@@ -16,11 +16,6 @@
 
 #define MAX_POLYGON_SIZE 5000
 
-extern "C" {
-	void PolygonCSV(void);
-	int UPI_Entry_Point(void);
-}
-
 void PolygonCSV(void)
 {
 	//Variables
