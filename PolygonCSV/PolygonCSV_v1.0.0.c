@@ -16,6 +16,35 @@
 
 #define MAX_POLYGON_SIZE 5000
 
+LPoint getArcCenter(LVertex current, LVertex next, float curveHeight)
+{
+	LPoint center = LPoint_Set(0,0);
+	if(LVertex_GetPoint(current).x < LVertex_GetPoint(next).x)
+		if(LVertex_GetPoint(current).y < LVertex_GetPoint(next).y)
+			if(curveHeight < 0)
+				center = LPoint_Set(LVertex_GetPoint(next).x, LVertex_GetPoint(current).y);
+			else
+				center = LPoint_Set(LVertex_GetPoint(current).x, LVertex_GetPoint(next).y);
+		else			
+			if(curveHeight < 0)
+				center = LPoint_Set(LVertex_GetPoint(current).x, LVertex_GetPoint(next).y);
+			else
+				center = LPoint_Set(LVertex_GetPoint(next).x, LVertex_GetPoint(current).y);
+	else
+		if(LVertex_GetPoint(current).y < LVertex_GetPoint(next).y)
+			if(curveHeight < 0)
+				center = LPoint_Set(LVertex_GetPoint(current).x, LVertex_GetPoint(next).y);
+			else
+				center = LPoint_Set(LVertex_GetPoint(next).x, LVertex_GetPoint(current).y);
+		else
+			if(curveHeight < 0)
+				center = LPoint_Set(LVertex_GetPoint(next).x, LVertex_GetPoint(current).y);
+			else
+				center = LPoint_Set(LVertex_GetPoint(current).x, LVertex_GetPoint(next).y);
+
+	return center;
+}
+
 void PolygonCSV(void)
 {
 	//Variables
@@ -31,6 +60,11 @@ void PolygonCSV(void)
 	char sLayerName[MAX_LAYER_NAME];
    	FILE * myFile;
    	int nPoints = 0;
+	int cpt = 0;
+
+	LObject polygon = NULL;
+	LPoint center = LPoint_Set(0,0);
+	LVertex firstVertex = NULL;
 
 	LDialogItem DialogItems[2] = {{ "CSV file","polygon_fillet.csv"}, { "Layer","WGUIDE"}};
 	
@@ -73,7 +107,31 @@ void PolygonCSV(void)
 
 	//LDialog_MsgBox(LFormat("nPoints = %d." , nPoints ));
 	LUpi_LogMessage(LFormat("nPoints = %d.\n" , nPoints ));
-	LPolygon_New(pCell, pLayer, point_arr, nPoints);
+	polygon=LPolygon_New(pCell, pLayer, point_arr, nPoints);
+
+	firstVertex = LObject_GetVertexList(polygon);
+
+	cpt = 0;
+	// for each vertex of the polygon
+	for(LVertex currentVertex = LObject_GetVertexList(polygon); currentVertex != NULL; currentVertex = LVertex_GetNext(currentVertex))
+	{
+		//if there is a curve height for that vertex
+		if(curveHeight_arr[cpt] != 0)
+		{
+			// ALWAYS USE CLOCKWISE VERTEX/POLYGON
+
+			//last vertex link to the first one
+			if(LVertex_GetNext(currentVertex) == NULL)
+				center = getArcCenter(currentVertex, firstVertex, curveHeight_arr[cpt]);
+			else
+				center = getArcCenter(currentVertex, LVertex_GetNext(currentVertex), curveHeight_arr[cpt]);
+			//LPoint center = LPoint_Set((LVertex_GetPoint(currentVertex).x+LVertex_GetPoint(LVertex_GetNext(currentVertex)).x)/2, (LVertex_GetPoint(currentVertex).y+LVertex_GetPoint(LVertex_GetNext(currentVertex)).y)/2);
+			//LUpi_LogMessage(LFormat("Centre X: %s\n", center.x));
+			LVertex_AddCurve(polygon, currentVertex, center, CW);
+		}
+		cpt++;
+	}
+
 	//LCell_MakeVisible ( pCell );
 	LDisplay_Refresh();
 }
