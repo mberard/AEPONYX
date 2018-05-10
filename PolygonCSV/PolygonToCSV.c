@@ -33,7 +33,6 @@ void PolygonToCSV(void)
 	char filesRoot[MAX_TDBFILE_NAME*3];
 	char fileName[MAX_TDBFILE_NAME*4];
 	char name[MAX_TDBFILE_NAME];
-	char* ptValue;
 
 	LStatus status;
 
