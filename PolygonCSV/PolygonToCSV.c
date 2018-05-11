@@ -135,8 +135,12 @@ void PolygonToCSV(void)
 		strcat(filesRoot,"_");
 		LUpi_LogMessage(LFormat("filesRoot: %s\n",filesRoot));
 
-		for(pObj = LObject_GetList(pCell, pLayer); pObj != NULL; pObj = LObject_GetNext(pObj))
+		if(LSelection_GetList() == NULL)
+			LSelection_AddAllObjectsOnLayer( pLayer );
+
+		for(LSelection pSel = LSelection_GetList(); pSel != NULL; pSel = LSelection_GetNext(pSel) )
 		{
+			pObj = LSelection_GetObject(pSel);
 			//prend un compteur, chercher a mettre le nom stocké dans propriete du polygone
 			fileName[0] = '\0';
 			name[0] = '\0';
