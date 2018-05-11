@@ -180,7 +180,6 @@ void PolygonToCSV(void)
 				#endif
 			}
 
-			//A CORRIGER
 			else if (LObject_GetGeometry(pObj) != LCurved)
 			{
 				//Polygon without curves
