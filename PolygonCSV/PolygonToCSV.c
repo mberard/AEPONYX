@@ -126,10 +126,11 @@ void PolygonToCSV(void)
 		//LUpi_LogMessage(LFormat("opened polygon file is: %s\n", cwd));
 
 		filesRoot[0] = '\0';
-		strcat(filesRoot, LFile_GetName(pFile, name, MAX_TDBFILE_NAME) );
-		strcat(filesRoot,"_");
+		strcat (filesRoot,cwd);
 		strcat(filesRoot, LCell_GetName(pCell, name, MAX_CELL_NAME) );
-		strcat(filesRoot,"_");
+		strcat(filesRoot,"\\");
+		//strcat(filesRoot, LFile_GetName(pFile, name, MAX_TDBFILE_NAME) );
+		//strcat(filesRoot,"_");
 		strcat(filesRoot, LLayer_GetName(pLayer, name, MAX_LAYER_NAME) );
 		strcat(filesRoot,"_");
 		LUpi_LogMessage(LFormat("filesRoot: %s\n",filesRoot));
