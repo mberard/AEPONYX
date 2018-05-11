@@ -161,6 +161,34 @@ void CSVToPolygon(void)
 			LUpi_LogMessage(LFormat("TRAITEMENT\n" ));
 			LVertex_AddCurve(polygon, vertex, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].dir);
 		}
+		else if(tcurve_arr[cpt].typeCurve == 2)
+		{
+			LUpi_LogMessage(LFormat("CIRCLE\n" ));
+			polygon = LCircle_New( pCell, pLayer, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].r );
+		}
+		else if(tcurve_arr[cpt].typeCurve == 3)
+		{
+			LUpi_LogMessage(LFormat("TORUS\n" ));
+			LTorusParams p;
+			p.ptCenter = LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy);
+			p.nInnerRadius = tcurve_arr[cpt].r;
+			p.nOuterRadius = tcurve_arr[cpt].r2;
+			p.dStartAngle = tcurve_arr[cpt].startAngle;
+			p.dStopAngle = tcurve_arr[cpt].stopAngle;
+
+			polygon = LTorus_CreateNew( pCell, pLayer, &p );
+		}
+		else if(tcurve_arr[cpt].typeCurve == 4)
+		{
+			LUpi_LogMessage(LFormat("PIE\n" ));
+			LPieParams p;
+			p.ptCenter = LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy);
+			p.nRadius = tcurve_arr[cpt].r;
+			p.dStartAngle = tcurve_arr[cpt].startAngle;
+			p.dStopAngle = tcurve_arr[cpt].stopAngle;
+
+			polygon = LPie_CreateNew( pCell, pLayer, &p );
+		}
 		vertex = LVertex_GetNext(vertex);
 	}
 
