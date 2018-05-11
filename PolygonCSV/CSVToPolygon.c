@@ -19,9 +19,10 @@
 #define MAX_POLYGON_SIZE 5000
 
 typedef struct curve{
-	int hasCurve; //0: no curve, 1: has curve
+	int typeCurve; //0:no curve, 1:curved polygone, 2:circle, 3:torus, 4:pie
 	LCoord cx,cy;
-	double r;
+	double r,r2;
+	double startAngle, stopAngle;
 	LArcDirection dir;
 }t_curve;
 
@@ -32,7 +33,9 @@ void CSVToPolygon(void)
 	LFile	pFile	=	LCell_GetFile(pCell);
 	LLayer pLayer;
 	LPoint point_arr[MAX_POLYGON_SIZE]; // could use malloc of LPoint (2 x LCoord or 2x Long or 2x 32bits) for undefined array size or base buffer on linecount
-	LCoord X,Y,CX,CY,R;
+	LCoord X,Y,CX,CY;
+	double R,R2,START,STOP;
+	int TYPE;
 	LArcDirection DIR;
 
 	char cwd[MAX_TDBFILE_NAME];
@@ -101,14 +104,16 @@ void CSVToPolygon(void)
 					Y = LC_Microns(atoi(token));
 
 					point_arr[nPoints] = LPoint_Set(X, Y);
-					tcurve_arr[nPoints].hasCurve = 0;
+					tcurve_arr[nPoints].typeCurve = 0;
 					nPoints = nPoints+1;
 				}
-				else if(cpt == 5)
+				else if(cpt == 9)
 				{
 					X = LC_Microns(atoi(token));
 					token = strtok(NULL, ",");
 					Y = LC_Microns(atoi(token));
+					token = strtok(NULL, ",");
+					TYPE = atoi(token);
 					token = strtok(NULL, ",");
 					CX = LC_Microns(atoi(token));
 					token = strtok(NULL, ",");
@@ -116,16 +121,25 @@ void CSVToPolygon(void)
 					token = strtok(NULL, ",");
 					R = LC_Microns(atoi(token));
 					token = strtok(NULL, ",");
+					R2 = LC_Microns(atoi(token));
+					token = strtok(NULL, ",");
+					START = atoi(token);
+					token = strtok(NULL, ",");
+					STOP = atoi(token);
+					token = strtok(NULL, ",");
 					if(strcmp(token,"CW") == 0)
 						DIR = CW;
 					else
 						DIR = CCW;
 
 					point_arr[nPoints] = LPoint_Set(X, Y);
-					tcurve_arr[nPoints].hasCurve = 1;
+					tcurve_arr[nPoints].typeCurve = TYPE;
 					tcurve_arr[nPoints].cx = CX;
 					tcurve_arr[nPoints].cy = CY;
 					tcurve_arr[nPoints].r = R;
+					tcurve_arr[nPoints].r2 = R2;
+					tcurve_arr[nPoints].startAngle = START;
+					tcurve_arr[nPoints].stopAngle = STOP;
 					tcurve_arr[nPoints].dir = DIR;
 					nPoints = nPoints+1;
 				}
@@ -142,7 +156,7 @@ void CSVToPolygon(void)
 	vertex = LObject_GetVertexList(polygon);
 	for(cpt=0; cpt<nPoints; cpt++)
 	{
-		if(tcurve_arr[cpt].hasCurve == 1)
+		if(tcurve_arr[cpt].typeCurve == 1)
 		{
 			LUpi_LogMessage(LFormat("TRAITEMENT\n" ));
 			LVertex_AddCurve(polygon, vertex, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].dir);
