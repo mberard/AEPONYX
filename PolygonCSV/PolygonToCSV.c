@@ -52,6 +52,25 @@ void Add( double x, double y, FILE * myFile, LFile pFile )
 	nLasty = ny;
 }
 
+void AddBox(LObject object, FILE * myFile, LFile pFile  )
+{
+	LRect rect = LBox_GetRect( object );
+	Add( rect.x0, rect.y0, myFile, pFile );
+	Add( rect.x0, rect.y1, myFile, pFile );
+	Add( rect.x1, rect.y1, myFile, pFile );
+	Add( rect.x1, rect.y0, myFile, pFile );
+	LUpi_LogMessage(LFormat("NEW BOX Polygon without curves\n"));
+}
+
+void AddPolygon(LObject object, FILE * myFile, LFile pFile  )
+{
+	LVertex currentVertex;
+	for (currentVertex = LObject_GetVertexList(object); currentVertex != NULL; currentVertex = LVertex_GetNext(currentVertex))
+	{
+		Add( LVertex_GetPoint(currentVertex).x, LVertex_GetPoint(currentVertex).y, myFile, pFile );
+	}
+}
+
 void PolygonToCSV(void)
 {
     //get the correct layer´/ cell
@@ -75,7 +94,7 @@ void PolygonToCSV(void)
 
 	#ifndef ALGORITHM_A
 		double dArcSegLen = grid.manufacturing_grid_size * 10.0;
-	#endif
+	#endif	
 
 	LStatus status;
 
@@ -106,7 +125,6 @@ void PolygonToCSV(void)
 		
 		//LUpi_LogMessage(LFormat("opened polygon file is: %s\n", cwd));
 
-		LUpi_LogMessage(LFormat("START\n"));
 		filesRoot[0] = '\0';
 		strcat(filesRoot, LFile_GetName(pFile, name, MAX_TDBFILE_NAME) );
 		strcat(filesRoot,"_");
@@ -133,34 +151,40 @@ void PolygonToCSV(void)
   			myFile = fopen(fileName,"w");
 			
 
-// CODE POUR PASSER DES COURBES EN SERIE DE VERTEX
+			// CODE POUR PASSER DES COURBES EN SERIE DE VERTEX
 			if (LObject_GetShape(pObj) == LCircle)
 			{
-	//			LDialog_MsgBox("Found a circle");
+				//LDialog_MsgBox("Found a circle");
 				LPoint ptCenter = LCircle_GetCenter(pObj);
 				LCoord nRadius = LCircle_GetRadius(pObj);
 
-	#ifdef ALGORITHM_A
-				double dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
-				for (double dTheta = 0; dTheta < 2.0 * M_PI; dTheta += dThetaStep )
-					Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ), myFile, pFile );
-	#else
-				int n = 2.0 * M_PI * (double)nRadius / dArcSegLen;
-				if ( n < 8 )
-					n = 8;
-				double dThetaStep = 2.0 * M_PI / n;
-				for ( int i = 0; i < n; i++ )
-				{
-					double dTheta = i * dThetaStep;
-					Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ), myFile, pFile );
-				}
-	#endif
+				#ifdef ALGORITHM_A
+							double dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
+							for (double dTheta = 0; dTheta < 2.0 * M_PI; dTheta += dThetaStep )
+								Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ), myFile, pFile );
+				#else
+							int n = 2.0 * M_PI * (double)nRadius / dArcSegLen;
+							if ( n < 8 )
+								n = 8;
+							double dThetaStep = 2.0 * M_PI / n;
+							for ( int i = 0; i < n; i++ )
+							{
+								double dTheta = i * dThetaStep;
+								Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ), myFile, pFile );
+							}
+				#endif
 			}
 
 			//A CORRIGER
 			else if (LObject_GetGeometry(pObj) != LCurved)
 			{
-				//vDeselect.push_back(pObj);
+				//Polygon without curves
+				if(LObject_GetShape(pObj) == LBox)
+					AddBox(pObj, myFile, pFile);
+				else
+					AddPolygon(pObj, myFile, pFile);
+				cpt++;
+				fclose(myFile);
 				continue;
 			}
 
@@ -168,15 +192,19 @@ void PolygonToCSV(void)
 			{
 				case LPolygon:
 	//				LDialog_MsgBox("Found a curved polygon");
-					for (LVertex pVert = LObject_GetVertexList(pObj); pVert; pVert = LVertex_GetNext(pVert))
+					for(LVertex pVert = LObject_GetVertexList(pObj); pVert != NULL; pVert = LVertex_GetNext(pVert))
 					{
 	//					char msg[200];
 	//					sprintf(msg, "Found a vertex (%ld, %ld)", LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y);
 	//					LDialog_MsgBox(msg);
 						Add( LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, myFile, pFile );
 						if ( ! LVertex_HasCurve(pVert))
+						{
+							cpt++;
+							fclose(myFile);
 							continue;
-
+						}
+						
 						LPoint ptStart;
 						LPoint ptEnd;
 						LPoint ptCenter;
@@ -355,29 +383,6 @@ void PolygonToCSV(void)
 				default:
 					break;
 			}
-
-
-
-			/*
-			if(LPolygon_HasCurve(object) == 1)
-			{
-				LUpi_LogMessage(LFormat("This polygon contains curves\n"));
-				status = LPolygon_StraightenAllCurves(pCell, object);
-				if(status == LBadParameters)
-					LUpi_LogMessage(LFormat("LPolygon_StraightenAllCurves error\n"));
-			}
-
-			for(vertex = LObject_GetVertexList(object); vertex != NULL; vertex = LVertex_GetNext(vertex))
-			{
-				xc = LVertex_GetPoint(vertex).x;
-				yc = LVertex_GetPoint(vertex).y;
-
-				x = (float)LFile_IntUtoMicrons(pFile, xc);
-				y = (float)LFile_IntUtoMicrons(pFile, yc);
-
-				fprintf(myFile, "%f,%f\n", (float)x, (float)y);
-			}
-			*/
 			cpt++;
 			fclose(myFile);
 		}
