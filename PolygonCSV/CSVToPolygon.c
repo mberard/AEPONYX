@@ -51,6 +51,7 @@ void CSVToPolygon(void)
 
 	t_curve tcurve_arr[MAX_POLYGON_SIZE];
 	t_port port;
+	LWireConfig wire_config;
 
 	LVertex vertex;
 
@@ -103,7 +104,6 @@ void CSVToPolygon(void)
 
 				token = strtok(line, ",");
 
-				LUpi_LogMessage(LFormat("i: %d\n", cpt));
 				if(cpt == 1)
 				{
 					X = LC_Microns(atoi(token));
@@ -164,6 +164,39 @@ void CSVToPolygon(void)
 					token = strtok(NULL, ",");
 					strcpy(port.text, token);
 				}
+				else if(cpt == 6)
+				{
+					X = LC_Microns(atoi(token));
+					token = strtok(NULL, ",");
+					Y = LC_Microns(atoi(token));
+					token = strtok(NULL, ",");
+					TYPE = atoi(token);
+					token = strtok(NULL, ",");
+					wire_config.width = LC_Microns(atoi(token));
+					token = strtok(NULL, ",");
+					if(strcmp(token,"LJoinMiter")==0)
+						wire_config.join = LJoinMiter;
+					else if(strcmp(token,"LJoinRound")==0)
+						wire_config.join = LJoinRound;
+					else if(strcmp(token,"LJoinBevel")==0)
+						wire_config.join = LJoinBevel;
+					else if(strcmp(token,"LJoinLayout")==0)
+						wire_config.join = LJoinLayout;
+
+					token = strtok(NULL, ",");
+					if(strcmp(token,"LCapButt")==0)
+						wire_config.cap = LCapButt;
+					else if(strcmp(token,"LCapRound")==0)
+						wire_config.cap = LCapRound;
+					else if(strcmp(token,"LCapExtend")==0)
+						wire_config.cap = LCapExtend;
+
+					token = strtok(NULL, ",");
+					wire_config.miter_angle = LC_Microns(atoi(token));
+
+					point_arr[nPoints] = LPoint_Set(X, Y);
+					nPoints++;
+				}
 				fscanf(myFile,"\n");
 			}	
 			fclose(myFile);
@@ -215,8 +248,16 @@ void CSVToPolygon(void)
 	}
 	else if(cpt == 5)
 	{
+		LUpi_LogMessage(LFormat("PORT\n" ));
 		polygon = LPort_New( pCell, pLayer, port.text, port.x0, port.y0, port.x1, port.y1 );
 	}
+
+	else if(cpt == 6)
+	{
+		LUpi_LogMessage(LFormat("WIRE\n"));
+		polygon = LWire_New( pCell, pLayer, &wire_config, LSetWireAll, point_arr, nPoints );
+	}
+
 	//LCell_MakeVisible ( pCell );
 	LDisplay_Refresh();
 }
