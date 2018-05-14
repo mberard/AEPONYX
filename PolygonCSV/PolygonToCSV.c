@@ -16,6 +16,7 @@
 /* End */
 
 #define MAX_POLYGON_SIZE 5000
+#define MAX_PORT_NAME_LENGTH 200
 
 LCoord Round(double d)
 {
@@ -52,6 +53,64 @@ void Add( double x, double y, FILE * myFile, LFile pFile )
 	nLasty = ny;
 }
 
+void AddWirePoint( double x, double y, LObject object, FILE * myFile, LFile pFile )
+{
+	int type = 6;
+	char strJoin[15];
+	char strCap[15];
+
+	LJoinType jt;
+	LCapType ct;
+
+	LCoord nx = Round( x );
+	LCoord ny = Round( y );
+
+	if(firstVertex != 1 &&  nx == nLastx && ny == nLasty )
+		return; // do not duplicate vertex
+		
+	if(firstVertex == 1)
+		firstVertex = 0;
+	
+	x = (float)LFile_IntUtoMicrons(pFile, nx);
+	y = (float)LFile_IntUtoMicrons(pFile, ny);
+
+	jt = LWire_GetJoinType(object);
+	switch(jt)
+	{
+		case LJoinMiter:
+			strcpy(strJoin,"LJoinMiter");
+			break;
+		case LJoinRound:
+			strcpy(strJoin,"LJoinRound");
+			break;
+		case LJoinBevel:
+			strcpy(strJoin,"LJoinBevel");
+			break;
+		case LJoinLayout:
+			strcpy(strJoin,"LJoinLayout");
+			break;
+	}
+
+	ct = LWire_GetCapType(object);
+	switch(ct)
+	{
+		case LCapButt:
+			strcpy(strCap,"LCapButt");
+			break;
+		case LCapRound:
+			strcpy(strCap,"LCapRound");
+			break;
+		case LCapExtend:
+			strcpy(strCap,"LCapExtend");
+			break;
+	}
+	
+	fprintf(myFile, "%f,%f,%d,%f,%s,%s,%f\n",(float)x, (float)y, type, LWire_GetWidth(object), strJoin, strCap, LWire_GetMiterAngle(object) );
+
+	nLastx = nx;
+	nLasty = ny;
+}
+
 void AddBox(LObject object, FILE * myFile, LFile pFile  )
 {
 	LRect rect = LBox_GetRect( object );
@@ -68,6 +127,25 @@ void AddPolygon(LObject object, FILE * myFile, LFile pFile  )
 	{
 		Add( LVertex_GetPoint(currentVertex).x, LVertex_GetPoint(currentVertex).y, myFile, pFile );
 	}
+}
+
+void AddWire(LObject object, FILE * myFile, LFile pFile  )
+{
+	LVertex currentVertex;
+	for (currentVertex = LObject_GetVertexList(object); currentVertex != NULL; currentVertex = LVertex_GetNext(currentVertex))
+	{
+		AddWirePoint( LVertex_GetPoint(currentVertex).x, LVertex_GetPoint(currentVertex).y, object, myFile, pFile );
+	}
+}
+
+void AddPort(LObject object, FILE * myFile, LFile pFile  )
+{
+	int type = 5;
+	LRect rect;
+	rect = LPort_GetRect( object );
+	char str[MAX_PORT_NAME_LENGTH];
+	LPort_GetText( object, str, MAX_PORT_NAME_LENGTH );
+	fprintf(myFile, "%f,%f,%d,%f,%f,%s\n", (float)LFile_IntUtoMicrons(pFile, rect.x0), (float)LFile_IntUtoMicrons(pFile, rect.y0),type,(float)LFile_IntUtoMicrons(pFile, rect.x1),(float)LFile_IntUtoMicrons(pFile, rect.y1),str);
 }
 
 void AddCurve(FILE* myFile, LFile pFile, double x, double y, int type, LCoord cx, LCoord cy, double r, double r2, double start, double stop, LArcDirection dir)
@@ -111,18 +189,24 @@ void PolygonToCSV(void)
 	float x,y;
 	int cpt=0;
 
-	LDialogItem DialogItems[2] = {{ "Name of the CSV file","polygon.csv"}, { "Which layer to save","WGUIDE"}};
+	LDialogItem DialogItems[1] = { "Which layer to save if no selection made","WGUIDE"};
 	
-	if (LDialog_MultiLineInputBox("Polygon File",DialogItems,2))
+	if (LDialog_MultiLineInputBox("Polygon File",DialogItems,1))
    	{
-		pLayer = LLayer_Find(pFile, DialogItems[1].value);
+		pLayer = LLayer_Find(pFile, DialogItems[0].value);
 		if(NotAssigned(pLayer)) 
 		{
-			LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", DialogItems[1].value));
+			LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", DialogItems[0].value));
 			return;
 		}
 		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
-   		LDialog_AlertBox(LFormat("The Polygon will be saved from Layer %s", sLayerName));
+		if(LSelection_GetList() == NULL)
+		{
+			LSelection_AddAllObjectsOnLayer( pLayer );
+			LDialog_AlertBox(LFormat("Layer %s saved", sLayerName));
+		}
+		else
+			LDialog_AlertBox(LFormat("Selection saved"));
 
 		if (getcwd(cwd, sizeof(cwd)) == NULL)
    			LUpi_LogMessage(LFormat("getcwd() error: %s\n",strerror(errno)));
@@ -138,14 +222,9 @@ void PolygonToCSV(void)
 		strcat (filesRoot,cwd);
 		strcat(filesRoot, LCell_GetName(pCell, name, MAX_CELL_NAME) );
 		strcat(filesRoot,"\\");
-		//strcat(filesRoot, LFile_GetName(pFile, name, MAX_TDBFILE_NAME) );
-		//strcat(filesRoot,"_");
 		strcat(filesRoot, LLayer_GetName(pLayer, name, MAX_LAYER_NAME) );
 		strcat(filesRoot,"_");
 		LUpi_LogMessage(LFormat("filesRoot: %s\n",filesRoot));
-
-		if(LSelection_GetList() == NULL)
-			LSelection_AddAllObjectsOnLayer( pLayer );
 
 		for(LSelection pSel = LSelection_GetList(); pSel != NULL; pSel = LSelection_GetNext(pSel) )
 		{
@@ -174,14 +253,19 @@ void PolygonToCSV(void)
 
 				AddCurve(myFile, pFile, 0, 0, 2, ptCenter.x, ptCenter.y, nRadius, 0, 0, 0, CCW);
 			}
+			//LUpi_LogMessage(LFormat("shape is: %s\n", LObject_GetShape(pObj)));
 
 			else if (LObject_GetGeometry(pObj) != LCurved)
 			{
 				//Polygon without curves
 				if(LObject_GetShape(pObj) == LBox)
 					AddBox(pObj, myFile, pFile);
-				else
+				else if(LObject_GetShape(pObj) == LPolygon)
 					AddPolygon(pObj, myFile, pFile);
+				else if(LObject_GetShape(pObj) == LWire)
+					AddWire(pObj, myFile, pFile);
+				else if(LObject_GetShape(pObj) == LObjPort)
+					AddPort(pObj, myFile, pFile);
 				cpt++;
 				fclose(myFile);
 				continue;
