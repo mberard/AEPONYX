@@ -17,6 +17,7 @@
 #include <string.h>
 
 #define MAX_POLYGON_SIZE 5000
+#define MAX_PORT_NAME_LENGTH 200
 
 typedef struct curve{
 	int typeCurve; //0:no curve, 1:curved polygone, 2:circle, 3:torus, 4:pie
@@ -25,6 +26,11 @@ typedef struct curve{
 	double startAngle, stopAngle;
 	LArcDirection dir;
 }t_curve;
+
+typedef struct port{
+	LCoord x0,y0,x1,y1;
+	char text[MAX_PORT_NAME_LENGTH];
+}t_port;
 
 void CSVToPolygon(void)
 {
@@ -44,6 +50,7 @@ void CSVToPolygon(void)
 	char line[256];
 
 	t_curve tcurve_arr[MAX_POLYGON_SIZE];
+	t_port port;
 
 	LVertex vertex;
 
@@ -143,55 +150,73 @@ void CSVToPolygon(void)
 					tcurve_arr[nPoints].dir = DIR;
 					nPoints = nPoints+1;
 				}
+				else if(cpt == 5)
+				{
+					port.x0 = LC_Microns(atoi(token));
+					token = strtok(NULL, ",");
+					port.y0 = LC_Microns(atoi(token));
+					token = strtok(NULL, ",");
+					TYPE = atoi(token);
+					token = strtok(NULL, ",");
+					port.x1 = LC_Microns(atoi(token));
+					token = strtok(NULL, ",");
+					port.y1 = LC_Microns(atoi(token));
+					token = strtok(NULL, ",");
+					strcpy(port.text, token);
+				}
 				fscanf(myFile,"\n");
 			}	
 			fclose(myFile);
 		}
 	}
 
-	//LDialog_MsgBox(LFormat("nPoints = %d." , nPoints ));
-	LUpi_LogMessage(LFormat("nPoints = %d.\n" , nPoints ));
-	polygon=LPolygon_New(pCell, pLayer, point_arr, nPoints);
-	
-	vertex = LObject_GetVertexList(polygon);
-	for(cpt=0; cpt<nPoints; cpt++)
+	if(cpt == 1 || cpt == 9)
 	{
-		if(tcurve_arr[cpt].typeCurve == 1)
+		polygon=LPolygon_New(pCell, pLayer, point_arr, nPoints);
+		
+		vertex = LObject_GetVertexList(polygon);
+		for(cpt=0; cpt<nPoints; cpt++)
 		{
-			LUpi_LogMessage(LFormat("TRAITEMENT\n" ));
-			LVertex_AddCurve(polygon, vertex, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].dir);
-		}
-		else if(tcurve_arr[cpt].typeCurve == 2)
-		{
-			LUpi_LogMessage(LFormat("CIRCLE\n" ));
-			polygon = LCircle_New( pCell, pLayer, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].r );
-		}
-		else if(tcurve_arr[cpt].typeCurve == 3)
-		{
-			LUpi_LogMessage(LFormat("TORUS\n" ));
-			LTorusParams p;
-			p.ptCenter = LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy);
-			p.nInnerRadius = tcurve_arr[cpt].r;
-			p.nOuterRadius = tcurve_arr[cpt].r2;
-			p.dStartAngle = tcurve_arr[cpt].startAngle;
-			p.dStopAngle = tcurve_arr[cpt].stopAngle;
+			if(tcurve_arr[cpt].typeCurve == 1)
+			{
+				LUpi_LogMessage(LFormat("TRAITEMENT\n" ));
+				LVertex_AddCurve(polygon, vertex, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].dir);
+			}
+			else if(tcurve_arr[cpt].typeCurve == 2)
+			{
+				LUpi_LogMessage(LFormat("CIRCLE\n" ));
+				polygon = LCircle_New( pCell, pLayer, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].r );
+			}
+			else if(tcurve_arr[cpt].typeCurve == 3)
+			{
+				LUpi_LogMessage(LFormat("TORUS\n" ));
+				LTorusParams p;
+				p.ptCenter = LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy);
+				p.nInnerRadius = tcurve_arr[cpt].r;
+				p.nOuterRadius = tcurve_arr[cpt].r2;
+				p.dStartAngle = tcurve_arr[cpt].startAngle;
+				p.dStopAngle = tcurve_arr[cpt].stopAngle;
 
-			polygon = LTorus_CreateNew( pCell, pLayer, &p );
-		}
-		else if(tcurve_arr[cpt].typeCurve == 4)
-		{
-			LUpi_LogMessage(LFormat("PIE\n" ));
-			LPieParams p;
-			p.ptCenter = LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy);
-			p.nRadius = tcurve_arr[cpt].r;
-			p.dStartAngle = tcurve_arr[cpt].startAngle;
-			p.dStopAngle = tcurve_arr[cpt].stopAngle;
+				polygon = LTorus_CreateNew( pCell, pLayer, &p );
+			}
+			else if(tcurve_arr[cpt].typeCurve == 4)
+			{
+				LUpi_LogMessage(LFormat("PIE\n" ));
+				LPieParams p;
+				p.ptCenter = LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy);
+				p.nRadius = tcurve_arr[cpt].r;
+				p.dStartAngle = tcurve_arr[cpt].startAngle;
+				p.dStopAngle = tcurve_arr[cpt].stopAngle;
 
-			polygon = LPie_CreateNew( pCell, pLayer, &p );
+				polygon = LPie_CreateNew( pCell, pLayer, &p );
+			}
+			vertex = LVertex_GetNext(vertex);
 		}
-		vertex = LVertex_GetNext(vertex);
 	}
-
+	else if(cpt == 5)
+	{
+		polygon = LPort_New( pCell, pLayer, port.text, port.x0, port.y0, port.x1, port.y1 );
+	}
 	//LCell_MakeVisible ( pCell );
 	LDisplay_Refresh();
 }

@@ -11,7 +11,7 @@ For a vertex without curve:
 ```
 x,y
 ```
-For a vertex with curve or any common shape:
+For a vertex with curve or any other shape:
 
 ```
 x,y,type,cx,cy,r,r2,startAngle,stopAngle,dir
@@ -34,6 +34,18 @@ r2: second radius of the shape (torus)
 startAngle,stopAngle: first and second angle (torus, pie)
 
 dir: LArcDirection CW or CCW (for curved polygon)
+
+For a port:
+
+```
+x,y,5,x1,y1
+```
+
+For a wire:
+
+```
+x,y,6,width,joinType,capType,miterAngle
+```
 ## Authors
 
 * **Martin Berard** - *Initial work* - [mberard](https://github.com/mberard)
