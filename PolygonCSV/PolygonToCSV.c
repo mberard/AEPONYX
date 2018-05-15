@@ -105,7 +105,7 @@ void AddWirePoint( double x, double y, LObject object, FILE * myFile, LFile pFil
 			break;
 	}
 	
-	fprintf(myFile, "%f,%f,%d,%f,%s,%s,%f\n",(float)x, (float)y, type, LWire_GetWidth(object), strJoin, strCap, LWire_GetMiterAngle(object) );
+	fprintf(myFile, "%f,%f,%d,%f,%s,%s,%f\n",(float)x, (float)y, type, (float)LFile_IntUtoMicrons(pFile, LWire_GetWidth(object)), strJoin, strCap, LWire_GetMiterAngle(object) );
 
 	nLastx = nx;
 	nLasty = ny;
