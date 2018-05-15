@@ -71,18 +71,24 @@ void CSVToPolygon(void)
 		pLayer = LLayer_Find(pFile, DialogItems[1].value);
 		if(NotAssigned(pLayer)) 
 		{
-			LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", DialogItems[1].value));
+			if(strlen(DialogItems[0].value) >= 61)
+				LDialog_AlertBox(LFormat("ERROR:  CSV file path is too long."));
+			else
+				LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", DialogItems[1].value));
 			return;
 		}
 		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
    		LDialog_AlertBox(LFormat("The Polygon will be added in Layer %s", sLayerName));
 
 		if (getcwd(cwd, sizeof(cwd)) == NULL)
-   		LUpi_LogMessage(LFormat("getcwd() error: %s\n",strerror(errno)));
+   			LUpi_LogMessage(LFormat("getcwd() error: %s\n",strerror(errno)));
 		else
-   		LUpi_LogMessage(LFormat("current working directory is: %s\n", strcat (cwd,"\\")));
+   			LUpi_LogMessage(LFormat("current working directory is: %s\n", strcat (cwd,"\\")));
 
-	   	strcat(cwd,DialogItems[0].value);
+		if(DialogItems[0].value[1] == ':') //chemin absolu
+	   		strcpy(cwd,DialogItems[0].value);
+		else //chemin relatif
+			strcat(cwd,DialogItems[0].value);
   		LUpi_LogMessage(LFormat("current csv file is: %s\n", cwd));
   		myFile = fopen(cwd,"r");
    		if (myFile == NULL)
