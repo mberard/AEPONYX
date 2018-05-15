@@ -19,6 +19,7 @@
 #define MAX_POLYGON_SIZE 5000
 #define MAX_PORT_NAME_LENGTH 200
 #define MAX_LENGTH_PATH 256
+const char saveFile[] = "importPath.txt";
 
 typedef struct curve{
 	int typeCurve; //0:no curve, 1:curved polygone, 2:circle, 3:torus, 4:pie
@@ -46,6 +47,7 @@ void CSVToPolygon(void)
 	LArcDirection DIR;
 
 	char cwd[MAX_TDBFILE_NAME];
+	char cwdFile[MAX_TDBFILE_NAME];
 	char sLayerName[MAX_LAYER_NAME];
 	char strLayer[MAX_LAYER_NAME];
 	char strPath[MAX_LENGTH_PATH];
@@ -67,7 +69,26 @@ void CSVToPolygon(void)
 
 	LObject polygon = NULL;
 
-	strcpy(strPath, "polygon.csv");
+
+	if (getcwd(cwd, sizeof(cwd)) == NULL)
+		LUpi_LogMessage(LFormat("getcwd() error: %s\n",strerror(errno)));
+	else
+		LUpi_LogMessage(LFormat("current working directory is: %s\n", strcat (cwd,"\\")));
+	
+	strcpy(cwdFile, cwd);
+	strcat(cwdFile, saveFile);
+	myFile = fopen(cwdFile, "r");
+	if(myFile == NULL)
+	{
+		LUpi_LogMessage(LFormat("Could not find: %s\n", cwdFile));
+		strcpy(strPath, "polygon.csv");
+	}
+	else
+	{
+		fscanf(myFile,"%[^\n]", line);
+		strcpy(strPath,line);
+		fclose(myFile);
+	}
 	
 	if (LDialog_InputBox("CSV file", "Enter path of the CSV file containing the polygon", strPath))
    	{
@@ -87,11 +108,6 @@ void CSVToPolygon(void)
 		}
 		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
    		LDialog_AlertBox(LFormat("The Polygon will be added in Layer %s", sLayerName));
-
-		if (getcwd(cwd, sizeof(cwd)) == NULL)
-   			LUpi_LogMessage(LFormat("getcwd() error: %s\n",strerror(errno)));
-		else
-   			LUpi_LogMessage(LFormat("current working directory is: %s\n", strcat (cwd,"\\")));
 
 		if(strPath[1] == ':') //chemin absolu
 	   		strcpy(cwd,strPath);
