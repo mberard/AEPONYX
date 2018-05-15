@@ -287,6 +287,16 @@ void CSVToPolygon(void)
 		}
 	}
 
+	myFile = fopen(saveFile, "w");
+	if(myFile == NULL)
+		LUpi_LogMessage(LFormat("Could not save the file path\n"));
+	else
+	{
+		fprintf(myFile, "%s", strPath);
+		fclose(myFile);
+		LUpi_LogMessage(LFormat("File path saved\n"));
+	}
+
 	//LCell_MakeVisible ( pCell );
 	LDisplay_Refresh();
 }
