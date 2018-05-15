@@ -18,6 +18,7 @@
 
 #define MAX_POLYGON_SIZE 5000
 #define MAX_PORT_NAME_LENGTH 200
+#define MAX_LENGTH_PATH 256
 
 typedef struct curve{
 	int typeCurve; //0:no curve, 1:curved polygone, 2:circle, 3:torus, 4:pie
@@ -46,6 +47,8 @@ void CSVToPolygon(void)
 
 	char cwd[MAX_TDBFILE_NAME];
 	char sLayerName[MAX_LAYER_NAME];
+	char strLayer[MAX_LAYER_NAME];
+	char strPath[MAX_LENGTH_PATH];
 
 	char line[256];
 
@@ -64,17 +67,22 @@ void CSVToPolygon(void)
 
 	LObject polygon = NULL;
 
-	LDialogItem DialogItems[2] = {{ "CSV file","polygon.csv"}, { "Layer","WGUIDE"}};
+	strcpy(strPath, "polygon.csv");
 	
-	if (LDialog_MultiLineInputBox("Polygon File",DialogItems,2))
+	if (LDialog_InputBox("CSV file", "Enter path of the CSV file containing the polygon", strPath))
    	{
-		pLayer = LLayer_Find(pFile, DialogItems[1].value);
+		strcpy(strLayer, "WGUIDE");
+		if ( LDialog_InputBox("Layer", "Enter name of the layer in which the polygon will be loaded", strLayer) == 0)
+			return;
+		else
+			pLayer = LLayer_Find(pFile, strLayer);
+
 		if(NotAssigned(pLayer)) 
 		{
-			if(strlen(DialogItems[0].value) >= 61)
+			if(strlen(strPath) >= MAX_LENGTH_PATH-1)
 				LDialog_AlertBox(LFormat("ERROR:  CSV file path is too long."));
 			else
-				LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", DialogItems[1].value));
+				LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", strLayer));
 			return;
 		}
 		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
@@ -85,10 +93,10 @@ void CSVToPolygon(void)
 		else
    			LUpi_LogMessage(LFormat("current working directory is: %s\n", strcat (cwd,"\\")));
 
-		if(DialogItems[0].value[1] == ':') //chemin absolu
-	   		strcpy(cwd,DialogItems[0].value);
+		if(strPath[1] == ':') //chemin absolu
+	   		strcpy(cwd,strPath);
 		else //chemin relatif
-			strcat(cwd,DialogItems[0].value);
+			strcat(cwd,strPath);
   		LUpi_LogMessage(LFormat("current csv file is: %s\n", cwd));
   		myFile = fopen(cwd,"r");
    		if (myFile == NULL)
@@ -207,61 +215,60 @@ void CSVToPolygon(void)
 			}	
 			fclose(myFile);
 		}
-	}
-
-	if(cpt == 1 || cpt == 9)
-	{
-		polygon=LPolygon_New(pCell, pLayer, point_arr, nPoints);
-		
-		vertex = LObject_GetVertexList(polygon);
-		for(cpt=0; cpt<nPoints; cpt++)
+		if(cpt == 1 || cpt == 9)
 		{
-			if(tcurve_arr[cpt].typeCurve == 1)
+			polygon=LPolygon_New(pCell, pLayer, point_arr, nPoints);
+			
+			vertex = LObject_GetVertexList(polygon);
+			for(cpt=0; cpt<nPoints; cpt++)
 			{
-				LUpi_LogMessage(LFormat("TRAITEMENT\n" ));
-				LVertex_AddCurve(polygon, vertex, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].dir);
-			}
-			else if(tcurve_arr[cpt].typeCurve == 2)
-			{
-				LUpi_LogMessage(LFormat("CIRCLE\n" ));
-				polygon = LCircle_New( pCell, pLayer, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].r );
-			}
-			else if(tcurve_arr[cpt].typeCurve == 3)
-			{
-				LUpi_LogMessage(LFormat("TORUS\n" ));
-				LTorusParams p;
-				p.ptCenter = LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy);
-				p.nInnerRadius = tcurve_arr[cpt].r;
-				p.nOuterRadius = tcurve_arr[cpt].r2;
-				p.dStartAngle = tcurve_arr[cpt].startAngle;
-				p.dStopAngle = tcurve_arr[cpt].stopAngle;
+				if(tcurve_arr[cpt].typeCurve == 1)
+				{
+					LUpi_LogMessage(LFormat("TRAITEMENT\n" ));
+					LVertex_AddCurve(polygon, vertex, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].dir);
+				}
+				else if(tcurve_arr[cpt].typeCurve == 2)
+				{
+					LUpi_LogMessage(LFormat("CIRCLE\n" ));
+					polygon = LCircle_New( pCell, pLayer, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].r );
+				}
+				else if(tcurve_arr[cpt].typeCurve == 3)
+				{
+					LUpi_LogMessage(LFormat("TORUS\n" ));
+					LTorusParams p;
+					p.ptCenter = LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy);
+					p.nInnerRadius = tcurve_arr[cpt].r;
+					p.nOuterRadius = tcurve_arr[cpt].r2;
+					p.dStartAngle = tcurve_arr[cpt].startAngle;
+					p.dStopAngle = tcurve_arr[cpt].stopAngle;
 
-				polygon = LTorus_CreateNew( pCell, pLayer, &p );
-			}
-			else if(tcurve_arr[cpt].typeCurve == 4)
-			{
-				LUpi_LogMessage(LFormat("PIE\n" ));
-				LPieParams p;
-				p.ptCenter = LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy);
-				p.nRadius = tcurve_arr[cpt].r;
-				p.dStartAngle = tcurve_arr[cpt].startAngle;
-				p.dStopAngle = tcurve_arr[cpt].stopAngle;
+					polygon = LTorus_CreateNew( pCell, pLayer, &p );
+				}
+				else if(tcurve_arr[cpt].typeCurve == 4)
+				{
+					LUpi_LogMessage(LFormat("PIE\n" ));
+					LPieParams p;
+					p.ptCenter = LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy);
+					p.nRadius = tcurve_arr[cpt].r;
+					p.dStartAngle = tcurve_arr[cpt].startAngle;
+					p.dStopAngle = tcurve_arr[cpt].stopAngle;
 
-				polygon = LPie_CreateNew( pCell, pLayer, &p );
+					polygon = LPie_CreateNew( pCell, pLayer, &p );
+				}
+				vertex = LVertex_GetNext(vertex);
 			}
-			vertex = LVertex_GetNext(vertex);
 		}
-	}
-	else if(cpt == 5)
-	{
-		LUpi_LogMessage(LFormat("PORT\n" ));
-		polygon = LPort_New( pCell, pLayer, port.text, port.x0, port.y0, port.x1, port.y1 );
-	}
+		else if(cpt == 5)
+		{
+			LUpi_LogMessage(LFormat("PORT\n" ));
+			polygon = LPort_New( pCell, pLayer, port.text, port.x0, port.y0, port.x1, port.y1 );
+		}
 
-	else if(cpt == 6)
-	{
-		LUpi_LogMessage(LFormat("WIRE\n"));
-		polygon = LWire_New( pCell, pLayer, &wire_config, LSetWireAll, point_arr, nPoints );
+		else if(cpt == 6)
+		{
+			LUpi_LogMessage(LFormat("WIRE\n"));
+			polygon = LWire_New( pCell, pLayer, &wire_config, LSetWireAll, point_arr, nPoints );
+		}
 	}
 
 	//LCell_MakeVisible ( pCell );
