@@ -89,8 +89,11 @@ void CSVToPolygon(void)
 		strcpy(strPath,line);
 		fclose(myFile);
 	}
-	
-	if (LDialog_InputBox("CSV file", "Enter path of the CSV file containing the polygon", strPath))
+
+	LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the polygon", "OK", "csv", "*.csv||", pFile );
+	strPath[strlen(strPath)-2]='\0';
+
+	if (strPath != NULL)
    	{
 		strcpy(strLayer, "WGUIDE");
 		if ( LDialog_InputBox("Layer", "Enter name of the layer in which the polygon will be loaded", strLayer) == 0)
