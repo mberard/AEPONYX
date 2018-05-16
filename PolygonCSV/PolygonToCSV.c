@@ -20,6 +20,7 @@
 
 #define MAX_POLYGON_SIZE 5000
 #define MAX_PORT_NAME_LENGTH 200
+#define MAX_GEOMETRY_LENGTH 15
 
 LCoord Round(double d)
 {
@@ -36,7 +37,74 @@ int firstVertex = 1;
 
 bool bLastSegVertical = true;
 
-void Add( double x, double y, FILE * myFile, LFile pFile )
+char* GetGeometry(LObject object)
+{
+	LGeomType geo;
+	char* geoStr = malloc(MAX_GEOMETRY_LENGTH* sizeof(char));
+	geo = LObject_GetGeometry( object );
+	switch(geo)
+	{
+		case LOrthogonal:
+			strcpy(geoStr,"LOrthogonal");
+			break;
+		case LFortyFive:
+			strcpy(geoStr,"LFortyFive");
+			break;
+		case LAllAngle:
+			strcpy(geoStr,"LAllAngle");
+			break;
+		case LCurved:
+			strcpy(geoStr,"LCurved");
+			break;
+		case LNonGeometric:
+			strcpy(geoStr,"LNonGeometric");
+			break;
+	}
+	return geoStr;
+}
+
+char* GetShape(LObject object)
+{
+	LShapeType shape;
+	char* shapeStr = malloc(MAX_GEOMETRY_LENGTH* sizeof(char));
+	shape = LObject_GetShape( object );
+	switch(shape)
+	{
+		case LBox:
+			strcpy(shapeStr,"LBox");
+			break;
+		case LCircle:
+			strcpy(shapeStr,"LCircle");
+			break;
+		case LWire:
+			strcpy(shapeStr,"LWire");
+			break;
+		case LPolygon:
+			strcpy(shapeStr,"LPolygon");
+			break;
+		case LTorus:
+			strcpy(shapeStr,"LTorus");
+			break;
+		case LPie:
+			strcpy(shapeStr,"LPie");
+			break;
+		case LOtherObject:
+			strcpy(shapeStr,"LOtherObject");
+			break;
+		case LObjInstance:
+			strcpy(shapeStr,"LObjInstance");
+			break;
+		case LObjPort:
+			strcpy(shapeStr,"LObjPort");
+			break;
+		case LObjRuler:
+			strcpy(shapeStr,"LObjRuler");
+			break;
+	}
+	return shapeStr;
+}
+
+void Add( LObject object, double x, double y, FILE * myFile, LFile pFile )
 {
 	LCoord nx = Round( x );
 	LCoord ny = Round( y );
@@ -50,10 +118,15 @@ void Add( double x, double y, FILE * myFile, LFile pFile )
 	x = (float)LFile_IntUtoMicrons(pFile, nx);
 	y = (float)LFile_IntUtoMicrons(pFile, ny);
 
-	fprintf(myFile, "%f,%f\n", (float)x, (float)y);
+	fprintf(myFile, "%s,%s,%f,%f\n", GetShape( object), GetGeometry( object), (float)x, (float)y);
 
 	nLastx = nx;
 	nLasty = ny;
+}
+
+void PrintInSaveFile( LObject object, FILE * myFile, LFile pFile )
+{
+	
 }
 
 void AddWirePoint( double x, double y, LObject object, FILE * myFile, LFile pFile )
@@ -117,10 +190,10 @@ void AddWirePoint( double x, double y, LObject object, FILE * myFile, LFile pFil
 void AddBox(LObject object, FILE * myFile, LFile pFile  )
 {
 	LRect rect = LBox_GetRect( object );
-	Add( rect.x0, rect.y0, myFile, pFile );
-	Add( rect.x0, rect.y1, myFile, pFile );
-	Add( rect.x1, rect.y1, myFile, pFile );
-	Add( rect.x1, rect.y0, myFile, pFile );
+	Add( object, rect.x0, rect.y0, myFile, pFile );
+	Add( object, rect.x0, rect.y1, myFile, pFile );
+	Add( object, rect.x1, rect.y1, myFile, pFile );
+	Add( object, rect.x1, rect.y0, myFile, pFile );
 }
 
 void AddPolygon(LObject object, FILE * myFile, LFile pFile  )
@@ -128,7 +201,7 @@ void AddPolygon(LObject object, FILE * myFile, LFile pFile  )
 	LVertex currentVertex;
 	for (currentVertex = LObject_GetVertexList(object); currentVertex != NULL; currentVertex = LVertex_GetNext(currentVertex))
 	{
-		Add( LVertex_GetPoint(currentVertex).x, LVertex_GetPoint(currentVertex).y, myFile, pFile );
+		Add( object, LVertex_GetPoint(currentVertex).x, LVertex_GetPoint(currentVertex).y, myFile, pFile );
 	}
 }
 
@@ -296,7 +369,7 @@ void PolygonToCSV(void)
 	//					LDialog_MsgBox(msg);
 						if ( ! LVertex_HasCurve(pVert))
 						{
-							Add( LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, myFile, pFile );
+							Add( pObj, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, myFile, pFile );
 							continue;
 						}
 						
