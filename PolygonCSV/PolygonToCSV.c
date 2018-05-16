@@ -8,6 +8,9 @@
 #include <unistd.h> //getcwd
 #include <math.h>
 
+#include <stdio.h>
+#include <io.h> //modify this on linux
+
 //#define EXCLUDE_LEDIT_LEGACY_UPI
 
 #include <ldata.h>
@@ -222,6 +225,17 @@ void PolygonToCSV(void)
 		strcat (filesRoot,cwd);
 		strcat(filesRoot, LCell_GetName(pCell, name, MAX_CELL_NAME) );
 		strcat(filesRoot,"\\");
+		if(access(filesRoot,0) != 0) //directory do not exist
+		{
+			#if defined(_WIN32)
+				_mkdir(filesRoot);
+			#else 
+				mkdir(filesRoot, 0755); 
+			#endif
+			LUpi_LogMessage(LFormat("NEED TO CREATE FOLDER\n",filesRoot));
+		}
+		else
+			LUpi_LogMessage(LFormat("FOLDER OK\n",filesRoot));
 		strcat(filesRoot, LLayer_GetName(pLayer, name, MAX_LAYER_NAME) );
 		strcat(filesRoot,"_");
 		LUpi_LogMessage(LFormat("filesRoot: %s\n",filesRoot));
