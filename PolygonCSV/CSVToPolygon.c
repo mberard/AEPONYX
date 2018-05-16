@@ -29,7 +29,7 @@ typedef struct curve{
 	LArcDirection dir;
 }t_curve;
 
-typedef struct port{
+typedef struct port{ //type code: 5
 	LCoord x0,y0,x1,y1;
 	char text[MAX_PORT_NAME_LENGTH];
 }t_port;
@@ -56,7 +56,7 @@ void CSVToPolygon(void)
 
 	t_curve tcurve_arr[MAX_POLYGON_SIZE];
 	t_port port;
-	LWireConfig wire_config;
+	LWireConfig wire_config; //for wire, type code: 6
 
 	LVertex vertex;
 
@@ -69,14 +69,14 @@ void CSVToPolygon(void)
 
 	LObject polygon = NULL;
 
-
+	//get the path
 	if (getcwd(cwd, sizeof(cwd)) == NULL)
 		LUpi_LogMessage(LFormat("getcwd() error: %s\n",strerror(errno)));
 	else
 		LUpi_LogMessage(LFormat("current working directory is: %s\n", strcat (cwd,"\\")));
 	
 	strcpy(cwdFile, cwd);
-	strcat(cwdFile, saveFile);
+	strcat(cwdFile, saveFile); //path to the file that save the last csv file path used
 	myFile = fopen(cwdFile, "r");
 	if(myFile == NULL)
 	{
@@ -86,37 +86,33 @@ void CSVToPolygon(void)
 	else
 	{
 		fscanf(myFile,"%[^\n]", line);
-		strcpy(strPath,line);
+		strcpy(strPath,line); //store the last csv file path used
 		fclose(myFile);
 	}
 
+	//Dialog box to browse the correct file
 	LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the polygon", "OK", "csv", "*.csv||", pFile );
-	strPath[strlen(strPath)-2]='\0';
+	strPath[strlen(strPath)-2]='\0'; //delete the last 2 char of the string ("|0")
 
 	if (strPath != NULL)
    	{
-		strcpy(strLayer, "WGUIDE");
+		strcpy(strLayer, "WGUIDE"); //preloaded text in the dialog box
 		if ( LDialog_InputBox("Layer", "Enter name of the layer in which the polygon will be loaded", strLayer) == 0)
 			return;
 		else
 			pLayer = LLayer_Find(pFile, strLayer);
 
-		if(NotAssigned(pLayer)) 
+		if(NotAssigned(pLayer)) //the layer is not found
 		{
-			if(strlen(strPath) >= MAX_LENGTH_PATH-1)
-				LDialog_AlertBox(LFormat("ERROR:  CSV file path is too long."));
-			else
-				LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", strLayer));
+			LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", strLayer));
 			return;
 		}
 		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
    		LDialog_AlertBox(LFormat("The Polygon will be added in Layer %s", sLayerName));
+			
+		LFile_GetResolvedFileName( pFile, strPath, cwd, MAX_TDBFILE_NAME ); //get the absolute path of strPath in cwd
 
-		if(strPath[1] == ':') //chemin absolu
-	   		strcpy(cwd,strPath);
-		else //chemin relatif
-			strcat(cwd,strPath);
-  		LUpi_LogMessage(LFormat("current csv file is: %s\n", cwd));
+		LUpi_LogMessage(LFormat("current csv file is: %s\n", cwd));
   		myFile = fopen(cwd,"r");
    		if (myFile == NULL)
    			LUpi_LogMessage(LFormat("fopen() error: %s\n",strerror(errno)));
@@ -125,29 +121,29 @@ void CSVToPolygon(void)
 			LUpi_LogMessage(LFormat("opened polygon file is: %s\n", cwd));
 			while(!feof(myFile))
 			{
-				// reads text until newline 
+				// reads text until new line 
 				fscanf(myFile,"%[^\n]", line);
 				LUpi_LogMessage(LFormat("READ LINE: %s\n", line));
 				cpt=0;
 				for(i=0; i<strlen(line);i++)
 				{
-					if(line[i]==',')
+					if(line[i]==',') //count the number of ',' to know what kind of shape it is
 						cpt++;
 				}
 
-				token = strtok(line, ",");
+				token = strtok(line, ","); //first string before the first ',' of line
 
-				if(cpt == 1)
+				if(cpt == 1) //only one point
 				{
 					X = LC_Microns(atoi(token));
-					token = strtok(NULL, ",");
+					token = strtok(NULL, ","); //next part
 					Y = LC_Microns(atoi(token));
 
 					point_arr[nPoints] = LPoint_Set(X, Y);
 					tcurve_arr[nPoints].typeCurve = 0;
 					nPoints = nPoints+1;
 				}
-				else if(cpt == 9)
+				else if(cpt == 9) //point with a curve or circle or pie or torus
 				{
 					X = LC_Microns(atoi(token));
 					token = strtok(NULL, ",");
@@ -183,7 +179,7 @@ void CSVToPolygon(void)
 					tcurve_arr[nPoints].dir = DIR;
 					nPoints = nPoints+1;
 				}
-				else if(cpt == 5)
+				else if(cpt == 5) //port
 				{
 					port.x0 = LC_Microns(atoi(token));
 					token = strtok(NULL, ",");
@@ -197,7 +193,7 @@ void CSVToPolygon(void)
 					token = strtok(NULL, ",");
 					strcpy(port.text, token);
 				}
-				else if(cpt == 6)
+				else if(cpt == 6) //wire
 				{
 					X = LC_Microns(atoi(token));
 					token = strtok(NULL, ",");
@@ -230,28 +226,28 @@ void CSVToPolygon(void)
 					point_arr[nPoints] = LPoint_Set(X, Y);
 					nPoints++;
 				}
-				fscanf(myFile,"\n");
+				fscanf(myFile,"\n"); //got o the next line
 			}	
 			fclose(myFile);
 		}
-		if(cpt == 1 || cpt == 9)
+		if(cpt == 1 || cpt == 9) //poygon with or without curve, circle, pie, torus
 		{
-			polygon=LPolygon_New(pCell, pLayer, point_arr, nPoints);
+			polygon=LPolygon_New(pCell, pLayer, point_arr, nPoints); //create the polygon that will be modified
 			
 			vertex = LObject_GetVertexList(polygon);
-			for(cpt=0; cpt<nPoints; cpt++)
+			for(cpt=0; cpt<nPoints; cpt++) //for each vertex
 			{
-				if(tcurve_arr[cpt].typeCurve == 1)
+				if(tcurve_arr[cpt].typeCurve == 1) //is a curve
 				{
-					LUpi_LogMessage(LFormat("TRAITEMENT\n" ));
+					LUpi_LogMessage(LFormat("CURVE\n" ));
 					LVertex_AddCurve(polygon, vertex, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].dir);
 				}
-				else if(tcurve_arr[cpt].typeCurve == 2)
+				else if(tcurve_arr[cpt].typeCurve == 2) //is a circle
 				{
 					LUpi_LogMessage(LFormat("CIRCLE\n" ));
 					polygon = LCircle_New( pCell, pLayer, LPoint_Set(tcurve_arr[cpt].cx, tcurve_arr[cpt].cy), tcurve_arr[cpt].r );
 				}
-				else if(tcurve_arr[cpt].typeCurve == 3)
+				else if(tcurve_arr[cpt].typeCurve == 3) //is a torus
 				{
 					LUpi_LogMessage(LFormat("TORUS\n" ));
 					LTorusParams p;
@@ -263,7 +259,7 @@ void CSVToPolygon(void)
 
 					polygon = LTorus_CreateNew( pCell, pLayer, &p );
 				}
-				else if(tcurve_arr[cpt].typeCurve == 4)
+				else if(tcurve_arr[cpt].typeCurve == 4) //is a pie
 				{
 					LUpi_LogMessage(LFormat("PIE\n" ));
 					LPieParams p;
@@ -277,25 +273,26 @@ void CSVToPolygon(void)
 				vertex = LVertex_GetNext(vertex);
 			}
 		}
-		else if(cpt == 5)
+		else if(cpt == 5) //for port
 		{
 			LUpi_LogMessage(LFormat("PORT\n" ));
 			polygon = LPort_New( pCell, pLayer, port.text, port.x0, port.y0, port.x1, port.y1 );
 		}
 
-		else if(cpt == 6)
+		else if(cpt == 6) //for wire
 		{
 			LUpi_LogMessage(LFormat("WIRE\n"));
 			polygon = LWire_New( pCell, pLayer, &wire_config, LSetWireAll, point_arr, nPoints );
 		}
 	}
 
+	//save the csv file path in importPath.txt
 	myFile = fopen(saveFile, "w");
 	if(myFile == NULL)
 		LUpi_LogMessage(LFormat("Could not save the file path\n"));
 	else
 	{
-		fprintf(myFile, "%s", strPath);
+		fprintf(myFile, "%s\n", cwd);
 		fclose(myFile);
 		LUpi_LogMessage(LFormat("File path saved\n"));
 	}
