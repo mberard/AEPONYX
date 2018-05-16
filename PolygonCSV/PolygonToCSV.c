@@ -244,7 +244,6 @@ void PolygonToCSV(void)
   			myFile = fopen(fileName,"w");
 			
 
-			// CODE POUR PASSER DES COURBES EN SERIE DE VERTEX
 			if (LObject_GetShape(pObj) == LCircle)
 			{
 				//LDialog_MsgBox("Found a circle");
@@ -320,10 +319,38 @@ void PolygonToCSV(void)
 				}
 
 				default:
+					LUpi_LogMessage(LFormat("DEFAULT\n"));
 					break;
 			}
 			cpt++;
 			fclose(myFile);
+		}
+		if(LDialog_YesNoBox("Do you want to export all the labels of the current layer ?"))
+		{
+			LPoint point;
+			cpt=0;
+			for(LLabel pLab = LLabel_GetList(pCell); pLab != NULL; pLab = LLabel_GetNext(pLab) )
+			{
+				int type = 7;
+				fileName[0] = '\0';
+				name[0] = '\0';
+				strcat(fileName,filesRoot);
+				strcat(fileName,"Label_");
+				LLabel_GetName( pLab, name, MAX_TDBFILE_NAME );
+				strcat(fileName,name);
+				strcat(fileName,".csv");
+
+				LUpi_LogMessage(LFormat("current csv file is: %s\n", fileName));
+  				myFile = fopen(fileName,"w");
+				
+				point = LLabel_GetPosition(pLab);
+				
+				fprintf(myFile, "%f,%f,%d,%f,%f,%s\n", (float)point.x, (float)point.y, type, (float)LLabel_GetTextSize(pLab), (float)LLabel_GetTextAlignment(pLab), name);
+
+				fclose(myFile);
+
+				cpt++;
+			}
 		}
 	}
 }
