@@ -136,9 +136,9 @@ void CSVToPolygon(void)
 
 				if(cpt == 1) //only one point
 				{
-					X = LC_Microns(atoi(token));
+					X = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ","); //next part
-					Y = LC_Microns(atoi(token));
+					Y = LFile_MicronsToIntU(pFile,atoi(token));
 
 					point_arr[nPoints] = LPoint_Set(X, Y);
 					tcurve_arr[nPoints].typeCurve = 0;
@@ -146,19 +146,19 @@ void CSVToPolygon(void)
 				}
 				else if(cpt == 9) //point with a curve or circle or pie or torus
 				{
-					X = LC_Microns(atoi(token));
+					X = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
-					Y = LC_Microns(atoi(token));
+					Y = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
 					TYPE = atoi(token);
 					token = strtok(NULL, ",");
-					CX = LC_Microns(atoi(token));
+					CX = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
-					CY = LC_Microns(atoi(token));
+					CY = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
-					R = LC_Microns(atoi(token));
+					R = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
-					R2 = LC_Microns(atoi(token));
+					R2 = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
 					START = atoi(token);
 					token = strtok(NULL, ",");
@@ -182,16 +182,16 @@ void CSVToPolygon(void)
 				}
 				else if(cpt == 5) //port or label
 				{
-					portlabel.x0 = LC_Microns(atoi(token));
+					portlabel.x0 = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
-					portlabel.y0 = LC_Microns(atoi(token));
+					portlabel.y0 = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
 					portlabel.type = atoi(token);
 					token = strtok(NULL, ",");
-					portlabel.x1 = LC_Microns(atoi(token));
+					portlabel.x1 = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
 					if (portlabel.type ==5)
-						portlabel.y1 = LC_Microns(atoi(token));
+						portlabel.y1 = LFile_MicronsToIntU(pFile,atoi(token));
 					else
 						portlabel.y1 = (double)atoi(token);
 					token = strtok(NULL, ",");
@@ -199,13 +199,13 @@ void CSVToPolygon(void)
 				}
 				else if(cpt == 6) //wire
 				{
-					X = LC_Microns(atoi(token));
+					X = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
-					Y = LC_Microns(atoi(token));
+					Y = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
 					TYPE = atoi(token);
 					token = strtok(NULL, ",");
-					wire_config.width = LC_Microns(atoi(token));
+					wire_config.width = LFile_MicronsToIntU(pFile,atoi(token));
 					token = strtok(NULL, ",");
 					if(strcmp(token,"LJoinMiter")==0)
 						wire_config.join = LJoinMiter;
@@ -225,7 +225,7 @@ void CSVToPolygon(void)
 						wire_config.cap = LCapExtend;
 
 					token = strtok(NULL, ",");
-					wire_config.miter_angle = LC_Microns(atoi(token));
+					wire_config.miter_angle = LFile_MicronsToIntU(pFile,atoi(token));
 
 					point_arr[nPoints] = LPoint_Set(X, Y);
 					nPoints++;
