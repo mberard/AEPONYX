@@ -29,10 +29,11 @@ typedef struct curve{
 	LArcDirection dir;
 }t_curve;
 
-typedef struct port{ //type code: 5
+typedef struct portlabel{ //type code: 5:port, 7:label
+	int type;
 	LCoord x0,y0,x1,y1;
 	char text[MAX_PORT_NAME_LENGTH];
-}t_port;
+}t_portlabel;
 
 void CSVToPolygon(void)
 {
@@ -55,7 +56,7 @@ void CSVToPolygon(void)
 	char line[256];
 
 	t_curve tcurve_arr[MAX_POLYGON_SIZE];
-	t_port port;
+	t_portlabel portlabel;
 	LWireConfig wire_config; //for wire, type code: 6
 
 	LVertex vertex;
@@ -179,19 +180,22 @@ void CSVToPolygon(void)
 					tcurve_arr[nPoints].dir = DIR;
 					nPoints = nPoints+1;
 				}
-				else if(cpt == 5) //port
+				else if(cpt == 5) //port or label
 				{
-					port.x0 = LC_Microns(atoi(token));
+					portlabel.x0 = LC_Microns(atoi(token));
 					token = strtok(NULL, ",");
-					port.y0 = LC_Microns(atoi(token));
+					portlabel.y0 = LC_Microns(atoi(token));
 					token = strtok(NULL, ",");
-					TYPE = atoi(token);
+					portlabel.type = atoi(token);
 					token = strtok(NULL, ",");
-					port.x1 = LC_Microns(atoi(token));
+					portlabel.x1 = LC_Microns(atoi(token));
 					token = strtok(NULL, ",");
-					port.y1 = LC_Microns(atoi(token));
+					if (portlabel.type ==5)
+						portlabel.y1 = LC_Microns(atoi(token));
+					else
+						portlabel.y1 = (double)atoi(token);
 					token = strtok(NULL, ",");
-					strcpy(port.text, token);
+					strcpy(portlabel.text, token);
 				}
 				else if(cpt == 6) //wire
 				{
@@ -273,10 +277,22 @@ void CSVToPolygon(void)
 				vertex = LVertex_GetNext(vertex);
 			}
 		}
-		else if(cpt == 5) //for port
+		else if(cpt == 5) //for port or label
 		{
-			LUpi_LogMessage(LFormat("PORT\n" ));
-			polygon = LPort_New( pCell, pLayer, port.text, port.x0, port.y0, port.x1, port.y1 );
+			if(portlabel.type == 5)
+			{
+				LUpi_LogMessage(LFormat("PORT\n"));
+				polygon = LPort_New( pCell, pLayer, portlabel.text, portlabel.x0, portlabel.y0, portlabel.x1, portlabel.y1 );
+			}
+			else if(portlabel.type == 7)
+			{
+				LUpi_LogMessage(LFormat("LABEL\n"));
+				LLabel label;
+				label = LLabel_New( pCell, pLayer, portlabel.text, portlabel.x0, portlabel.y0 );
+				LLabel_SetTextSize( pCell, label, portlabel.x1 );
+				LLabel_SetTextAlignment( pCell, label, (int)portlabel.y1 );
+			}
+			
 		}
 
 		else if(cpt == 6) //for wire
