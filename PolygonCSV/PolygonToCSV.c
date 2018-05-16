@@ -307,7 +307,15 @@ void PolygonToCSV(void)
 						LCoord nRadius;
 						LVertex_GetCurveEX(pObj, pVert, &ptCenter, &nRadius, &ptStart, &ptEnd, &Dir);
 
-						AddCurve(myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, 1, ptCenter.x, ptCenter.y, nRadius, 0, 0, 0, Dir);
+						DPoint ExactCenter = LVertex_GetCurveExactCenter( pObj, pVert, nRadius, &Dir );
+
+						if(ExactCenter.x == ptCenter.x && ExactCenter.y == ptCenter.y)
+							LUpi_LogMessage(LFormat("CENTRE IDENTIQUE\n"));
+						else
+							LUpi_LogMessage(LFormat("int x: %d float x: %f\nint x: %d float x: %f\n",ptCenter.x,ExactCenter.x,ptCenter.y,ExactCenter.y));
+
+						//AddCurve(myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, 1, ptCenter.x, ptCenter.y, nRadius, 0, 0, 0, Dir);
+						AddCurve(myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, 1, ExactCenter.x, ExactCenter.y, nRadius, 0, 0, 0, Dir);
 					}
 					cpt++;
 					fclose(myFile);
