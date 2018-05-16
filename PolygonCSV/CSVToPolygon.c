@@ -237,6 +237,7 @@ void CSVToPolygon(void)
 		if(cpt == 1 || cpt == 9) //poygon with or without curve, circle, pie, torus
 		{
 			polygon=LPolygon_New(pCell, pLayer, point_arr, nPoints); //create the polygon that will be modified
+			LUpi_LogMessage(LFormat("POLYGON CREATED\n" ));
 			
 			vertex = LObject_GetVertexList(polygon);
 			for(cpt=0; cpt<nPoints; cpt++) //for each vertex
@@ -281,12 +282,12 @@ void CSVToPolygon(void)
 		{
 			if(portlabel.type == 5)
 			{
-				LUpi_LogMessage(LFormat("PORT\n"));
+				LUpi_LogMessage(LFormat("PORT CREATED\n"));
 				polygon = LPort_New( pCell, pLayer, portlabel.text, portlabel.x0, portlabel.y0, portlabel.x1, portlabel.y1 );
 			}
 			else if(portlabel.type == 7)
 			{
-				LUpi_LogMessage(LFormat("LABEL\n"));
+				LUpi_LogMessage(LFormat("LABEL CREATED\n"));
 				LLabel label;
 				label = LLabel_New( pCell, pLayer, portlabel.text, portlabel.x0, portlabel.y0 );
 				LLabel_SetTextSize( pCell, label, portlabel.x1 );
@@ -294,10 +295,9 @@ void CSVToPolygon(void)
 			}
 			
 		}
-
 		else if(cpt == 6) //for wire
 		{
-			LUpi_LogMessage(LFormat("WIRE\n"));
+			LUpi_LogMessage(LFormat("WIRE CREATED\n"));
 			polygon = LWire_New( pCell, pLayer, &wire_config, LSetWireAll, point_arr, nPoints );
 		}
 	}
