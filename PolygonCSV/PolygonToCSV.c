@@ -264,15 +264,12 @@ void AddBox(LObject object, FILE * myFile, LFile pFile  )
 	DPoint XY0;
 	LWireConfig conf;
 
-	XY0.x = 0;
-	XY0.y = 0;
+	XY0.x = rect.x1;
+	XY0.y = rect.y1;
 	conf.width = 0;
 	conf.miter_angle = 0;
 
 	PrintInSaveFile(object, myFile, pFile , rect.x0, rect.y0, XY0, 0, 0, 0, 0, CCW, "", &conf);
-	PrintInSaveFile(object, myFile, pFile , rect.x0, rect.y1, XY0, 0, 0, 0, 0, CCW, "", &conf);
-	PrintInSaveFile(object, myFile, pFile , rect.x1, rect.y1, XY0, 0, 0, 0, 0, CCW, "", &conf);
-	PrintInSaveFile(object, myFile, pFile , rect.x1, rect.y0, XY0, 0, 0, 0, 0, CCW, "", &conf);
 }
 
 void AddPolygon(LObject object, FILE * myFile, LFile pFile  )
