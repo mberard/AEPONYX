@@ -193,6 +193,25 @@ void Add( LObject object, double x, double y, FILE * myFile, LFile pFile )
 
 void PrintInSaveFile( LObject object, FILE * myFile, LFile pFile , double x, double y, DPoint XY0, double r, double r2, double startAngle, double stopAngle, LArcDirection dir, char* str, LWireConfig* wireConfig)
 {
+	char string1[MAX_PORT_NAME_LENGTH];
+	char string2[MAX_JOIN_LENGTH];
+	char string3[MAX_CAP_LENGTH];
+
+	if(strcmp(str, "") == 0)
+		strcpy(string1,"NA");
+	else
+		strcpy(string1,str);
+
+	if(strcmp(GetJoinStr(wireConfig->join), "") == 0)
+		strcpy(string2,"NA");
+	else
+		strcpy(string2,GetJoinStr(wireConfig->join));
+
+	if(strcmp(GetCapStr(wireConfig->cap), "") == 0)
+		strcpy(string3,"NA");
+	else
+		strcpy(string3,GetCapStr(wireConfig->cap));
+
 	fprintf(myFile, "%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%s,%s,%lf,%s,%s,%lf\n", 
 						GetShape(object), 
 						GetGeometry(object),
@@ -205,10 +224,10 @@ void PrintInSaveFile( LObject object, FILE * myFile, LFile pFile , double x, dou
 						startAngle, 
 						stopAngle,
 						getArcDirection(dir),
-						str,
+						string1,
 						LFile_IntUtoMicrons(pFile, wireConfig->width),
-						GetJoinStr(wireConfig->join),
-						GetCapStr(wireConfig->cap),
+						string2,
+						string3,
 						wireConfig->miter_angle );
 }
 
