@@ -21,8 +21,12 @@
 #define MAX_POLYGON_SIZE 5000
 #define MAX_PORT_NAME_LENGTH 200
 #define MAX_GEOMETRY_LENGTH 15
+#define MAX_SHAPE_LENGTH 15
+#define MAX_JOIN_LENGTH 15
+#define MAX_CAP_LENGTH 15
+#define MAX_ARCDIR_LENGTH 5
 
-LCoord Round(double d)
+double Round(double d)
 {
 	if (d >= 0)
 		return d+0.5;
@@ -59,6 +63,8 @@ char* GetGeometry(LObject object)
 		case LNonGeometric:
 			strcpy(geoStr,"LNonGeometric");
 			break;
+		default:
+			strcpy(geoStr,"");
 	}
 	return geoStr;
 }
@@ -66,7 +72,7 @@ char* GetGeometry(LObject object)
 char* GetShape(LObject object)
 {
 	LShapeType shape;
-	char* shapeStr = malloc(MAX_GEOMETRY_LENGTH* sizeof(char));
+	char* shapeStr = malloc(MAX_SHAPE_LENGTH* sizeof(char));
 	shape = LObject_GetShape( object );
 	switch(shape)
 	{
@@ -100,14 +106,75 @@ char* GetShape(LObject object)
 		case LObjRuler:
 			strcpy(shapeStr,"LObjRuler");
 			break;
+		default:
+			strcpy(shapeStr,"");
 	}
 	return shapeStr;
+}
+char* getArcDirection(LArcDirection dir)
+{
+	char* dirStr = malloc(MAX_ARCDIR_LENGTH* sizeof(char));
+	switch(dir)
+	{
+		case CW:
+			strcpy(dirStr, "CW");
+			break;
+		case CCW:
+			strcpy(dirStr, "CCW");
+			break;
+		default:
+			strcpy(dirStr,"");
+	}
+	return dirStr;
+}
+
+char* GetJoinStr(LJoinType join)
+{
+	char* joinStr = malloc(MAX_JOIN_LENGTH* sizeof(char));
+	switch(join)
+	{
+		case LJoinMiter:
+			strcpy(joinStr,"LJoinMiter");
+			break;
+		case LJoinRound:
+			strcpy(joinStr,"LJoinRound");
+			break;
+		case LJoinBevel:
+			strcpy(joinStr,"LJoinBevel");
+			break;
+		case LJoinLayout:
+			strcpy(joinStr,"LJoinLayout");
+			break;
+		default:
+			strcpy(joinStr,"");
+	}
+	return joinStr;
+}
+
+char* GetCapStr(LCapType cap)
+{
+	char* capStr = malloc(MAX_CAP_LENGTH* sizeof(char));
+	switch(cap)
+	{
+		case LCapButt:
+			strcpy(capStr,"LCapButt");
+			break;
+		case LCapRound:
+			strcpy(capStr,"LCapRound");
+			break;
+		case LCapExtend:
+			strcpy(capStr,"LCapExtend");
+			break;
+		default:
+			strcpy(capStr,"");
+	}
+	return capStr;
 }
 
 void Add( LObject object, double x, double y, FILE * myFile, LFile pFile )
 {
-	LCoord nx = Round( x );
-	LCoord ny = Round( y );
+	double nx = Round( x );
+	double ny = Round( y );
 
 	if(firstVertex != 1 &&  nx == nLastx && ny == nLasty )
 		return; // do not duplicate vertex
@@ -115,73 +182,58 @@ void Add( LObject object, double x, double y, FILE * myFile, LFile pFile )
 	if(firstVertex == 1)
 		firstVertex = 0;
 	
-	x = (float)LFile_IntUtoMicrons(pFile, nx);
-	y = (float)LFile_IntUtoMicrons(pFile, ny);
+	x = LFile_IntUtoMicrons(pFile, nx);
+	y = LFile_IntUtoMicrons(pFile, ny);
 
-	fprintf(myFile, "%s,%s,%f,%f\n", GetShape( object), GetGeometry( object), (float)x, (float)y);
+	fprintf(myFile, "%s,%s,%f,%f\n", GetShape(object), GetGeometry(object), x, y);
 
 	nLastx = nx;
 	nLasty = ny;
 }
 
-void PrintInSaveFile( LObject object, FILE * myFile, LFile pFile )
+void PrintInSaveFile( LObject object, FILE * myFile, LFile pFile , double x, double y, DPoint XY0, double r, double r2, double startAngle, double stopAngle, LArcDirection dir, char* str, LWireConfig* wireConfig)
 {
-	
+	fprintf(myFile, "%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%s,%s,%lf,%s,%s,%lf\n", 
+						GetShape(object), 
+						GetGeometry(object),
+						LFile_IntUtoMicrons(pFile, x), 
+						LFile_IntUtoMicrons(pFile, y),
+						LFile_IntUtoMicrons(pFile, XY0.x), 
+						LFile_IntUtoMicrons(pFile, XY0.y),
+						LFile_IntUtoMicrons(pFile, r), 
+						LFile_IntUtoMicrons(pFile, r2),
+						startAngle, 
+						stopAngle,
+						getArcDirection(dir),
+						str,
+						LFile_IntUtoMicrons(pFile, wireConfig->width),
+						GetJoinStr(wireConfig->join),
+						GetCapStr(wireConfig->cap),
+						wireConfig->miter_angle );
 }
 
 void AddWirePoint( double x, double y, LObject object, FILE * myFile, LFile pFile )
 {
-	int type = 6;
-	char strJoin[15];
-	char strCap[15];
+	LWireConfig conf;
+	DPoint XY0;
+	XY0.x = 0;
+	XY0.y = 0;
 
-	LJoinType jt;
-	LCapType ct;
-
-	LCoord nx = Round( x );
-	LCoord ny = Round( y );
+	double nx = Round( x );
+	double ny = Round( y );
 
 	if(firstVertex != 1 &&  nx == nLastx && ny == nLasty )
 		return; // do not duplicate vertex
 		
 	if(firstVertex == 1)
 		firstVertex = 0;
-	
-	x = (float)LFile_IntUtoMicrons(pFile, nx);
-	y = (float)LFile_IntUtoMicrons(pFile, ny);
 
-	jt = LWire_GetJoinType(object);
-	switch(jt)
-	{
-		case LJoinMiter:
-			strcpy(strJoin,"LJoinMiter");
-			break;
-		case LJoinRound:
-			strcpy(strJoin,"LJoinRound");
-			break;
-		case LJoinBevel:
-			strcpy(strJoin,"LJoinBevel");
-			break;
-		case LJoinLayout:
-			strcpy(strJoin,"LJoinLayout");
-			break;
-	}
-
-	ct = LWire_GetCapType(object);
-	switch(ct)
-	{
-		case LCapButt:
-			strcpy(strCap,"LCapButt");
-			break;
-		case LCapRound:
-			strcpy(strCap,"LCapRound");
-			break;
-		case LCapExtend:
-			strcpy(strCap,"LCapExtend");
-			break;
-	}
+	conf.width = LWire_GetWidth(object);
+	conf.join = LWire_GetJoinType(object);
+	conf.cap = LWire_GetCapType(object);
+	conf.miter_angle = LWire_GetMiterAngle(object);
 	
-	fprintf(myFile, "%f,%f,%d,%f,%s,%s,%f\n",(float)x, (float)y, type, (float)LFile_IntUtoMicrons(pFile, LWire_GetWidth(object)), strJoin, strCap, LWire_GetMiterAngle(object) );
+	PrintInSaveFile(object, myFile, pFile , nx, ny, XY0, 0, 0, 0, 0, CCW, "", &conf);
 
 	nLastx = nx;
 	nLasty = ny;
@@ -190,10 +242,18 @@ void AddWirePoint( double x, double y, LObject object, FILE * myFile, LFile pFil
 void AddBox(LObject object, FILE * myFile, LFile pFile  )
 {
 	LRect rect = LBox_GetRect( object );
-	Add( object, rect.x0, rect.y0, myFile, pFile );
-	Add( object, rect.x0, rect.y1, myFile, pFile );
-	Add( object, rect.x1, rect.y1, myFile, pFile );
-	Add( object, rect.x1, rect.y0, myFile, pFile );
+	DPoint XY0;
+	LWireConfig conf;
+
+	XY0.x = 0;
+	XY0.y = 0;
+	conf.width = 0;
+	conf.miter_angle = 0;
+
+	PrintInSaveFile(object, myFile, pFile , rect.x0, rect.y0, XY0, 0, 0, 0, 0, CCW, "", &conf);
+	PrintInSaveFile(object, myFile, pFile , rect.x0, rect.y1, XY0, 0, 0, 0, 0, CCW, "", &conf);
+	PrintInSaveFile(object, myFile, pFile , rect.x1, rect.y1, XY0, 0, 0, 0, 0, CCW, "", &conf);
+	PrintInSaveFile(object, myFile, pFile , rect.x1, rect.y0, XY0, 0, 0, 0, 0, CCW, "", &conf);
 }
 
 void AddPolygon(LObject object, FILE * myFile, LFile pFile  )
@@ -216,22 +276,31 @@ void AddWire(LObject object, FILE * myFile, LFile pFile  )
 
 void AddPort(LObject object, FILE * myFile, LFile pFile  )
 {
-	int type = 5;
 	LRect rect;
-	rect = LPort_GetRect( object );
 	char str[MAX_PORT_NAME_LENGTH];
+	DPoint XY0;
+	LWireConfig wireConfig;
+
+	rect = LPort_GetRect( object );
+	XY0.x = rect.x1;
+	XY0.y = rect.y1;
 	LPort_GetText( object, str, MAX_PORT_NAME_LENGTH );
-	fprintf(myFile, "%f,%f,%d,%f,%f,%s\n", (float)LFile_IntUtoMicrons(pFile, rect.x0), (float)LFile_IntUtoMicrons(pFile, rect.y0),type,(float)LFile_IntUtoMicrons(pFile, rect.x1),(float)LFile_IntUtoMicrons(pFile, rect.y1),str);
+	wireConfig.width = 0;
+	wireConfig.miter_angle = 0;
+
+	PrintInSaveFile( object, myFile, pFile , rect.x0, rect.y0, XY0, 0, 0, 0, 0, CCW, str, &wireConfig);
+
 }
 
-void AddCurve(FILE* myFile, LFile pFile, double x, double y, int type, LCoord cx, LCoord cy, double r, double r2, double start, double stop, LArcDirection dir)
+void AddCurve(LObject object, FILE* myFile, LFile pFile, double x, double y, double cx, double cy, double r, double r2, double start, double stop, LArcDirection dir)
 {
-	char str[4];
-	if(dir == CW)
-		strcpy(str, "CW");
-	else
-		strcpy(str, "CCW");
-	fprintf(myFile, "%f,%f,%d,%f,%f,%f,%f,%f,%f,%s\n", (float)LFile_IntUtoMicrons(pFile, x), (float)LFile_IntUtoMicrons(pFile, y),type,(float)LFile_IntUtoMicrons(pFile, cx),(float)LFile_IntUtoMicrons(pFile, cy),(float)LFile_IntUtoMicrons(pFile, r),(float)LFile_IntUtoMicrons(pFile, r2),(float)start,(float)stop,str);
+	DPoint XY0;
+	LWireConfig conf;
+	XY0.x = cx;
+	XY0.y = cx;
+	conf.width = 0;
+	conf.miter_angle = 0;
+	PrintInSaveFile( object, myFile, pFile , x, y, XY0, r, r2, start, stop, dir, "", &conf);
 }
 
 void PolygonToCSV(void)
@@ -305,10 +374,8 @@ void PolygonToCSV(void)
 			#else 
 				mkdir(filesRoot, 0755); 
 			#endif
-			LUpi_LogMessage(LFormat("NEED TO CREATE FOLDER\n",filesRoot));
+			LUpi_LogMessage(LFormat("New folder created\n",filesRoot));
 		}
-		else
-			LUpi_LogMessage(LFormat("FOLDER OK\n",filesRoot));
 		strcat(filesRoot, LLayer_GetName(pLayer, name, MAX_LAYER_NAME) );
 		strcat(filesRoot,"_");
 		LUpi_LogMessage(LFormat("filesRoot: %s\n",filesRoot));
@@ -337,7 +404,7 @@ void PolygonToCSV(void)
 				LPoint ptCenter = LCircle_GetCenter(pObj);
 				LCoord nRadius = LCircle_GetRadius(pObj);
 
-				AddCurve(myFile, pFile, 0, 0, 2, ptCenter.x, ptCenter.y, nRadius, 0, 0, 0, CCW);
+				AddCurve(pObj, myFile, pFile, 0, 0, ptCenter.x, ptCenter.y, nRadius, 0, 0, 0, CCW);
 			}
 			//LUpi_LogMessage(LFormat("shape is: %s\n", LObject_GetShape(pObj)));
 
@@ -387,8 +454,8 @@ void PolygonToCSV(void)
 						else
 							LUpi_LogMessage(LFormat("int x: %d float x: %f\nint x: %d float x: %f\n",ptCenter.x,ExactCenter.x,ptCenter.y,ExactCenter.y));
 
-						//AddCurve(myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, 1, ptCenter.x, ptCenter.y, nRadius, 0, 0, 0, Dir);
-						AddCurve(myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, 1, ExactCenter.x, ExactCenter.y, nRadius, 0, 0, 0, Dir);
+						//AddCurve(pObj, myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, ptCenter.x, ptCenter.y, nRadius, 0, 0, 0, Dir);
+						AddCurve(pObj, myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, ExactCenter.x, ExactCenter.y, nRadius, 0, 0, 0, Dir);
 					}
 					cpt++;
 					fclose(myFile);
@@ -399,7 +466,7 @@ void PolygonToCSV(void)
 					LTorusParams TorusParams;
 					LTorus_GetParams(pObj, &TorusParams);
 
-					AddCurve(myFile, pFile, 0, 0, 3, TorusParams.ptCenter.x, TorusParams.ptCenter.y, TorusParams.nInnerRadius, TorusParams.nOuterRadius, TorusParams.dStartAngle, TorusParams.dStopAngle, CCW);
+					AddCurve(pObj, myFile, pFile, 0, 0, TorusParams.ptCenter.x, TorusParams.ptCenter.y, TorusParams.nInnerRadius, TorusParams.nOuterRadius, TorusParams.dStartAngle, TorusParams.dStopAngle, CCW);
 					break;
 				}
 
@@ -408,13 +475,12 @@ void PolygonToCSV(void)
 					LPieParams PieParams;
 					LPie_GetParams(pObj, &PieParams);
 					
-					AddCurve(myFile, pFile, 0, 0, 4, PieParams.ptCenter.x, PieParams.ptCenter.y, PieParams.nRadius, 0, PieParams.dStartAngle, PieParams.dStopAngle, CCW);
+					AddCurve(pObj, myFile, pFile, 0, 0, PieParams.ptCenter.x, PieParams.ptCenter.y, PieParams.nRadius, 0, PieParams.dStartAngle, PieParams.dStopAngle, CCW);
 
 					break;
 				}
 
 				default:
-					LUpi_LogMessage(LFormat("DEFAULT\n"));
 					break;
 			}
 			cpt++;
