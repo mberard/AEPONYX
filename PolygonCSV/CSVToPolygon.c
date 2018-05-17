@@ -297,17 +297,21 @@ void CSVToPolygon(void)
 
 					shape.nPoints = shape.nPoints+1;
 				}
-				else if(cpt == 5) //port or label
+				else if(cpt == 5) //label
 				{
-					labelStruct.x = LFile_MicronsToIntU(pFile,atof(token));
-					token = strtok(NULL, ",");
-					labelStruct.y = LFile_MicronsToIntU(pFile,atof(token));
-					token = strtok(NULL, ",");
-					labelStruct.textSize = LFile_MicronsToIntU(pFile,atof(token));
-					token = strtok(NULL, ",");
-					labelStruct.textAlignment = atoi(token);
-					token = strtok(NULL, ",");
-					strcpy(labelStruct.text, token);
+					if(strcmp(token, "LLabel")==0)
+					{
+						token = strtok(NULL, ",");
+						labelStruct.x = LFile_MicronsToIntU(pFile,atof(token));
+						token = strtok(NULL, ",");
+						labelStruct.y = LFile_MicronsToIntU(pFile,atof(token));
+						token = strtok(NULL, ",");
+						labelStruct.textSize = LFile_MicronsToIntU(pFile,atof(token));
+						token = strtok(NULL, ",");
+						labelStruct.textAlignment = atoi(token);
+						token = strtok(NULL, ",");
+						strcpy(labelStruct.text, token);
+					}
 				}
 				fscanf(myFile,"\n"); //got o the next line
 			}	
