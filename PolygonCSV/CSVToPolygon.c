@@ -244,6 +244,20 @@ void CSVToPolygon(void)
 					shape.point_arr[shape.nPoints].x = LFile_MicronsToIntU(pFile,atof(token));
 					token = strtok(NULL, ",");
 					shape.point_arr[shape.nPoints].y = LFile_MicronsToIntU(pFile,atof(token));
+
+					shape.XY[shape.nPoints].x = -1;
+					shape.XY[shape.nPoints].y = -1;
+					shape.r = -1;
+					shape.r2 = -1;
+					shape.startAngle = -1;
+					shape.stopAngle = -1;
+					shape.dir[shape.nPoints] = CCW;
+					strcpy(shape.text, "NA");
+					shape.wireConfig.width = -1;
+					shape.wireConfig.join = GetJoinType("");
+					shape.wireConfig.cap = GetCapType("");
+					shape.wireConfig.miter_angle = -1;
+
 					shape.nPoints = shape.nPoints+1;
 				}
 				else if(cpt == 15)
@@ -279,6 +293,7 @@ void CSVToPolygon(void)
 					shape.wireConfig.cap = GetCapType(token);
 					token = strtok(NULL, ",");
 					shape.wireConfig.miter_angle = atof(token);
+
 
 					shape.nPoints = shape.nPoints+1;
 				}
@@ -322,13 +337,29 @@ void CSVToPolygon(void)
 					polygon=LPolygon_New(pCell, pLayer, shape.point_arr, shape.nPoints); //create the polygon that will be modified
 					if(shape.geomType == LCurved)
 					{
+						int i = 0;
 						vertex = LObject_GetVertexList(polygon);
 						for(cpt=0; cpt<shape.nPoints; cpt++) //for each vertex
 						{
-							LUpi_LogMessage(LFormat("ADDING A CURVE TO THE POLYGON\n" ));
-							LVertex_AddCurve(polygon, vertex, shape.XY[cpt], shape.dir[cpt]);
-							vertex = LVertex_GetNext(vertex);
+							if(shape.XY[cpt].x != -1 && shape.XY[cpt].y != -1)
+							{
+								//LUpi_LogMessage(LFormat("ADDING A CURVE TO THE POLYGON\n" ));
+								if(shape.XY[cpt].x > 0)
+									shape.XY[cpt].x = (int)((shape.XY[cpt].x+5)/10)*10;
+								else
+									shape.XY[cpt].x = (int)((shape.XY[cpt].x-5)/10)*10;
+
+								if(shape.XY[cpt].y > 0)
+									shape.XY[cpt].y = (int)((shape.XY[cpt].y+5)/10)*10;
+								else
+									shape.XY[cpt].y = (int)((shape.XY[cpt].y-5)/10)*10;
+
+								LVertex_AddCurve(polygon, vertex, shape.XY[cpt], shape.dir[cpt]);
+								vertex = LVertex_GetNext(vertex);
+								i++;
+							}
 						}
+						LUpi_LogMessage(LFormat("cpt %d\n",i ));
 					}
 					break;
 				case LTorus:
