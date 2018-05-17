@@ -94,8 +94,6 @@ LGeomType GetGeometryType(char* str)
 
 LArcDirection GetArcDirection(char* str)
 {
-	LUpi_LogMessage(LFormat("str %s\n", str ));
-	LUpi_LogMessage(LFormat("coucou\n"));
 	LArcDirection dir;
 	if(strcmp(str,"CW")==0)
 		dir = CW;
@@ -109,8 +107,6 @@ LArcDirection GetArcDirection(char* str)
 
 LJoinType GetJoinType(char* str)
 {
-	LUpi_LogMessage(LFormat("str %s\n", str ));
-	LUpi_LogMessage(LFormat("coucou\n"));
 	LJoinType join;
 	if(strcmp(str,"LJoinMiter")==0)
 		join = LJoinMiter;
@@ -241,23 +237,17 @@ void CSVToPolygon(void)
 
 				if(cpt == 3) //point
 				{
-				LUpi_LogMessage(LFormat("BEGIN\n" ));
 					shape.shapeType = GetShapeType(token);
-				LUpi_LogMessage(LFormat("%s STORED\n",shape.shapeType ));
 					token = strtok(NULL, ","); //next part
 					shape.geomType = GetGeometryType(token);
-				LUpi_LogMessage(LFormat("%s STORED\n",shape.geomType ));
 					token = strtok(NULL, ",");
 					shape.point_arr[shape.nPoints].x = LFile_MicronsToIntU(pFile,atof(token));
 					token = strtok(NULL, ",");
 					shape.point_arr[shape.nPoints].y = LFile_MicronsToIntU(pFile,atof(token));
 					shape.nPoints = shape.nPoints+1;
-					
-					LUpi_LogMessage(LFormat("%s STORED\n",shape.geomType ));
 				}
 				else if(cpt == 15)
 				{
-				LUpi_LogMessage(LFormat("BEGIN\n" ));
 					shape.shapeType = GetShapeType(token);
 					token = strtok(NULL, ","); //next part
 					shape.geomType = GetGeometryType(token);
@@ -311,7 +301,7 @@ void CSVToPolygon(void)
 
 
 
-		if(cpt == 3 || cpt == 17) //poygon with or without curve, circle, pie, torus
+		if(cpt == 3 || cpt == 15) //poygon with or without curve, circle, pie, torus
 		{
 			polygon=LPolygon_New(pCell, pLayer, shape.point_arr, shape.nPoints); //create the polygon that will be modified
 			LUpi_LogMessage(LFormat("POLYGON CREATED\n" ));
@@ -361,7 +351,9 @@ void CSVToPolygon(void)
 
 						polygon = LPie_CreateNew( pCell, pLayer, &pp );
 						break;
-					//PORT
+					case LObjPort:
+						LUpi_LogMessage(LFormat("PORT\n"));
+						polygon = LPort_New( pCell, pLayer, shape.text, shape.point_arr[cpt].x, shape.point_arr[cpt].y, shape.XY[cpt].x, shape.XY[cpt].y );
 					default:
 						LUpi_LogMessage(LFormat("Object shape not found\n" ));
 				}
