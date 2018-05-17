@@ -303,62 +303,60 @@ void CSVToPolygon(void)
 
 		if(cpt == 3 || cpt == 15) //poygon with or without curve, circle, pie, torus
 		{
-			polygon=LPolygon_New(pCell, pLayer, shape.point_arr, shape.nPoints); //create the polygon that will be modified
-			LUpi_LogMessage(LFormat("POLYGON CREATED\n" ));
-			
-			vertex = LObject_GetVertexList(polygon);
-			for(cpt=0; cpt<shape.nPoints; cpt++) //for each vertex
+			switch(shape.shapeType)
 			{
-				switch(shape.shapeType)
-				{
-					case LBox:
-						LUpi_LogMessage(LFormat("BOX\n" ));
-						polygon = LBox_New( pCell, pLayer, shape.point_arr[cpt].x, shape.point_arr[cpt].y, shape.XY[cpt].x, shape.XY[cpt].y );
-						break;
-					case LCircle:
-						LUpi_LogMessage(LFormat("CIRCLE\n" ));
-						polygon = LCircle_New( pCell, pLayer, shape.XY[cpt], shape.r );
-						break;
-					case LWire:
-						LUpi_LogMessage(LFormat("WIRE CREATED\n"));
-						polygon = LWire_New( pCell, pLayer, &shape.wireConfig, LSetWireAll, shape.point_arr, shape.nPoints );
-						break;
-					case LPolygon:
-						if(shape.geomType == LCurved)
+				case LBox:
+					LUpi_LogMessage(LFormat("BOX\n" ));
+					polygon = LBox_New( pCell, pLayer, shape.point_arr[0].x, shape.point_arr[0].y, shape.XY[0].x, shape.XY[0].y );
+					break;
+				case LCircle:
+					LUpi_LogMessage(LFormat("CIRCLE\n" ));
+					polygon = LCircle_New( pCell, pLayer, shape.XY[0], shape.r );
+					break;
+				case LWire:
+					LUpi_LogMessage(LFormat("WIRE\n"));
+					polygon = LWire_New( pCell, pLayer, &shape.wireConfig, LSetWireAll, shape.point_arr, shape.nPoints );
+					break;
+				case LPolygon:
+					LUpi_LogMessage(LFormat("POLYGON\n" ));
+					polygon=LPolygon_New(pCell, pLayer, shape.point_arr, shape.nPoints); //create the polygon that will be modified
+					if(shape.geomType == LCurved)
+					{
+						vertex = LObject_GetVertexList(polygon);
+						for(cpt=0; cpt<shape.nPoints; cpt++) //for each vertex
 						{
 							LUpi_LogMessage(LFormat("ADDING A CURVE TO THE POLYGON\n" ));
 							LVertex_AddCurve(polygon, vertex, shape.XY[cpt], shape.dir[cpt]);
+							vertex = LVertex_GetNext(vertex);
 						}
-						break;
-					case LTorus:
-						LUpi_LogMessage(LFormat("TORUS\n" ));
-						LTorusParams tp;
-						tp.ptCenter = shape.XY[cpt];
-						tp.nInnerRadius = shape.r;
-						tp.nOuterRadius = shape.r2;
-						tp.dStartAngle = shape.startAngle;
-						tp.dStopAngle = shape.stopAngle;
-
-						polygon = LTorus_CreateNew( pCell, pLayer, &tp );
-						break;
-					case LPie:
-						LUpi_LogMessage(LFormat("PIE\n" ));
-						LPieParams pp;
-						pp.ptCenter = shape.XY[cpt];
-						pp.nRadius = shape.r;
-						pp.dStartAngle = shape.startAngle;
-						pp.dStopAngle = shape.stopAngle;
-
-						polygon = LPie_CreateNew( pCell, pLayer, &pp );
-						break;
-					case LObjPort:
-						LUpi_LogMessage(LFormat("PORT\n"));
-						polygon = LPort_New( pCell, pLayer, shape.text, shape.point_arr[cpt].x, shape.point_arr[cpt].y, shape.XY[cpt].x, shape.XY[cpt].y );
-					default:
-						LUpi_LogMessage(LFormat("Object shape not found\n" ));
-				}
-				vertex = LVertex_GetNext(vertex);
-			}			
+					}
+					break;
+				case LTorus:
+					LUpi_LogMessage(LFormat("TORUS\n" ));
+					LTorusParams tp;
+					tp.ptCenter = shape.XY[0];
+					tp.nInnerRadius = shape.r;
+					tp.nOuterRadius = shape.r2;
+					tp.dStartAngle = shape.startAngle;
+					tp.dStopAngle = shape.stopAngle;
+					polygon = LTorus_CreateNew( pCell, pLayer, &tp );
+					break;
+				case LPie:
+					LUpi_LogMessage(LFormat("PIE\n" ));
+					LPieParams pp;
+					pp.ptCenter = shape.XY[0];
+					pp.nRadius = shape.r;
+					pp.dStartAngle = shape.startAngle;
+					pp.dStopAngle = shape.stopAngle;
+					polygon = LPie_CreateNew( pCell, pLayer, &pp );
+					break;
+				case LObjPort:
+					LUpi_LogMessage(LFormat("PORT\n"));
+					polygon = LPort_New( pCell, pLayer, shape.text, shape.point_arr[0].x, shape.point_arr[0].y, shape.XY[0].x, shape.XY[0].y );
+				default:
+					LUpi_LogMessage(LFormat("Object shape not found\n" ));
+			}
+						
 		}
 		else if(cpt == 5) //for label
 		{
