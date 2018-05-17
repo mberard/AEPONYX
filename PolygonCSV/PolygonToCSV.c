@@ -517,7 +517,7 @@ void PolygonToCSV(void)
 				
 				point = LLabel_GetPosition(pLab);
 				
-				fprintf(myFile, "%f,%f,%d,%f,%f,%s\n", (float)LFile_IntUtoMicrons(pFile, point.x), (float)LFile_IntUtoMicrons(pFile, point.y), type, (float)LFile_IntUtoMicrons(pFile, LLabel_GetTextSize(pLab)), (float)LLabel_GetTextAlignment(pLab), name);
+				fprintf(myFile, "%s,%lf,%lf,%lf,%lf,%s\n", "LLabel", LFile_IntUtoMicrons(pFile, point.x), LFile_IntUtoMicrons(pFile, point.y), LFile_IntUtoMicrons(pFile, LLabel_GetTextSize(pLab)), LLabel_GetTextAlignment(pLab), name);
 
 				fclose(myFile);
 
