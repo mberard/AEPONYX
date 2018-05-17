@@ -21,19 +21,26 @@
 #define MAX_LENGTH_PATH 256
 const char saveFile[] = "importPath.txt";
 
-typedef struct curve{
-	int typeCurve; //0:no curve, 1:curved polygone, 2:circle, 3:torus, 4:pie
-	LCoord cx,cy;
-	double r,r2;
-	double startAngle, stopAngle;
+typedef struct shape{
+	LShape shapeType;
+	LGeomType geomType;
+	DPoint point_arr[MAX_POLYGON_SIZE]; // could use malloc of LPoint (2 x LCoord or 2x Long or 2x 32bits) for undefined array size or base buffer on linecount
+	int nPoints = 0;
+	DPoint XY;
+	double r = 0;
+	double r2 = 0;
+	double startAngle = 0; 
+	double stopAngle = 0;
 	LArcDirection dir;
-}t_curve;
+	char* text = "";
+	LWireConfig wireConfig;
+}t_shape;
 
-typedef struct portlabel{ //type code: 5:port, 7:label
-	int type;
-	LCoord x0,y0,x1,y1;
-	char text[MAX_PORT_NAME_LENGTH];
-}t_portlabel;
+LShapeType GetShapeType(char* str)
+{
+	
+	return shape;
+}
 
 void CSVToPolygon(void)
 {
@@ -41,11 +48,6 @@ void CSVToPolygon(void)
 	LCell	pCell	=	LCell_GetVisible();
 	LFile	pFile	=	LCell_GetFile(pCell);
 	LLayer pLayer;
-	LPoint point_arr[MAX_POLYGON_SIZE]; // could use malloc of LPoint (2 x LCoord or 2x Long or 2x 32bits) for undefined array size or base buffer on linecount
-	LCoord X,Y,CX,CY;
-	double R,R2,START,STOP;
-	int TYPE;
-	LArcDirection DIR;
 
 	char cwd[MAX_TDBFILE_NAME];
 	char cwdFile[MAX_TDBFILE_NAME];
@@ -55,16 +57,13 @@ void CSVToPolygon(void)
 
 	char line[256];
 
-	t_curve tcurve_arr[MAX_POLYGON_SIZE];
-	t_portlabel portlabel;
-	LWireConfig wire_config; //for wire, type code: 6
+	t_shape shape;
 
 	LVertex vertex;
 
 	char* token;
 
    	FILE * myFile;
-   	int nPoints = 0;
 	int i = 0;
 	int cpt = 0;
 
@@ -134,10 +133,14 @@ void CSVToPolygon(void)
 
 				token = strtok(line, ","); //first string before the first ',' of line
 
-				if(cpt == 1) //only one point
+				if(cpt == 3) //point
 				{
-					X = LFile_MicronsToIntU(pFile,atoi(token));
+					shape.shapeType = GetShapeType();
 					token = strtok(NULL, ","); //next part
+					shape.geomType = GetGeometryType();
+					token = strtok(NULL, ",");
+					X = LFile_MicronsToIntU(pFile,atoi(token));
+					token = strtok(NULL, ",");
 					Y = LFile_MicronsToIntU(pFile,atoi(token));
 
 					point_arr[nPoints] = LPoint_Set(X, Y);
