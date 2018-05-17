@@ -313,7 +313,7 @@ void AddCurve(LObject object, FILE* myFile, LFile pFile, double x, double y, dou
 	DPoint XY0;
 	LWireConfig conf;
 	XY0.x = cx;
-	XY0.y = cx;
+	XY0.y = cy;
 	conf.width = 0;
 	conf.miter_angle = 0;
 	PrintInSaveFile( object, myFile, pFile , x, y, XY0, r, r2, start, stop, dir, "", &conf);
@@ -465,10 +465,8 @@ void PolygonToCSV(void)
 
 						DPoint ExactCenter = LVertex_GetCurveExactCenter( pObj, pVert, nRadius, &Dir );
 
-						if(ExactCenter.x == ptCenter.x && ExactCenter.y == ptCenter.y)
-							LUpi_LogMessage(LFormat("CENTRE IDENTIQUE\n"));
-						else
-							LUpi_LogMessage(LFormat("int x: %d float x: %f\nint x: %d float x: %f\n",ptCenter.x,ExactCenter.x,ptCenter.y,ExactCenter.y));
+						LUpi_LogMessage(LFormat("int x: %d int y: %d\n",ptCenter.x,ptCenter.y));
+						LUpi_LogMessage(LFormat("float x: %f float y: %f\n",ExactCenter.x,ExactCenter.y));
 
 						AddCurve(pObj, myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, ptCenter.x, ptCenter.y, nRadius, 0, 0, 0, Dir);
 						//AddCurve(pObj, myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, ExactCenter.x, ExactCenter.y, nRadius, 0, 0, 0, Dir);
