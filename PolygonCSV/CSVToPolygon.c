@@ -337,13 +337,13 @@ void CSVToPolygon(void)
 					polygon=LPolygon_New(pCell, pLayer, shape.point_arr, shape.nPoints); //create the polygon that will be modified
 					if(shape.geomType == LCurved)
 					{
-						int i = 0;
 						vertex = LObject_GetVertexList(polygon);
 						for(cpt=0; cpt<shape.nPoints; cpt++) //for each vertex
 						{
 							if(shape.XY[cpt].x != -1 && shape.XY[cpt].y != -1)
 							{
-								//LUpi_LogMessage(LFormat("ADDING A CURVE TO THE POLYGON\n" ));
+								LUpi_LogMessage(LFormat("ADDING A CURVE TO THE POLYGON\n" ));
+								/*
 								if(shape.XY[cpt].x > 0)
 									shape.XY[cpt].x = (int)((shape.XY[cpt].x+5)/10)*10;
 								else
@@ -353,13 +353,12 @@ void CSVToPolygon(void)
 									shape.XY[cpt].y = (int)((shape.XY[cpt].y+5)/10)*10;
 								else
 									shape.XY[cpt].y = (int)((shape.XY[cpt].y-5)/10)*10;
+								*/
 
 								LVertex_AddCurve(polygon, vertex, shape.XY[cpt], shape.dir[cpt]);
-								vertex = LVertex_GetNext(vertex);
-								i++;
 							}
+							vertex = LVertex_GetNext(vertex);
 						}
-						LUpi_LogMessage(LFormat("cpt %d\n",i ));
 					}
 					break;
 				case LTorus:
