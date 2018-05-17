@@ -67,6 +67,8 @@ LShapeType GetShapeType(char* str)
 		shape = LObjPort;
 	else if(strcmp(str,"LObjRuler")==0)
 		shape = LObjRuler;
+	else
+		shape = LOtherObject;
 	
 	return shape;
 }
@@ -84,6 +86,8 @@ LGeomType GetGeometryType(char* str)
 		geom = LCurved;
 	else if(strcmp(str,"LNonGeometric")==0)
 		geom = LNonGeometric;
+	else
+		geom = LNonGeometric;
 
 	return geom;
 }
@@ -97,6 +101,8 @@ LArcDirection GetArcDirection(char* str)
 		dir = CW;
 	else if(strcmp(str,"CCW")==0)
 		dir = CCW;
+	else
+		dir = CW;
 
 	return dir;
 }
@@ -114,25 +120,23 @@ LJoinType GetJoinType(char* str)
 		join = LJoinBevel;
 	else if(strcmp(str,"LJoinLayout")==0)
 		join = LJoinLayout;
+	else
+		join = LJoinLayout;
 
 	return join;
 }
 
 LCapType GetCapType(char* str)
 {
-	
 	LCapType cap;
-	
-	LUpi_LogMessage(LFormat("str %s\n", str ));
-	if(str != NULL)
-	{
-		if(strcmp(str,"LCapButt")==0)
-			cap = LCapButt;
-		else if(strcmp(str,"LCapRound")==0)
-			cap = LCapRound;
-		else if(strcmp(str,"LCapExtend")==0)
-			cap = LCapExtend;
-	}
+	if(strcmp(str,"LCapButt")==0)
+		cap = LCapButt;
+	else if(strcmp(str,"LCapRound")==0)
+		cap = LCapRound;
+	else if(strcmp(str,"LCapExtend")==0)
+		cap = LCapExtend;
+	else
+		cap = LCapExtend;
 	
 	return cap;
 }
