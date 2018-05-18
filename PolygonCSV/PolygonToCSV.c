@@ -516,33 +516,48 @@ void PolygonToCSV(void)
 			cpt++;
 			fclose(myFile);
 		}
-		if(LDialog_YesNoBox("Do you want to export all the labels of the current layer ?"))
+		if(LLabel_GetList(pCell))
 		{
-			LPoint point;
-			cpt=0;
-			for(LLabel pLab = LLabel_GetList(pCell); pLab != NULL; pLab = LLabel_GetNext(pLab) )
+			if(LDialog_YesNoBox("Do you want to export all the labels of the current layer ?"))
 			{
-				int type = 7;
-				fileName[0] = '\0';
-				name[0] = '\0';
-				strcat(fileName,filesRoot);
-				strcat(fileName,"Label_");
-				LLabel_GetName( pLab, name, MAX_TDBFILE_NAME );
-				strcat(fileName,name);
-				strcat(fileName,".csv");
+				LPoint point;
+				cpt=0;
+				for(LLabel pLab = LLabel_GetList(pCell); pLab != NULL; pLab = LLabel_GetNext(pLab) )
+				{
+					int type = 7;
+					fileName[0] = '\0';
+					name[0] = '\0';
+					strcat(fileName,filesRoot);
+					strcat(fileName,"Label_");
+					LLabel_GetName( pLab, name, MAX_TDBFILE_NAME );
+					strcat(fileName,name);
+					strcat(fileName,".csv");
 
-				LUpi_LogMessage(LFormat("current csv file is: %s\n", fileName));
-  				myFile = fopen(fileName,"w");
-				
-				point = LLabel_GetPosition(pLab);
-				
-				fprintf(myFile, "%s,%lf,%lf,%lf,%d,%s\n", "LLabel", LFile_IntUtoMicrons(pFile, point.x), LFile_IntUtoMicrons(pFile, point.y), LFile_IntUtoMicrons(pFile, LLabel_GetTextSize(pLab)), LLabel_GetTextAlignment(pLab), name);
+					LUpi_LogMessage(LFormat("current csv file is: %s\n", fileName));
+					myFile = fopen(fileName,"w");
+					
+					point = LLabel_GetPosition(pLab);
+					
+					fprintf(myFile, "%s,%lf,%lf,%lf,%d,%s\n", "LLabel", LFile_IntUtoMicrons(pFile, point.x), LFile_IntUtoMicrons(pFile, point.y), LFile_IntUtoMicrons(pFile, LLabel_GetTextSize(pLab)), LLabel_GetTextAlignment(pLab), name);
 
-				fclose(myFile);
+					fclose(myFile);
 
-				cpt++;
+					cpt++;
+				}
 			}
 		}
+		/*
+		if(LInstance_GetList(pCell))
+		{
+			if(LDialog_YesNoBox("Do you want to export all the instance of the current layer ?"))
+			{
+				for(LInstance instance = LInstance_GetList(pCell); instance != NULL; instance = LInstance_GetNext(instance) )
+				{
+					LUpi_LogMessage(LFormat("INSTANCE NOT IMPLEMENTED YET\n"));
+				}
+			}
+		}
+		*/
 	}
 }
 
