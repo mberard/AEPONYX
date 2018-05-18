@@ -18,6 +18,7 @@
 
 #define MAX_POLYGON_SIZE 5000
 #define MAX_PORT_NAME_LENGTH 200
+#define MAX_CELL_NAME_LENGTH 200
 #define MAX_LABEL_TEXT_LENGTH 200
 #define MAX_LENGTH_PATH 256
 const char saveFile[] = "importPath.txt";
@@ -43,6 +44,14 @@ typedef struct label{
 	double textSize;
 	int textAlignment;
 }t_label;
+
+typedef struct instance{
+	LTransform_Ex99 tranformation;
+	LPoint repeat_cnt;
+	LPoint delta;
+	char cellName[MAX_CELL_NAME_LENGTH];
+	char instanceName[MAX_CELL_NAME_LENGTH];
+}t_instance;
 
 LShapeType GetShapeType(char* str)
 {
@@ -160,6 +169,8 @@ void CSVToPolygon(void)
 	shape.stopAngle = 0;
 
 	t_label labelStruct;
+
+	t_instance instanceStruct;
 
 	LVertex vertex;
 
@@ -313,6 +324,34 @@ void CSVToPolygon(void)
 						strcpy(labelStruct.text, token);
 					}
 				}
+				else if(cpt == 11) //instance
+				{
+					if(strcmp(token, "LInstance")==0)
+					{
+						token = strtok(NULL, ",");
+						instanceStruct.tranformation.translation.x = LFile_MicronsToIntU(pFile,atof(token));
+						token = strtok(NULL, ",");
+						instanceStruct.tranformation.translation.y = LFile_MicronsToIntU(pFile,atof(token));
+						token = strtok(NULL, ",");
+						instanceStruct.tranformation.orientation = atof(token);
+						token = strtok(NULL, ",");
+						instanceStruct.tranformation.magnification.num = atoi(token);
+						token = strtok(NULL, ",");
+						instanceStruct.tranformation.magnification.denom = atoi(token);
+						token = strtok(NULL, ",");
+						instanceStruct.repeat_cnt.x = atoi(token);
+						token = strtok(NULL, ",");
+						instanceStruct.repeat_cnt.y = atoi(token);
+						token = strtok(NULL, ",");
+						instanceStruct.delta.x = LFile_MicronsToIntU(pFile,atof(token));
+						token = strtok(NULL, ",");
+						instanceStruct.delta.y = LFile_MicronsToIntU(pFile,atof(token));
+						token = strtok(NULL, ",");
+						strcpy(instanceStruct.cellName, token);
+						token = strtok(NULL, ",");
+						strcpy(instanceStruct.instanceName, token);
+					}
+				}
 				fscanf(myFile,"\n"); //got o the next line
 			}	
 			fclose(myFile);
@@ -399,6 +438,25 @@ void CSVToPolygon(void)
 			label = LLabel_New( pCell, pLayer, labelStruct.text, labelStruct.x, labelStruct.y );
 			LLabel_SetTextSize( pCell, label, labelStruct.textSize );
 			LLabel_SetTextAlignment( pCell, label, labelStruct.textAlignment );
+		}
+		else if(cpt == 11) //instances
+		{
+			LCell foundCell = LCell_Find( pFile, instanceStruct.cellName );
+			if( foundCell )
+			{
+				LInstance instanceCreated;
+
+				instanceCreated = LInstance_GenerateV(pCell, foundCell, NULL);
+				if(LInstance_Set_Ex99(pCell, instanceCreated, instanceStruct.tranformation, instanceStruct.repeat_cnt, instanceStruct.delta) == LStatusOK)
+				{
+					LInstance_SetName( pCell, instanceCreated, instanceStruct.instanceName );
+					LUpi_LogMessage(LFormat("INSTANCE CREATED\n"));
+				}
+				else
+					LUpi_LogMessage(LFormat("ERROR\n"));
+			}
+			else
+				LDialog_AlertBox(LFormat("Could not find %s cell\n", instanceStruct.cellName));
 		}
 	}
 
