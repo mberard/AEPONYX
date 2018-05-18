@@ -591,8 +591,6 @@ void PolygonToCSV(void)
 											LFile_IntUtoMicrons(pFile, delta.y),
 											cellName,
 											instanceName);
-
-					LUpi_LogMessage(LFormat("INSTANCE NOT IMPLEMENTED YET\n"));
 					fclose(myFile);
 				}
 			}
