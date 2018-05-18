@@ -13,8 +13,8 @@ Shape,Geometry,x,y
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;\- Shape: *LShapeType* (LBox, LCircle, LWire...)\
 &nbsp;&nbsp;&nbsp;&nbsp;\- Geometry: *LGeomType* (LOrthogonal, LFortyFive,LCurved...)\
-&nbsp;&nbsp;&nbsp;&nbsp;\- x: double\
-&nbsp;&nbsp;&nbsp;&nbsp;\- y: double
+&nbsp;&nbsp;&nbsp;&nbsp;\- x: *double*\
+&nbsp;&nbsp;&nbsp;&nbsp;\- y: *double*
 
 * For a **vertex with curve or any other shape**:
 
