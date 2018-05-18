@@ -51,7 +51,22 @@ LLabel,x,y,textSize,textAlignment,text
 &nbsp;&nbsp;&nbsp;&nbsp;\- textAlignment: *int* text alignment\
 &nbsp;&nbsp;&nbsp;&nbsp;\- text: *String* text
 
+* For an **instance**:
 
+```
+LInstance,translationX,translationY,orientation,magnificationNum,magnificationDenom,repeatX,repeatY,deltaX,deltaY,cellName,instanceName
+```
+&nbsp;&nbsp;&nbsp;&nbsp;\- translationX: *double* translation in X\
+&nbsp;&nbsp;&nbsp;&nbsp;\- translationY: *double* translation in Y\
+&nbsp;&nbsp;&nbsp;&nbsp;\- orientation: *double* orientation\
+&nbsp;&nbsp;&nbsp;&nbsp;\- magnificationNum: *long* magnification numerator\
+&nbsp;&nbsp;&nbsp;&nbsp;\- magnificationDenom: *long* magnification denominator\
+&nbsp;&nbsp;&nbsp;&nbsp;\- repeatX: *int* how many occurences in X\
+&nbsp;&nbsp;&nbsp;&nbsp;\- repeatY: *int* how many occurences in X\
+&nbsp;&nbsp;&nbsp;&nbsp;\- deltaX: *double* delta between 2 occurences in X\
+&nbsp;&nbsp;&nbsp;&nbsp;\- deltaY: *double* delta between 2 occurences in Y\
+&nbsp;&nbsp;&nbsp;&nbsp;\- cellName: *String* name of the cell from which we will create the instance (must exist in the same file)\
+&nbsp;&nbsp;&nbsp;&nbsp;\- instanceName: *String* name of the instance created
 
 ## Authors
 
