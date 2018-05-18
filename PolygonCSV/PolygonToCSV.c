@@ -20,6 +20,7 @@
 
 #define MAX_POLYGON_SIZE 5000
 #define MAX_PORT_NAME_LENGTH 200
+#define MAX_CELL_NAME_LENGTH 200
 #define MAX_GEOMETRY_LENGTH 15
 #define MAX_SHAPE_LENGTH 15
 #define MAX_JOIN_LENGTH 15
@@ -228,22 +229,22 @@ void PrintInSaveFile( LObject object, FILE * myFile, LFile pFile , double x, dou
 		strcpy(string3,GetCapStr(wireConfig->cap));
 
 	fprintf(myFile, "%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%s,%s,%lf,%s,%s,%lf\n",
-						GetShape(object),
-						GetGeometry(object),
-						LFile_IntUtoMicrons(pFile, x),
-						LFile_IntUtoMicrons(pFile, y),
-						Round0or5(LFile_IntUtoMicrons(pFile, XY0.x)),
-						Round0or5(LFile_IntUtoMicrons(pFile, XY0.y)),
-						Round0or5(LFile_IntUtoMicrons(pFile, r)),
-						Round0or5(LFile_IntUtoMicrons(pFile, r2)),
-						startAngle,
-						stopAngle,
-						getArcDirection(dir),
-						string1,
-						Round0or5(LFile_IntUtoMicrons(pFile, wireConfig->width)),
-						string2,
-						string3,
-						wireConfig->miter_angle );
+								GetShape(object),
+								GetGeometry(object),
+								LFile_IntUtoMicrons(pFile, x),
+								LFile_IntUtoMicrons(pFile, y),
+								Round0or5(LFile_IntUtoMicrons(pFile, XY0.x)),
+								Round0or5(LFile_IntUtoMicrons(pFile, XY0.y)),
+								Round0or5(LFile_IntUtoMicrons(pFile, r)),
+								Round0or5(LFile_IntUtoMicrons(pFile, r2)),
+								startAngle,
+								stopAngle,
+								getArcDirection(dir),
+								string1,
+								Round0or5(LFile_IntUtoMicrons(pFile, wireConfig->width)),
+								string2,
+								string3,
+								wireConfig->miter_angle );
 }
 
 void AddWirePoint( double x, double y, LObject object, FILE * myFile, LFile pFile )
@@ -521,10 +522,8 @@ void PolygonToCSV(void)
 			if(LDialog_YesNoBox("Do you want to export all the labels of the current layer ?"))
 			{
 				LPoint point;
-				cpt=0;
 				for(LLabel pLab = LLabel_GetList(pCell); pLab != NULL; pLab = LLabel_GetNext(pLab) )
 				{
-					int type = 7;
 					fileName[0] = '\0';
 					name[0] = '\0';
 					strcat(fileName,filesRoot);
@@ -538,26 +537,67 @@ void PolygonToCSV(void)
 					
 					point = LLabel_GetPosition(pLab);
 					
-					fprintf(myFile, "%s,%lf,%lf,%lf,%d,%s\n", "LLabel", LFile_IntUtoMicrons(pFile, point.x), LFile_IntUtoMicrons(pFile, point.y), LFile_IntUtoMicrons(pFile, LLabel_GetTextSize(pLab)), LLabel_GetTextAlignment(pLab), name);
+					fprintf(myFile, "%s,%lf,%lf,%lf,%d,%s\n", 
+											"LLabel", 
+											LFile_IntUtoMicrons(pFile, point.x), 
+											LFile_IntUtoMicrons(pFile, point.y), 
+											LFile_IntUtoMicrons(pFile, LLabel_GetTextSize(pLab)), 
+											LLabel_GetTextAlignment(pLab), 
+											name);
 
 					fclose(myFile);
-
-					cpt++;
 				}
 			}
 		}
-		/*
+		
 		if(LInstance_GetList(pCell))
 		{
 			if(LDialog_YesNoBox("Do you want to export all the instance of the current layer ?"))
 			{
+				LTransform_Ex99 tranformation;
+				LPoint repeat_cnt;
+				LPoint delta;
+				char instanceName[MAX_CELL_NAME_LENGTH];
+				char cellName[MAX_CELL_NAME_LENGTH];
 				for(LInstance instance = LInstance_GetList(pCell); instance != NULL; instance = LInstance_GetNext(instance) )
 				{
+					tranformation = LInstance_GetTransform_Ex99( instance );
+					repeat_cnt = LInstance_GetRepeatCount( instance );
+					delta = LInstance_GetDelta( instance );
+					LInstance_GetName( instance, instanceName, MAX_CELL_NAME_LENGTH );
+					LCell_GetName( LInstance_GetCell( instance ) , cellName, MAX_CELL_NAME_LENGTH );
+
+					fileName[0] = '\0';
+					name[0] = '\0';
+					strcat(fileName,filesRoot);
+					strcat(fileName,"Instance_");
+					strcat(fileName,cellName);
+					strcat(fileName,"_");
+					strcat(fileName,instanceName);
+					strcat(fileName,".csv");
+					LUpi_LogMessage(LFormat("current csv file is: %s\n", fileName));
+					myFile = fopen(fileName,"w");
+
+					fprintf(myFile, "%s,%lf,%lf,%lf,%ld,%ld,%d,%d,%lf,%lf,%s,%s\n",
+											"LInstance",
+											LFile_IntUtoMicrons(pFile, tranformation.translation.x),
+											LFile_IntUtoMicrons(pFile, tranformation.translation.y),
+											tranformation.orientation,
+											tranformation.magnification.num,
+											tranformation.magnification.denom,
+											repeat_cnt.x,
+											repeat_cnt.y,
+											LFile_IntUtoMicrons(pFile, delta.x),
+											LFile_IntUtoMicrons(pFile, delta.y),
+											cellName,
+											instanceName);
+
 					LUpi_LogMessage(LFormat("INSTANCE NOT IMPLEMENTED YET\n"));
+					fclose(myFile);
 				}
 			}
 		}
-		*/
+		
 	}
 }
 
