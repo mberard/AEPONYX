@@ -483,8 +483,8 @@ void PolygonToCSV(void)
 						AddCurve(pObj, myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, ptCenter.x, ptCenter.y, nRadius, 0, 0, 0, Dir);
 						//AddCurve(pObj, myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, ExactCenter.x, ExactCenter.y, nRadius, 0, 0, 0, Dir);
 					}
-					cpt++;
-					fclose(myFile);
+					//cpt++;
+					//fclose(myFile);
 					break;
 				}
 				case LTorus:
@@ -507,6 +507,10 @@ void PolygonToCSV(void)
 				}
 
 				default:
+					if(LObject_GetShape(pObj) != LCircle)
+					{
+						LUpi_LogMessage(LFormat("Shape not found: %s\n", LObject_GetShape(pObj)));
+					}
 					break;
 			}
 			cpt++;
