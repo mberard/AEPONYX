@@ -32,7 +32,22 @@ double Round(double d)
 		return d+0.5;
 	else
 		return d-0.5;
-} 
+}
+
+double Round0or5(double val)
+{
+	double tmpFloat = val*10000;
+	int tmpInt = 0;
+	double returnedVal = 0;
+	if(val >= 0)
+		tmpFloat = (double)(tmpFloat + 2.5)/5.0;
+	else
+		tmpFloat = (double)(tmpFloat - 2.5)/5.0;
+	tmpInt = (int)tmpFloat;
+	returnedVal = tmpInt*5;
+	returnedVal = returnedVal/10000;
+	return returnedVal;
+}
 
 LCoord nLastx;
 LCoord nLasty;
@@ -215,17 +230,17 @@ void PrintInSaveFile( LObject object, FILE * myFile, LFile pFile , double x, dou
 	fprintf(myFile, "%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%s,%s,%lf,%s,%s,%lf\n", 
 						GetShape(object), 
 						GetGeometry(object),
-						LFile_IntUtoMicrons(pFile, x), 
-						LFile_IntUtoMicrons(pFile, y),
-						LFile_IntUtoMicrons(pFile, XY0.x), 
-						LFile_IntUtoMicrons(pFile, XY0.y),
-						LFile_IntUtoMicrons(pFile, r), 
-						LFile_IntUtoMicrons(pFile, r2),
+						Round0or5(LFile_IntUtoMicrons(pFile, x)), 
+						Round0or5(LFile_IntUtoMicrons(pFile, y)),
+						Round0or5(LFile_IntUtoMicrons(pFile, XY0.x)), 
+						Round0or5(LFile_IntUtoMicrons(pFile, XY0.y)),
+						Round0or5(LFile_IntUtoMicrons(pFile, r)), 
+						Round0or5(LFile_IntUtoMicrons(pFile, r2)),
 						startAngle, 
 						stopAngle,
 						getArcDirection(dir),
 						string1,
-						LFile_IntUtoMicrons(pFile, wireConfig->width),
+						Round0or5(LFile_IntUtoMicrons(pFile, wireConfig->width)),
 						string2,
 						string3,
 						wireConfig->miter_angle );
