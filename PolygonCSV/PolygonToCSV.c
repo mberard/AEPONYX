@@ -37,13 +37,13 @@ double Round(double d)
 double Round0or5(double val)
 {
 	double tmpFloat = val*10000;
-	int tmpInt = 0;
+	long tmpInt = 0;
 	double returnedVal = 0;
 	if(val >= 0)
 		tmpFloat = (double)(tmpFloat + 2.5)/5.0;
 	else
 		tmpFloat = (double)(tmpFloat - 2.5)/5.0;
-	tmpInt = (int)tmpFloat;
+	tmpInt = (long)tmpFloat;
 	returnedVal = tmpInt*5;
 	returnedVal = returnedVal/10000;
 	return returnedVal;
