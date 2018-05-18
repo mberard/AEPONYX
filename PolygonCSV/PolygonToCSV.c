@@ -227,16 +227,16 @@ void PrintInSaveFile( LObject object, FILE * myFile, LFile pFile , double x, dou
 	else
 		strcpy(string3,GetCapStr(wireConfig->cap));
 
-	fprintf(myFile, "%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%s,%s,%lf,%s,%s,%lf\n", 
-						GetShape(object), 
+	fprintf(myFile, "%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%s,%s,%lf,%s,%s,%lf\n",
+						GetShape(object),
 						GetGeometry(object),
-						Round0or5(LFile_IntUtoMicrons(pFile, x)), 
-						Round0or5(LFile_IntUtoMicrons(pFile, y)),
-						Round0or5(LFile_IntUtoMicrons(pFile, XY0.x)), 
+						LFile_IntUtoMicrons(pFile, x),
+						LFile_IntUtoMicrons(pFile, y),
+						Round0or5(LFile_IntUtoMicrons(pFile, XY0.x)),
 						Round0or5(LFile_IntUtoMicrons(pFile, XY0.y)),
-						Round0or5(LFile_IntUtoMicrons(pFile, r)), 
+						Round0or5(LFile_IntUtoMicrons(pFile, r)),
 						Round0or5(LFile_IntUtoMicrons(pFile, r2)),
-						startAngle, 
+						startAngle,
 						stopAngle,
 						getArcDirection(dir),
 						string1,
