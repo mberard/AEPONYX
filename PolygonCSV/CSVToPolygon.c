@@ -227,7 +227,7 @@ void CSVToPolygon(void)
 
 		LUpi_LogMessage(LFormat("current csv file is: %s\n", cwd));
   		myFile = fopen(cwd,"r");
-   		if (myFile == NULL)
+   		if (myFile == NULL) //error during file opnening
    			LUpi_LogMessage(LFormat("fopen() error: %s\n",strerror(errno)));
 		else 
 		{
@@ -418,7 +418,6 @@ void CSVToPolygon(void)
 				default:
 					LUpi_LogMessage(LFormat("Object shape not found\n" ));
 			}
-						
 		}
 		else if(cpt == 5) //for label
 		{
