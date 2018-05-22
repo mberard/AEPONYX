@@ -62,7 +62,7 @@ LInstance,translationX,translationY,orientation,magnificationNum,magnificationDe
 &nbsp;&nbsp;&nbsp;&nbsp;\- magnificationNum: *long* magnification numerator\
 &nbsp;&nbsp;&nbsp;&nbsp;\- magnificationDenom: *long* magnification denominator\
 &nbsp;&nbsp;&nbsp;&nbsp;\- repeatX: *int* how many occurences in X\
-&nbsp;&nbsp;&nbsp;&nbsp;\- repeatY: *int* how many occurences in X\
+&nbsp;&nbsp;&nbsp;&nbsp;\- repeatY: *int* how many occurences in Y\
 &nbsp;&nbsp;&nbsp;&nbsp;\- deltaX: *double* delta between 2 occurences in X\
 &nbsp;&nbsp;&nbsp;&nbsp;\- deltaY: *double* delta between 2 occurences in Y\
 &nbsp;&nbsp;&nbsp;&nbsp;\- cellName: *String* name of the cell from which we will create the instance (must exist in the same file)\
