@@ -44,7 +44,7 @@ double Round0or5(double val)
 		tmpFloat = (double)(tmpFloat + 2.5)/5.0;
 	else
 		tmpFloat = (double)(tmpFloat - 2.5)/5.0;
-	tmpInt = (long)tmpFloat;
+	tmpInt = (long)tmpFloat; //delete the digits after the '.'
 	returnedVal = tmpInt*5;
 	returnedVal = returnedVal/10000;
 	return returnedVal;
@@ -192,13 +192,13 @@ void Add( LObject object, double x, double y, FILE * myFile, LFile pFile )
 	double nx = Round( x );
 	double ny = Round( y );
 
-	if(firstVertex != 1 &&  nx == nLastx && ny == nLasty )
+	if(firstVertex != 1 &&  nx == nLastx && ny == nLasty ) //not the first vertex AND the same point as the previous
 		return; // do not duplicate vertex
 		
 	if(firstVertex == 1)
 		firstVertex = 0;
 	
-	x = LFile_IntUtoMicrons(pFile, nx);
+	x = LFile_IntUtoMicrons(pFile, nx); //store in microns
 	y = LFile_IntUtoMicrons(pFile, ny);
 
 	fprintf(myFile, "%s,%s,%f,%f\n", GetShape(object), GetGeometry(object), x, y);
@@ -263,7 +263,7 @@ void AddWirePoint( double x, double y, LObject object, FILE * myFile, LFile pFil
 	if(firstVertex == 1)
 		firstVertex = 0;
 
-	conf.width = LWire_GetWidth(object);
+	conf.width = LWire_GetWidth(object); //create the wire config
 	conf.join = LWire_GetJoinType(object);
 	conf.cap = LWire_GetCapType(object);
 	conf.miter_angle = LWire_GetMiterAngle(object);
@@ -280,7 +280,7 @@ void AddBox(LObject object, FILE * myFile, LFile pFile  )
 	DPoint XY0;
 	LWireConfig conf;
 
-	XY0.x = rect.x1;
+	XY0.x = rect.x1; //second point of the box (top-right) stored in the DPoint XY0
 	XY0.y = rect.y1;
 	conf.width = 0;
 	conf.miter_angle = 0;
@@ -291,7 +291,7 @@ void AddBox(LObject object, FILE * myFile, LFile pFile  )
 void AddPolygon(LObject object, FILE * myFile, LFile pFile  )
 {
 	LVertex currentVertex;
-	for (currentVertex = LObject_GetVertexList(object); currentVertex != NULL; currentVertex = LVertex_GetNext(currentVertex))
+	for (currentVertex = LObject_GetVertexList(object); currentVertex != NULL; currentVertex = LVertex_GetNext(currentVertex)) //each vertex of the polygon
 	{
 		Add( object, LVertex_GetPoint(currentVertex).x, LVertex_GetPoint(currentVertex).y, myFile, pFile );
 	}
@@ -300,7 +300,7 @@ void AddPolygon(LObject object, FILE * myFile, LFile pFile  )
 void AddWire(LObject object, FILE * myFile, LFile pFile  )
 {
 	LVertex currentVertex;
-	for (currentVertex = LObject_GetVertexList(object); currentVertex != NULL; currentVertex = LVertex_GetNext(currentVertex))
+	for (currentVertex = LObject_GetVertexList(object); currentVertex != NULL; currentVertex = LVertex_GetNext(currentVertex)) //each vertex of the wire
 	{
 		AddWirePoint( LVertex_GetPoint(currentVertex).x, LVertex_GetPoint(currentVertex).y, object, myFile, pFile );
 	}
@@ -314,9 +314,9 @@ void AddPort(LObject object, FILE * myFile, LFile pFile  )
 	LWireConfig wireConfig;
 
 	rect = LPort_GetRect( object );
-	XY0.x = rect.x1;
+	XY0.x = rect.x1; //second point of the box (top-right) stored in the DPoint XY0
 	XY0.y = rect.y1;
-	LPort_GetText( object, str, MAX_PORT_NAME_LENGTH );
+	LPort_GetText( object, str, MAX_PORT_NAME_LENGTH ); //text of the port
 	wireConfig.width = 0;
 	wireConfig.miter_angle = 0;
 
@@ -328,7 +328,7 @@ void AddCurve(LObject object, FILE* myFile, LFile pFile, double x, double y, dou
 {
 	DPoint XY0;
 	LWireConfig conf;
-	XY0.x = cx;
+	XY0.x = cx; //center of the curve stored in the DPoint XY0
 	XY0.y = cy;
 	conf.width = 0;
 	conf.miter_angle = 0;
@@ -368,18 +368,18 @@ void PolygonToCSV(void)
 
 	LDialogItem DialogItems[1] = { "Which layer to save if no selection made","WGUIDE"};
 	
-	if (LDialog_MultiLineInputBox("Polygon File",DialogItems,1))
+	if (LDialog_MultiLineInputBox("Polygon File",DialogItems,1)) //seletion of the layer
    	{
-		pLayer = LLayer_Find(pFile, DialogItems[0].value);
-		if(NotAssigned(pLayer)) 
+		pLayer = LLayer_Find(pFile, DialogItems[0].value); //find the layer
+		if(NotAssigned(pLayer)) //layer not found
 		{
 			LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", DialogItems[0].value));
 			return;
 		}
 		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
-		if(LSelection_GetList() == NULL)
+		if(LSelection_GetList() == NULL) //if no selection made
 		{
-			LSelection_AddAllObjectsOnLayer( pLayer );
+			LSelection_AddAllObjectsOnLayer( pLayer ); //add the entire layer to the selection
 			LDialog_AlertBox(LFormat("Layer %s saved", sLayerName));
 		}
 		else
@@ -396,10 +396,10 @@ void PolygonToCSV(void)
 		//LUpi_LogMessage(LFormat("opened polygon file is: %s\n", cwd));
 
 		filesRoot[0] = '\0';
-		strcat (filesRoot,cwd);
-		strcat(filesRoot, LCell_GetName(pCell, name, MAX_CELL_NAME) );
-		strcat(filesRoot,"\\");
-		if(access(filesRoot,0) != 0) //directory do not exist
+		strcat (filesRoot,cwd);											//cwd
+		strcat(filesRoot, LCell_GetName(pCell, name, MAX_CELL_NAME) );	// + name of the cell
+		strcat(filesRoot,"\\");											// + '\'
+		if(access(filesRoot,0) != 0) //directory do not exist ==> create the diredctory
 		{
 			#if defined(_WIN32)
 				_mkdir(filesRoot);
@@ -408,8 +408,8 @@ void PolygonToCSV(void)
 			#endif
 			LUpi_LogMessage(LFormat("New folder created\n",filesRoot));
 		}
-		strcat(filesRoot, LLayer_GetName(pLayer, name, MAX_LAYER_NAME) );
-		strcat(filesRoot,"_");
+		strcat(filesRoot, LLayer_GetName(pLayer, name, MAX_LAYER_NAME) );// + name of the layer
+		strcat(filesRoot,"_");											 // + '_'
 		LUpi_LogMessage(LFormat("filesRoot: %s\n",filesRoot));
 
 		for(LSelection pSel = LSelection_GetList(); pSel != NULL; pSel = LSelection_GetNext(pSel) )
@@ -420,17 +420,17 @@ void PolygonToCSV(void)
 			name[0] = '\0';
 			strcat(fileName,filesRoot);
 			LEntity_GetPropertyValue ((LEntity)pObj, "name", name, MAX_TDBFILE_NAME);
-			if(name[0] != '\0')
+			if(name[0] != '\0')											// + name of the shape OR a number
 				strcat(fileName, name);
 			else
-				strcat(fileName, itoa(cpt+1, name, 10));
-			strcat(fileName, ".csv");
+				strcat(fileName, itoa(cpt+1, name, 10)); //int to string; itoa(int, string, numeric base)
+			strcat(fileName, ".csv");									// + ".csv"
 			
   			LUpi_LogMessage(LFormat("current csv file is: %s\n", fileName));
   			myFile = fopen(fileName,"w");
 			
 
-			if (LObject_GetShape(pObj) == LCircle)
+			if (LObject_GetShape(pObj) == LCircle) //export circle
 			{
 				//LDialog_MsgBox("Found a circle");
 				LPoint ptCenter = LCircle_GetCenter(pObj);
@@ -440,38 +440,34 @@ void PolygonToCSV(void)
 			}
 			//LUpi_LogMessage(LFormat("shape is: %s\n", LObject_GetShape(pObj)));
 
-			else if (LObject_GetGeometry(pObj) != LCurved)
+			else if (LObject_GetGeometry(pObj) != LCurved) //shape witout curves
 			{
 				//Polygon without curves
-				if(LObject_GetShape(pObj) == LBox)
+				if(LObject_GetShape(pObj) == LBox) //export box
 					AddBox(pObj, myFile, pFile);
-				else if(LObject_GetShape(pObj) == LPolygon)
+				else if(LObject_GetShape(pObj) == LPolygon) //export polygon
 					AddPolygon(pObj, myFile, pFile);
-				else if(LObject_GetShape(pObj) == LWire)
+				else if(LObject_GetShape(pObj) == LWire) //export wire
 					AddWire(pObj, myFile, pFile);
-				else if(LObject_GetShape(pObj) == LObjPort)
+				else if(LObject_GetShape(pObj) == LObjPort) //export port
 					AddPort(pObj, myFile, pFile);
 				cpt++;
 				fclose(myFile);
 				continue;
 			}
 
-			switch( LObject_GetShape(pObj) )
+			switch( LObject_GetShape(pObj) ) //any shape not already export
 			{
-				case LPolygon:
+				case LPolygon: //export polygon with shape
 				{
-	//				LDialog_MsgBox("Found a curved polygon");
-					for(LVertex pVert = LObject_GetVertexList(pObj); pVert != NULL; pVert = LVertex_GetNext(pVert))
+					for(LVertex pVert = LObject_GetVertexList(pObj); pVert != NULL; pVert = LVertex_GetNext(pVert)) //for each vertex of the polygon
 					{
-	//					char msg[200];
-	//					sprintf(msg, "Found a vertex (%ld, %ld)", LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y);
-	//					LDialog_MsgBox(msg);
-						if ( ! LVertex_HasCurve(pVert))
+						if ( ! LVertex_HasCurve(pVert)) //if the vertex is NOT a curve
 						{
 							Add( pObj, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, myFile, pFile );
 							continue;
 						}
-						
+						//vertex with curve
 						LPoint ptStart;
 						LPoint ptEnd;
 						LPoint ptCenter;
@@ -484,11 +480,9 @@ void PolygonToCSV(void)
 						AddCurve(pObj, myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, ptCenter.x, ptCenter.y, nRadius, 0, 0, 0, Dir);
 						//AddCurve(pObj, myFile, pFile, LVertex_GetPoint(pVert).x, LVertex_GetPoint(pVert).y, ExactCenter.x, ExactCenter.y, nRadius, 0, 0, 0, Dir);
 					}
-					//cpt++;
-					//fclose(myFile);
 					break;
 				}
-				case LTorus:
+				case LTorus: //export torus
 				{
 					LTorusParams TorusParams;
 					LTorus_GetParams(pObj, &TorusParams);
@@ -497,7 +491,7 @@ void PolygonToCSV(void)
 					break;
 				}
 
-				case LPie:
+				case LPie: //export pie
 				{
 					LPieParams PieParams;
 					LPie_GetParams(pObj, &PieParams);
@@ -507,7 +501,7 @@ void PolygonToCSV(void)
 					break;
 				}
 
-				default:
+				default: //other shape
 					if(LObject_GetShape(pObj) != LCircle)
 					{
 						LUpi_LogMessage(LFormat("Shape not found: %s\n", LObject_GetShape(pObj)));
@@ -517,16 +511,16 @@ void PolygonToCSV(void)
 			cpt++;
 			fclose(myFile);
 		}
-		if(LLabel_GetList(pCell))
+		if(LLabel_GetList(pCell)) //if there are some labels
 		{
-			if(LDialog_YesNoBox("Do you want to export all the labels of the current layer ?"))
+			if(LDialog_YesNoBox("Do you want to export all the labels of the current layer ?")) //ask if needed to export labels
 			{
 				LPoint point;
-				for(LLabel pLab = LLabel_GetList(pCell); pLab != NULL; pLab = LLabel_GetNext(pLab) )
+				for(LLabel pLab = LLabel_GetList(pCell); pLab != NULL; pLab = LLabel_GetNext(pLab) ) //for each label
 				{
 					fileName[0] = '\0';
 					name[0] = '\0';
-					strcat(fileName,filesRoot);
+					strcat(fileName,filesRoot);						//complete the file path with "Label_" and the name of the label
 					strcat(fileName,"Label_");
 					LLabel_GetName( pLab, name, MAX_TDBFILE_NAME );
 					strcat(fileName,name);
@@ -550,16 +544,16 @@ void PolygonToCSV(void)
 			}
 		}
 		
-		if(LInstance_GetList(pCell))
+		if(LInstance_GetList(pCell)) //if there are some labels
 		{
-			if(LDialog_YesNoBox("Do you want to export all the instance of the current layer ?"))
+			if(LDialog_YesNoBox("Do you want to export all the instance of the current layer ?")) //ask if needed to export instance
 			{
 				LTransform_Ex99 tranformation;
 				LPoint repeat_cnt;
 				LPoint delta;
 				char instanceName[MAX_CELL_NAME_LENGTH];
 				char cellName[MAX_CELL_NAME_LENGTH];
-				for(LInstance instance = LInstance_GetList(pCell); instance != NULL; instance = LInstance_GetNext(instance) )
+				for(LInstance instance = LInstance_GetList(pCell); instance != NULL; instance = LInstance_GetNext(instance) ) //for each instance
 				{
 					tranformation = LInstance_GetTransform_Ex99( instance );
 					repeat_cnt = LInstance_GetRepeatCount( instance );
@@ -569,8 +563,8 @@ void PolygonToCSV(void)
 
 					fileName[0] = '\0';
 					name[0] = '\0';
-					strcat(fileName,filesRoot);
-					strcat(fileName,"Instance_");
+					strcat(fileName,filesRoot);		
+					strcat(fileName,"Instance_");		//complete the file path with "Instance_", the instanced cell and the name of the instance
 					strcat(fileName,cellName);
 					strcat(fileName,"_");
 					strcat(fileName,instanceName);
