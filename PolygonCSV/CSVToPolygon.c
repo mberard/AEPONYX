@@ -246,7 +246,7 @@ void CSVToPolygon(void)
 
 				token = strtok(line, ","); //first string before the first ',' of line
 
-				if(cpt == 3) //point
+				if(cpt == 3) //point: Shape,Geometry,x,y
 				{
 					shape.shapeType = GetShapeType(token);
 					token = strtok(NULL, ","); //next part
@@ -271,7 +271,8 @@ void CSVToPolygon(void)
 
 					shape.nPoints = shape.nPoints+1;
 				}
-				else if(cpt == 15)
+				else if(cpt == 15)  //any shape except simple point, label or instance
+									//Shape,Geometry,x,y,x1,y1,r,r2,startAngle,stopAngle,dir,text,WireWidth,WireJoin,WireCap,WireMiterAngle
 				{
 					shape.shapeType = GetShapeType(token);
 					token = strtok(NULL, ","); //next part
@@ -308,7 +309,7 @@ void CSVToPolygon(void)
 
 					shape.nPoints = shape.nPoints+1;
 				}
-				else if(cpt == 5) //label
+				else if(cpt == 5) //label: LLabel,x,y,textSize,textAlignment,text
 				{
 					if(strcmp(token, "LLabel")==0)
 					{
@@ -324,7 +325,7 @@ void CSVToPolygon(void)
 						strcpy(labelStruct.text, token);
 					}
 				}
-				else if(cpt == 11) //instance
+				else if(cpt == 11) //instance: LInstance,translationX,translationY,orientation,magnificationNum,magnificationDenom,repeatX,repeatY,deltaX,deltaY,cellName,instanceName
 				{
 					if(strcmp(token, "LInstance")==0)
 					{
@@ -359,7 +360,7 @@ void CSVToPolygon(void)
 
 
 
-		if(cpt == 3 || cpt == 15) //poygon with or without curve, circle, pie, torus
+		if(cpt == 3 || cpt == 15) //poygon with or without curve, circle, pie, torus, ports
 		{
 			switch(shape.shapeType)
 			{
@@ -377,7 +378,7 @@ void CSVToPolygon(void)
 					break;
 				case LPolygon:
 					LUpi_LogMessage(LFormat("POLYGON\n" ));
-					polygon=LPolygon_New(pCell, pLayer, shape.point_arr, shape.nPoints); //create the polygon that will be modified
+					polygon=LPolygon_New(pCell, pLayer, shape.point_arr, shape.nPoints); //create the polygon that will be modified if necessary to add curves
 					if(shape.geomType == LCurved)
 					{
 						vertex = LObject_GetVertexList(polygon);
@@ -386,18 +387,6 @@ void CSVToPolygon(void)
 							if(shape.XY[cpt].x != -1 && shape.XY[cpt].y != -1)
 							{
 								LUpi_LogMessage(LFormat("ADDING A CURVE TO THE POLYGON\n" ));
-								/*
-								if(shape.XY[cpt].x > 0)
-									shape.XY[cpt].x = (int)((shape.XY[cpt].x+5)/10)*10;
-								else
-									shape.XY[cpt].x = (int)((shape.XY[cpt].x-5)/10)*10;
-
-								if(shape.XY[cpt].y > 0)
-									shape.XY[cpt].y = (int)((shape.XY[cpt].y+5)/10)*10;
-								else
-									shape.XY[cpt].y = (int)((shape.XY[cpt].y-5)/10)*10;
-								*/
-
 								LVertex_AddCurve(polygon, vertex, shape.XY[cpt], shape.dir[cpt]);
 							}
 							vertex = LVertex_GetNext(vertex);
