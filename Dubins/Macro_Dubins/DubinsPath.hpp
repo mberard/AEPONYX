@@ -12,6 +12,7 @@ private:
     LObject torusEnd;
     LObject line;
     PathType type;
+    
     DubinsPoint startPoint;
     DubinsPoint endPoint;
     float distance;
@@ -21,15 +22,17 @@ private:
     LPoint centerStartRightCircle;
     LPoint centerEndLeftCircle;
     LPoint centerEndRightCircle;
+    LPoint centerMiddleCircle;
 
     LPoint startTangent;
     LPoint endTangent;
 
-    LStatus UpdateCircleCenter();
 
     LCell cell;
     LFile file;
     LLayer layer;
+    
+    LStatus UpdateCircleCenter();
 
 public:
     DubinsPath();
@@ -45,6 +48,23 @@ public:
     LCell GetCell();
     LLayer GetLayer();
 
+    void ComputeDubinsPaths();
+
+    float ComputeRSRLength();
+    float ComputeLSLLength();
+    float ComputeRSLLength();
+    float ComputeLSRLength();
+    float ComputeRLRLength();
+    float ComputeLRLLength();
+
+    void GetLSLorRSRTangent(LPoint startCenter, LPoint endCenter, bool isBottom);
+    void GetRSLorLSRTangent(LPoint startCenter, LPoint endCenter, bool isBottom);
+    void GetRLRorLRLTangent(LPoint startCenter, LPoint endCenter, bool isRLR);
+
+    float GetArcLength(LPoint circleCenter, LPoint point, LPoint tangent, bool isLeftCircle);
+
 };
+
+double PointDistance(LPoint start, LPoint end);
 
 #endif

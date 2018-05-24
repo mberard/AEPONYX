@@ -2,6 +2,42 @@
 #include <math.h>
 #include "ldata.h"
 
+//// PRIVATE METHODS ////
+
+LStatus DubinsPath::UpdateCircleCenter(){
+    DPoint Dcenter;
+    LPoint Lcenter;
+    LCoord radius = this->radius;
+
+    Dcenter.x = startPoint.GetPoint().x + radius*cos(startPoint.GetAngleRadian() - M_PI/2.0);
+    Dcenter.y = startPoint.GetPoint().y + radius*sin(startPoint.GetAngleRadian() - M_PI/2.0);
+    Lcenter.x = Dcenter.x;
+    Lcenter.y = Dcenter.y;
+    this->centerStartRightCircle = Lcenter;
+
+    Dcenter.x = startPoint.GetPoint().x + radius*cos(startPoint.GetAngleRadian() + M_PI/2.0);
+    Dcenter.y = startPoint.GetPoint().y + radius*sin(startPoint.GetAngleRadian() + M_PI/2.0);
+    Lcenter.x = Dcenter.x;
+    Lcenter.y = Dcenter.y;
+    this->centerStartLeftCircle = Lcenter;
+
+    Dcenter.x = endPoint.GetPoint().x + radius*cos(endPoint.GetAngleRadian() - M_PI/2.0);
+    Dcenter.y = endPoint.GetPoint().y + radius*sin(endPoint.GetAngleRadian() - M_PI/2.0);
+    Lcenter.x = Dcenter.x;
+    Lcenter.y = Dcenter.y;
+    this->centerEndRightCircle = Lcenter;
+
+    Dcenter.x = endPoint.GetPoint().x + radius*cos(endPoint.GetAngleRadian() + M_PI/2.0);
+    Dcenter.y = endPoint.GetPoint().y + radius*sin(endPoint.GetAngleRadian() + M_PI/2.0);
+    Lcenter.x = Dcenter.x;
+    Lcenter.y = Dcenter.y;
+    this->centerEndLeftCircle = Lcenter;
+    
+    return LStatusOK;
+}
+
+//// PUBLIC METHODS ////
+
 DubinsPath::DubinsPath(){}
 
 LStatus DubinsPath::SetPathType(PathType type){
@@ -61,70 +97,320 @@ LLayer DubinsPath::GetLayer(){
     return this->layer;
 }
 
+void DubinsPath::ComputeDubinsPaths(){
 
-//// PRIVATE METHODS ////
+    float xStart, xEnd, yStart, yEnd, angleStart, angleEnd;
+    //float dx, dy, theta, alpha, beta;
 
-LStatus DubinsPath::UpdateCircleCenter(){
-    DPoint Dcenter;
-    LPoint Lcenter;
-    LCoord radius = this->radius;
+    xStart = this->startPoint.GetPoint().x;
+    xEnd = this->endPoint.GetPoint().x;
+    yStart = this->startPoint.GetPoint().y;
+    yEnd = this->endPoint.GetPoint().y;
 
-    Dcenter.x = startPoint.GetPoint().x + radius*cos(startPoint.GetAngleRadian() - M_PI/2.0);
-    Dcenter.y = startPoint.GetPoint().y + radius*sin(startPoint.GetAngleRadian() - M_PI/2.0);
-
-    float x = Dcenter.x;
-    float y = Dcenter.y;
-
-    Lcenter.x = Dcenter.x;
-    Lcenter.y = Dcenter.y;
-
-    LUpi_LogMessage( LFormat("START POINT : %lf %lf %f\n", startPoint.GetPoint().x, startPoint.GetPoint().y, startPoint.GetAngleRadian() ) );
-    LUpi_LogMessage( LFormat("END POINT : %lf %lf %f\n", endPoint.GetPoint().x, endPoint.GetPoint().y, endPoint.GetAngleRadian() ) );
-
-    LUpi_LogMessage( LFormat("centre cercle droit debut : %lf %lf\n", x, y ) );
-    this->centerStartRightCircle = Lcenter;
+    float returnDistance, shortestDistance;
+    PathType shortestType;
 
 
 
-    Dcenter.x = startPoint.GetPoint().x + radius*cos(startPoint.GetAngleRadian() + M_PI/2.0);
-    Dcenter.y = startPoint.GetPoint().y + radius*sin(startPoint.GetAngleRadian() + M_PI/2.0);
 
-    x = Dcenter.x;
-    y = Dcenter.y;
+    shortestDistance = 9999999999999999.9999;
 
-    Lcenter.x = Dcenter.x;
-    Lcenter.y = Dcenter.y;
+    //RSR
+    if( ! (xStart == xEnd && yStart == yEnd) ) //not the same circle == start and endpoint are different
+    {
+        ////compute the RSR length
+        //find the tangent
+        this->GetLSLorRSRTangent(this->centerStartRightCircle, this->centerEndRightCircle, false);
+        //Lenght
+        returnDistance = this->ComputeRSRLength();
 
-    LUpi_LogMessage( LFormat("centre cercle gauche debut : %lf %lf\n", x, y ) );
-    this->centerStartLeftCircle = Lcenter;
-
-
-
-    Dcenter.x = endPoint.GetPoint().x + radius*cos(endPoint.GetAngleRadian() - M_PI/2.0);
-    Dcenter.y = endPoint.GetPoint().y + radius*sin(endPoint.GetAngleRadian() - M_PI/2.0);
-
-    x = Dcenter.x;
-    y = Dcenter.y;
-
-    Lcenter.x = Dcenter.x;
-    Lcenter.y = Dcenter.y;
-
-    LUpi_LogMessage( LFormat("centre cercle droit fin : %lf %lf\n", x, y ) );
-    this->centerEndLeftCircle = Lcenter;
-
-
-
-    Dcenter.x = endPoint.GetPoint().x + radius*cos(endPoint.GetAngleRadian() + M_PI/2.0);
-    Dcenter.y = endPoint.GetPoint().y + radius*sin(endPoint.GetAngleRadian() + M_PI/2.0);
-
-    x = Dcenter.x;
-    y = Dcenter.y;
-
-    Lcenter.x = Dcenter.x;
-    Lcenter.y = Dcenter.y;
-
-    LUpi_LogMessage( LFormat("centre cercle gauche fin: %lf %lf\n", x, y ) );
-    this->centerEndLeftCircle = Lcenter;
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = RSR;
+        }
+    }
     
-    return LStatusOK;
+
+    //LSL
+    if( ! (xStart == xEnd && yStart == yEnd) ) //not the same circle == start and endpoint are different
+    {
+        
+        this->GetLSLorRSRTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, true);
+        
+        returnDistance = this->ComputeLSLLength();
+
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = LSL;
+        }
+    }
+
+    float circleDistanceSqr = (xEnd-xStart)*(xEnd-xStart)+(yEnd-yStart)*(yEnd-yStart);
+    float comparaisonDistanceSqr = (2*this->radius)*(2*this->radius);
+
+    //RSL
+    if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
+    {
+        this->GetRSLorLSRTangent(this->centerStartRightCircle, this->centerEndLeftCircle, false);
+
+        returnDistance = this->ComputeRSLLength();
+
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = RSL;
+        }
+    }    
+
+    //LSR
+    if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
+    {
+        this->GetRSLorLSRTangent(this->centerStartLeftCircle, this->centerEndRightCircle, true);
+         
+        returnDistance = this->ComputeLSRLength();
+
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = LSR;
+        }
+    }
+//LUpi_LogMessage(LFormat("min dist %f\n", shortestDistance));
+
+    comparaisonDistanceSqr = (4*this->radius)*(4*this->radius);
+    //RLR
+    if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
+    {
+        this->GetRLRorLRLTangent(this->centerStartRightCircle, this->centerEndRightCircle, true);
+        
+        returnDistance = this->ComputeRLRLength();
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = RLR;
+        }
+    } 
+
+    //LRL
+    if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
+    {
+        this->GetRLRorLRLTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, false);
+
+        returnDistance = this->ComputeLRLLength();
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = LRL;
+        }
+    }
+LUpi_LogMessage(LFormat("min dist %f\n", shortestDistance));
+}
+
+float DubinsPath::ComputeRSRLength()
+{
+    float returnDistance;
+
+    returnDistance = this->GetArcLength(this->centerStartRightCircle, this->startPoint.GetPoint(), this->startTangent, false);
+    returnDistance += PointDistance(this->startTangent, this->endTangent);
+    returnDistance += this->GetArcLength(this->centerEndRightCircle, this->endTangent, this->endPoint.GetPoint(), false);
+
+    return returnDistance;
+}
+
+float DubinsPath::ComputeLSLLength()
+{
+    float returnDistance;
+
+    returnDistance = this->GetArcLength(this->centerStartLeftCircle, this->startPoint.GetPoint(), this->startTangent, true);
+    returnDistance += PointDistance(this->startTangent, this->endTangent);
+    returnDistance += this->GetArcLength(this->centerEndLeftCircle, this->endTangent, this->endPoint.GetPoint(), true);
+
+    return returnDistance;
+}
+
+float DubinsPath::ComputeRSLLength()
+{
+    float returnDistance;
+
+    returnDistance = this->GetArcLength(this->centerStartRightCircle, this->startPoint.GetPoint(), this->startTangent, false);
+    returnDistance += PointDistance(this->startTangent, this->endTangent);
+    returnDistance += this->GetArcLength(this->centerEndLeftCircle, this->endTangent, this->endPoint.GetPoint(), true);
+
+    return returnDistance;
+}
+
+float DubinsPath::ComputeLSRLength()
+{
+    float returnDistance;
+
+    returnDistance = this->GetArcLength(this->centerStartLeftCircle, this->startPoint.GetPoint(), this->startTangent, true);
+    returnDistance += PointDistance(this->startTangent, this->endTangent);
+    returnDistance += this->GetArcLength(this->centerEndRightCircle, this->endTangent, this->endPoint.GetPoint(), false);
+
+    return returnDistance;
+}
+
+float DubinsPath::ComputeRLRLength()
+{
+    float returnDistance;
+
+    returnDistance = this->GetArcLength(this->centerStartRightCircle, this->startPoint.GetPoint(), this->startTangent, false);
+    returnDistance += this->GetArcLength(this->centerMiddleCircle, this->startTangent, this->endTangent, true);
+    returnDistance += this->GetArcLength(this->centerEndRightCircle, this->endTangent, this->endPoint.GetPoint(), false);
+
+    return returnDistance;
+}
+
+float DubinsPath::ComputeLRLLength()
+{
+    float returnDistance;
+    
+    returnDistance = this->GetArcLength(this->centerStartLeftCircle, this->startPoint.GetPoint(), this->startTangent, true);
+    returnDistance += this->GetArcLength(this->centerMiddleCircle, this->startTangent, this->endTangent, false);
+    returnDistance += this->GetArcLength(this->centerEndLeftCircle, this->endTangent, this->endPoint.GetPoint(), true);
+    
+    return returnDistance;
+}
+
+void DubinsPath::GetLSLorRSRTangent(LPoint startCircleCenter, LPoint endCircleCenter, bool isBottom)
+{
+    LCoord xStart, xEnd, yStart, yEnd;
+    float dx, dy, theta;
+
+    xStart = startCircleCenter.x;
+    xEnd = endCircleCenter.x;
+    yStart = startCircleCenter.y;
+    yEnd = endCircleCenter.y;
+
+    dx = xEnd - xStart;
+    dy = yEnd - yStart;
+    
+    theta = M_PI/2;
+    theta += atan2(dy, dx);
+    if(isBottom)
+        theta += M_PI;
+    
+    theta = fmod( theta, 2*M_PI );
+    if(theta <0)
+        theta = theta + 2*M_PI;
+
+    this->startTangent.x = xStart + this->radius * cos(theta);
+    this->startTangent.y = yStart + this->radius * sin(theta);
+
+    this->endTangent.x = this->startTangent.x + dx;
+    this->endTangent.y = this->startTangent.y + dy;
+}
+
+void DubinsPath::GetRSLorLSRTangent(LPoint startCircleCenter, LPoint endCircleCenter, bool isBottom)
+{
+    float circleDistance, theta;
+    LCoord xStart, xEnd, yStart, yEnd;
+    LPoint tmp;
+    float dx, dy;
+
+    xStart = startCircleCenter.x;
+    xEnd = endCircleCenter.x;
+    yStart = startCircleCenter.y;
+    yEnd = endCircleCenter.y;
+
+    dx = xEnd - xStart;
+    dy = yEnd - yStart;
+
+    circleDistance = PointDistance(startCircleCenter, endCircleCenter);
+
+    theta = acos((2.0 * this->radius)/circleDistance);
+
+    if(isBottom)
+        theta = theta * (-1.0);
+
+    theta += atan2(dy, dx);
+
+    this->startTangent.x = xStart + this->radius * cos(theta);
+    this->startTangent.y = yStart + this->radius * sin(theta);
+
+    tmp.x = xStart + 2.0 * this->radius * cos(theta);
+    tmp.y = yStart + 2.0 * this->radius * sin(theta);
+
+    dx = xEnd - tmp.x;
+    dy = yEnd - tmp.y;
+
+    this->endTangent.x = this->startTangent.x + dx;
+    this->endTangent.y = this->startTangent.y + dy;
+}
+
+void DubinsPath::GetRLRorLRLTangent(LPoint startCircleCenter, LPoint endCircleCenter, bool isLRL)
+{
+    float circleDistance, theta;
+    LCoord xStart, xEnd, yStart, yEnd;
+    float xNormalised, yNormalised;
+    float dx, dy;
+
+    xStart = startCircleCenter.x;
+    xEnd = endCircleCenter.x;
+    yStart = startCircleCenter.y;
+    yEnd = endCircleCenter.y;
+
+    dx = xEnd - xStart;
+    dy = yEnd - yStart;
+
+    circleDistance = PointDistance(startCircleCenter, endCircleCenter);
+
+    theta = acos(circleDistance / (4.0 * this->radius));
+
+    if(isLRL)
+        theta = atan2(dy,dx) + theta;
+    else
+        theta = atan2(dy,dx) - theta;
+
+    this->centerMiddleCircle.x = xStart + 2.0 * this->radius * cos(theta);
+    this->centerMiddleCircle.y = yStart + 2.0 * this->radius * sin(theta);
+    
+    xNormalised = (xStart - this->centerMiddleCircle.x) / PointDistance(startCircleCenter, this->centerMiddleCircle);
+    yNormalised = (yStart - this->centerMiddleCircle.y) / PointDistance(startCircleCenter, this->centerMiddleCircle);
+    this->startTangent.x = this->centerMiddleCircle.x + xNormalised * this->radius;
+    this->startTangent.y = this->centerMiddleCircle.y + yNormalised * this->radius;
+
+    xNormalised = (xEnd - this->centerMiddleCircle.x) / PointDistance(endCircleCenter, this->centerMiddleCircle);
+    yNormalised = (yEnd - this->centerMiddleCircle.y) / PointDistance(endCircleCenter, this->centerMiddleCircle);
+    this->endTangent.x = this->centerMiddleCircle.x + xNormalised * this->radius;
+    this->endTangent.y = this->centerMiddleCircle.y + yNormalised * this->radius;
+}
+
+
+
+
+
+float DubinsPath::GetArcLength(LPoint centerCircle, LPoint startPoint, LPoint tangent, bool isLeftCircle)
+{
+    float theta, returnDistance;
+    LCoord dxStart, dyStart, dxTangent, dyTangent;
+
+    dxStart = startPoint.x - centerCircle.x;
+    dyStart = startPoint.y - centerCircle.y;
+    dxTangent = tangent.x - centerCircle.x;
+    dyTangent = tangent.y - centerCircle.y;
+
+    theta = atan2(dyTangent, dxTangent) - atan2(dyStart, dxStart);
+
+    if(theta < 0.0 && isLeftCircle)
+        theta += 2.0*M_PI;
+    
+    else if(theta > 0.0 && !isLeftCircle)
+        theta -= 2.0*M_PI;
+
+    returnDistance = theta * this->radius;
+
+    if(returnDistance<0.0)
+        return -returnDistance;
+    else
+        return returnDistance;
+}
+
+
+
+//NON CLASS FUNCTIONS
+
+double PointDistance(LPoint start, LPoint end)
+{
+    double dist=0.0;
+    dist = (double)(end.x - start.x)*(end.x - start.x);
+    dist += (double)(end.y - start.y)*(end.y - start.y);
+    dist = sqrt(dist);
+    return dist;
 }

@@ -63,6 +63,7 @@ void DubinsMacro()
     path.SetEndPoint(end);
     path.SetRadius(10);
     
+    path.ComputeDubinsPaths();
 
     LUpi_LogMessage( "Macro FIN\n" );
 
