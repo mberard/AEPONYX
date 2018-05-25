@@ -62,6 +62,8 @@ void DubinsMacro()
     path.SetStartPoint(start);
     path.SetEndPoint(end);
     path.SetRadius(10);
+
+    path.SetGuideWidth(1);
     
     path.ComputeDubinsPaths();
 

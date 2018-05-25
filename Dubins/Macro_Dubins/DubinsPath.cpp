@@ -40,8 +40,8 @@ LStatus DubinsPath::UpdateCircleCenter(){
 
 DubinsPath::DubinsPath(){}
 
-LStatus DubinsPath::SetPathType(PathType type){
-    this->type = type;
+LStatus DubinsPath::SetGuideWidth(LCoord width){
+    this->guideWidth = LFile_MicronsToIntU( this->file, width );
     return LStatusOK;
 }
 
@@ -97,110 +97,6 @@ LLayer DubinsPath::GetLayer(){
     return this->layer;
 }
 
-void DubinsPath::ComputeDubinsPaths(){
-
-    float xStart, xEnd, yStart, yEnd, angleStart, angleEnd;
-    //float dx, dy, theta, alpha, beta;
-
-    xStart = this->startPoint.GetPoint().x;
-    xEnd = this->endPoint.GetPoint().x;
-    yStart = this->startPoint.GetPoint().y;
-    yEnd = this->endPoint.GetPoint().y;
-
-    float returnDistance, shortestDistance;
-    PathType shortestType;
-
-
-
-
-    shortestDistance = 9999999999999999.9999;
-
-    //RSR
-    if( ! (xStart == xEnd && yStart == yEnd) ) //not the same circle == start and endpoint are different
-    {
-        ////compute the RSR length
-        //find the tangent
-        this->GetLSLorRSRTangent(this->centerStartRightCircle, this->centerEndRightCircle, false);
-        //Lenght
-        returnDistance = this->ComputeRSRLength();
-
-        if(returnDistance < shortestDistance){
-            shortestDistance = returnDistance;
-            shortestType = RSR;
-        }
-    }
-    
-
-    //LSL
-    if( ! (xStart == xEnd && yStart == yEnd) ) //not the same circle == start and endpoint are different
-    {
-        
-        this->GetLSLorRSRTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, true);
-        
-        returnDistance = this->ComputeLSLLength();
-
-        if(returnDistance < shortestDistance){
-            shortestDistance = returnDistance;
-            shortestType = LSL;
-        }
-    }
-
-    float circleDistanceSqr = (xEnd-xStart)*(xEnd-xStart)+(yEnd-yStart)*(yEnd-yStart);
-    float comparaisonDistanceSqr = (2*this->radius)*(2*this->radius);
-
-    //RSL
-    if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
-    {
-        this->GetRSLorLSRTangent(this->centerStartRightCircle, this->centerEndLeftCircle, false);
-
-        returnDistance = this->ComputeRSLLength();
-
-        if(returnDistance < shortestDistance){
-            shortestDistance = returnDistance;
-            shortestType = RSL;
-        }
-    }    
-
-    //LSR
-    if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
-    {
-        this->GetRSLorLSRTangent(this->centerStartLeftCircle, this->centerEndRightCircle, true);
-         
-        returnDistance = this->ComputeLSRLength();
-
-        if(returnDistance < shortestDistance){
-            shortestDistance = returnDistance;
-            shortestType = LSR;
-        }
-    }
-//LUpi_LogMessage(LFormat("min dist %f\n", shortestDistance));
-
-    comparaisonDistanceSqr = (4*this->radius)*(4*this->radius);
-    //RLR
-    if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
-    {
-        this->GetRLRorLRLTangent(this->centerStartRightCircle, this->centerEndRightCircle, true);
-        
-        returnDistance = this->ComputeRLRLength();
-        if(returnDistance < shortestDistance){
-            shortestDistance = returnDistance;
-            shortestType = RLR;
-        }
-    } 
-
-    //LRL
-    if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
-    {
-        this->GetRLRorLRLTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, false);
-
-        returnDistance = this->ComputeLRLLength();
-        if(returnDistance < shortestDistance){
-            shortestDistance = returnDistance;
-            shortestType = LRL;
-        }
-    }
-LUpi_LogMessage(LFormat("min dist %f\n", shortestDistance));
-}
 
 float DubinsPath::ComputeRSRLength()
 {
@@ -373,9 +269,6 @@ void DubinsPath::GetRLRorLRLTangent(LPoint startCircleCenter, LPoint endCircleCe
 }
 
 
-
-
-
 float DubinsPath::GetArcLength(LPoint centerCircle, LPoint startPoint, LPoint tangent, bool isLeftCircle)
 {
     float theta, returnDistance;
@@ -401,6 +294,399 @@ float DubinsPath::GetArcLength(LPoint centerCircle, LPoint startPoint, LPoint ta
     else
         return returnDistance;
 }
+
+
+void DubinsPath::ComputeDubinsPaths(){
+
+    float xStart, xEnd, yStart, yEnd;
+
+    xStart = this->startPoint.GetPoint().x;
+    xEnd = this->endPoint.GetPoint().x;
+    yStart = this->startPoint.GetPoint().y;
+    yEnd = this->endPoint.GetPoint().y;
+
+    float returnDistance, shortestDistance;
+    PathType shortestType;
+    LPoint shortestStartTangent, shortestEndTangent, shortestMiddleCenter;
+
+    shortestDistance = 9999999999999999.9999;
+
+    //RSR
+    if( ! (xStart == xEnd && yStart == yEnd) ) //not the same circle == start and endpoint are different
+    {
+        ////compute the RSR length
+        //find the tangent
+        this->GetLSLorRSRTangent(this->centerStartRightCircle, this->centerEndRightCircle, false);
+        //Lenght
+        returnDistance = this->ComputeRSRLength();
+
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = RSR;
+            shortestStartTangent = this->startTangent;
+            shortestEndTangent = this->endTangent;
+        }
+    }
+
+    //LSL
+    if( ! (xStart == xEnd && yStart == yEnd) ) //not the same circle == start and endpoint are different
+    {
+        
+        this->GetLSLorRSRTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, true);
+        
+        returnDistance = this->ComputeLSLLength();
+
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = LSL;
+            shortestStartTangent = this->startTangent;
+            shortestEndTangent = this->endTangent;
+        }
+    }
+
+    float circleDistanceSqr = (xEnd-xStart)*(xEnd-xStart)+(yEnd-yStart)*(yEnd-yStart);
+    float comparaisonDistanceSqr = (2*this->radius)*(2*this->radius);
+
+    //RSL
+    if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
+    {
+        this->GetRSLorLSRTangent(this->centerStartRightCircle, this->centerEndLeftCircle, false);
+
+        returnDistance = this->ComputeRSLLength();
+
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = RSL;
+            shortestStartTangent = this->startTangent;
+            shortestEndTangent = this->endTangent;
+        }
+    }    
+
+    //LSR
+    if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
+    {
+        this->GetRSLorLSRTangent(this->centerStartLeftCircle, this->centerEndRightCircle, true);
+         
+        returnDistance = this->ComputeLSRLength();
+
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = LSR;
+            shortestStartTangent = this->startTangent;
+            shortestEndTangent = this->endTangent;
+        }
+    }
+
+
+    comparaisonDistanceSqr = (4*this->radius)*(4*this->radius);
+
+    //RLR
+    if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
+    {
+        this->GetRLRorLRLTangent(this->centerStartRightCircle, this->centerEndRightCircle, true);
+        
+        returnDistance = this->ComputeRLRLength();
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = RLR;
+            shortestStartTangent = this->startTangent;
+            shortestEndTangent = this->endTangent;
+            shortestMiddleCenter = this->centerMiddleCircle;
+        }
+    } 
+
+    //LRL
+    if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
+    {
+        this->GetRLRorLRLTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, false);
+
+        returnDistance = this->ComputeLRLLength();
+        if(returnDistance < shortestDistance){
+            shortestDistance = returnDistance;
+            shortestType = LRL;
+            shortestStartTangent = this->startTangent;
+            shortestEndTangent = this->endTangent;
+            shortestMiddleCenter = this->centerMiddleCircle;
+        }
+    }
+
+    this->startTangent = shortestStartTangent;
+    this->endTangent = shortestEndTangent;
+    this->distance = shortestDistance;
+    if( shortestType == LRL || shortestType == RLR )
+        this->centerMiddleCircle = shortestMiddleCenter;
+    else
+        this->centerMiddleCircle = LPoint_Set(0,0);
+
+
+
+    switch(shortestType)
+    {
+        case RSR:
+            this->StoreRSRPath();
+            break;
+        case LSL:
+            this->StoreLSLPath();
+            break;
+        case RSL:
+            this->StoreRSLPath();
+            break;
+        case LSR:
+            this->StoreLSRPath();
+            break;
+        case RLR:
+            this->StoreRLRPath();
+            break;
+        case LRL:
+            this->StoreLRLPath();
+            break;
+        default:
+            LDialog_AlertBox(LFormat("Path error"));
+    }
+}
+
+
+
+void DubinsPath::StoreRSRPath()
+{
+    double angleTorusPoint, angleTorusTangent;
+
+    LTorusParams params;
+    params.ptCenter = this->centerStartRightCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    angleTorusTangent = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
+    angleTorusPoint = atan2( this->startPoint.GetPoint().y - this->centerStartRightCircle.y , this->startPoint.GetPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
+    
+    params.dStartAngle = angleTorusTangent;
+    params.dStopAngle = angleTorusPoint;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+
+    LPoint point_arr[4];
+    float dx, dy;
+    dx = this->endTangent.x - this->startTangent.x;
+    dy = this->endTangent.y - this->startTangent.y;
+    point_arr[0] = LPoint_Set( this->startTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[1] = LPoint_Set( this->endTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[2] = LPoint_Set( this->endTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[3] = LPoint_Set( this->startTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
+    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+
+    params.ptCenter = this->centerEndRightCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    angleTorusTangent = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
+    angleTorusPoint = atan2( this->endPoint.GetPoint().y - this->centerEndRightCircle.y , this->endPoint.GetPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
+    
+    params.dStartAngle = angleTorusPoint;
+    params.dStopAngle = angleTorusTangent;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+}
+
+void DubinsPath::StoreLSLPath()
+{
+    double angleTorusPoint, angleTorusTangent;
+
+    LTorusParams params;
+    params.ptCenter = this->centerStartLeftCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    angleTorusTangent = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
+    angleTorusPoint = atan2( this->startPoint.GetPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
+    
+    params.dStartAngle = angleTorusPoint;
+    params.dStopAngle = angleTorusTangent;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+
+    LPoint point_arr[4];
+    float dx, dy;
+    dx = this->endTangent.x - this->startTangent.x;
+    dy = this->endTangent.y - this->startTangent.y;
+    point_arr[0] = LPoint_Set( this->startTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[1] = LPoint_Set( this->endTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[2] = LPoint_Set( this->endTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[3] = LPoint_Set( this->startTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
+    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+
+    params.ptCenter = this->centerEndLeftCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    angleTorusTangent = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
+    angleTorusPoint = atan2( this->endPoint.GetPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
+    
+    params.dStartAngle = angleTorusTangent;
+    params.dStopAngle = angleTorusPoint;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+}
+
+void DubinsPath::StoreRSLPath()
+{
+    double angleTorusPoint, angleTorusTangent;
+
+    LTorusParams params;
+    params.ptCenter = this->centerStartRightCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    angleTorusTangent = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
+    angleTorusPoint = atan2( this->startPoint.GetPoint().y - this->centerStartRightCircle.y , this->startPoint.GetPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
+    
+    params.dStartAngle = angleTorusTangent;
+    params.dStopAngle = angleTorusPoint;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+
+    LPoint point_arr[4];
+    float dx, dy;
+    dx = this->endTangent.x - this->startTangent.x;
+    dy = this->endTangent.y - this->startTangent.y;
+    point_arr[0] = LPoint_Set( this->startTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[1] = LPoint_Set( this->endTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[2] = LPoint_Set( this->endTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[3] = LPoint_Set( this->startTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
+    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+
+    params.ptCenter = this->centerEndLeftCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    angleTorusTangent = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
+    angleTorusPoint = atan2( this->endPoint.GetPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
+
+    params.dStartAngle = angleTorusTangent;
+    params.dStopAngle = angleTorusPoint;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+}
+
+void DubinsPath::StoreLSRPath()
+{
+    double angleTorusPoint, angleTorusTangent;
+
+    LTorusParams params;
+    params.ptCenter = this->centerStartLeftCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    angleTorusTangent = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
+    angleTorusPoint = atan2( this->startPoint.GetPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
+    
+    params.dStartAngle = angleTorusPoint;
+    params.dStopAngle = angleTorusTangent;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+
+    LPoint point_arr[4];
+    float dx, dy;
+    dx = this->endTangent.x - this->startTangent.x;
+    dy = this->endTangent.y - this->startTangent.y;
+    point_arr[0] = LPoint_Set( this->startTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[1] = LPoint_Set( this->endTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[2] = LPoint_Set( this->endTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[3] = LPoint_Set( this->startTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
+    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+
+    params.ptCenter = this->centerEndRightCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    angleTorusTangent = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
+    angleTorusPoint = atan2( this->endPoint.GetPoint().y - this->centerEndRightCircle.y , this->endPoint.GetPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
+
+    params.dStartAngle = angleTorusPoint;
+    params.dStopAngle = angleTorusTangent;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+}
+
+void DubinsPath::StoreRLRPath()
+{
+    double angleTorusPointStart, angleTorusTangentStart, angleTorusPointEnd, angleTorusTangentEnd;
+
+    angleTorusTangentStart = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
+    angleTorusPointStart = atan2( this->startPoint.GetPoint().y - this->centerStartRightCircle.y , this->startPoint.GetPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
+    angleTorusTangentEnd = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
+    angleTorusPointEnd = atan2( this->endPoint.GetPoint().y - this->centerEndRightCircle.y , this->endPoint.GetPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
+    
+    LTorusParams params;
+    params.ptCenter = this->centerStartRightCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.dStartAngle = angleTorusTangentStart;
+    params.dStopAngle = angleTorusPointStart;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+
+
+    params.ptCenter = this->centerMiddleCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.dStartAngle = std::fmod(angleTorusTangentStart + 180.0, 360.0);
+    params.dStopAngle =  std::fmod(angleTorusTangentEnd + 180.0, 360.0);
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusMiddle = LTorus_CreateNew(this->cell, this->layer, &params);
+
+
+    params.ptCenter = this->centerEndRightCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.dStartAngle = angleTorusPointEnd;
+    params.dStopAngle = angleTorusTangentEnd;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+}
+
+void DubinsPath::StoreLRLPath()
+{
+    double angleTorusPointStart, angleTorusTangentStart, angleTorusPointEnd, angleTorusTangentEnd;
+
+    angleTorusTangentStart = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
+    angleTorusPointStart = atan2( this->startPoint.GetPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
+    angleTorusTangentEnd = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
+    angleTorusPointEnd = atan2( this->endPoint.GetPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
+    
+    LTorusParams params;
+    params.ptCenter = this->centerStartLeftCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.dStartAngle = angleTorusPointStart;
+    params.dStopAngle = angleTorusTangentStart;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+
+
+    params.ptCenter = this->centerMiddleCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.dStopAngle = std::fmod(angleTorusTangentStart + 180.0, 360.0);
+    params.dStartAngle =  std::fmod(angleTorusTangentEnd + 180.0, 360.0);
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusMiddle = LTorus_CreateNew(this->cell, this->layer, &params);
+
+
+    params.ptCenter = this->centerEndLeftCircle;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.dStartAngle = angleTorusTangentEnd;
+    params.dStopAngle = angleTorusPointEnd;
+    
+    if(params.dStartAngle != params.dStopAngle)
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+}
+
 
 
 

@@ -11,7 +11,9 @@ private:
     LObject torusStart;
     LObject torusEnd;
     LObject line;
+    LObject torusMiddle;
     PathType type;
+    LCoord guideWidth;
     
     DubinsPoint startPoint;
     DubinsPoint endPoint;
@@ -36,7 +38,7 @@ private:
 
 public:
     DubinsPath();
-    LStatus SetPathType(PathType type);
+    LStatus SetGuideWidth(LCoord width);
     LStatus SetStartPoint(DubinsPoint startPoint);
     LStatus SetEndPoint(DubinsPoint endPoint);
     LStatus SetDistance(float distance);
@@ -56,6 +58,13 @@ public:
     float ComputeLSRLength();
     float ComputeRLRLength();
     float ComputeLRLLength();
+
+    void StoreRSRPath();
+    void StoreLSLPath();
+    void StoreRSLPath();
+    void StoreLSRPath();
+    void StoreRLRPath();
+    void StoreLRLPath();
 
     void GetLSLorRSRTangent(LPoint startCenter, LPoint endCenter, bool isBottom);
     void GetRSLorLSRTangent(LPoint startCenter, LPoint endCenter, bool isBottom);
