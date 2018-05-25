@@ -123,8 +123,11 @@ float DubinsPath::ComputeRSLLength()
     float returnDistance;
 
     returnDistance = this->GetArcLength(this->centerStartRightCircle, this->startPoint.GetLPoint(), this->startTangent, false);
+LUpi_LogMessage(LFormat("dist %f\n", returnDistance));
     returnDistance += PointDistance(this->startTangent, this->endTangent);
+LUpi_LogMessage(LFormat("dist %f\n", returnDistance));
     returnDistance += this->GetArcLength(this->centerEndLeftCircle, this->endTangent, this->endPoint.GetLPoint(), true);
+LUpi_LogMessage(LFormat("dist %f\n", returnDistance));
     return returnDistance;
 }
 
@@ -379,7 +382,7 @@ LUpi_LogMessage( LFormat("LSR distance %f\n",returnDistance) );
     //RLR
     if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
     {
-        this->GetRLRorLRLTangent(this->centerStartRightCircle, this->centerEndRightCircle, true);
+        this->GetRLRorLRLTangent(this->centerStartRightCircle, this->centerEndRightCircle, false);
 
         returnDistance = this->ComputeRLRLength();
 LUpi_LogMessage( LFormat("RLR distance %f\n",returnDistance) );
@@ -395,7 +398,7 @@ LUpi_LogMessage( LFormat("RLR distance %f\n",returnDistance) );
     //LRL
     if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
     {
-        this->GetRLRorLRLTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, false);
+        this->GetRLRorLRLTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, true);
 
         returnDistance = this->ComputeLRLLength();
 LUpi_LogMessage( LFormat("LRL distance %f\n",returnDistance) );
