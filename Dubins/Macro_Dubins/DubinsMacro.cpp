@@ -36,6 +36,17 @@ void DubinsMacro()
     char sLayerName[MAX_LAYER_NAME];
     char strLayer[MAX_LAYER_NAME];
 
+    LLabel startLabel, endLabel;
+    LPoint pLabelLocation;
+    double xPosLabel, yPosLabel;
+    char startLabelName[MAX_CELL_NAME];
+    char endLabelName[MAX_CELL_NAME];
+    char value_buffer[MAX_CELL_NAME];
+    char* token;
+    char sLabelName[MAX_CELL_NAME];
+    double dAngle;
+    int nmbLabel = 0;
+
     strcpy(strLayer, "WGUIDE"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter name of the layer in which the guide will be loaded", strLayer) == 0)
 		return;
@@ -48,12 +59,76 @@ void DubinsMacro()
 		return;
     }
     LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
-    LDialog_AlertBox(LFormat("The guide will be added in Layer %s", sLayerName));
+    //LDialog_AlertBox(LFormat("The guide will be added in Layer %s", sLayerName));
 
-    start.SetPoint(0.0 , 0.0, pFile);
-    start.SetAngleDegre(0.0);
-    end.SetPoint(20.0 , 10.0, pFile);
-    end.SetAngleDegre(0.0);
+    strcpy(value_buffer, "start;end");
+    if ( LDialog_InputBox("Start/end points", "Enter the name of the start and end label separate by ';'", value_buffer) == 0)
+        return;
+
+    token = strtok(value_buffer, ";");
+    strcpy(startLabelName, token);
+    token = strtok(NULL , ";");
+    strcpy(endLabelName, token);
+
+    for(LLabel pLabel = LLabel_GetList(pCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+	{
+		LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+		
+        if(strcmp(sLabelName, startLabelName) == 0)
+        {
+            pLabelLocation = LLabel_GetPosition( pLabel );
+            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+
+            start.SetPoint(xPosLabel , yPosLabel, pFile);
+
+            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+            {
+                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                {
+                    start.SetAngleDegre( dAngle );
+                }	
+                else
+                    LUpi_LogMessage("Angle GetPropertyValue failed\n");
+            }		
+            else
+            {
+                LUpi_LogMessage("Angle property not found\n");
+            }
+
+            nmbLabel++;
+        }
+        else if(strcmp(sLabelName, endLabelName) == 0)
+        {
+            pLabelLocation = LLabel_GetPosition( pLabel );
+            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+
+            end.SetPoint(xPosLabel , yPosLabel, pFile);
+
+            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+            {
+                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                {
+                    end.SetAngleDegre( dAngle );
+                }	
+                else
+                    LUpi_LogMessage("Angle GetPropertyValue failed\n");
+            }		
+            else
+            {
+                LUpi_LogMessage("Angle property not found\n");
+            }
+
+            nmbLabel++;
+        }
+	}
+
+    if(nmbLabel != 2)
+    {
+        LUpi_LogMessage( LFormat("ERROR: %d LLabel(s) found instead of 2\n",nmbLabel) );
+        return;
+    }
 
     path.SetFile(pFile);
     path.SetCell(pCell);
