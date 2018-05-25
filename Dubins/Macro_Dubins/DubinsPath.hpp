@@ -13,7 +13,7 @@ private:
     LObject line;
     LObject torusMiddle;
     PathType type;
-    LCoord guideWidth;
+    float guideWidth;
     
     DubinsPoint startPoint;
     DubinsPoint endPoint;
@@ -38,7 +38,7 @@ private:
 
 public:
     DubinsPath();
-    LStatus SetGuideWidth(LCoord width);
+    LStatus SetGuideWidth(float width);
     LStatus SetStartPoint(DubinsPoint startPoint);
     LStatus SetEndPoint(DubinsPoint endPoint);
     LStatus SetDistance(float distance);

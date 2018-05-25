@@ -3,14 +3,22 @@
 
 DubinsPoint::DubinsPoint(){}
 
-DubinsPoint::DubinsPoint(LPoint point, float angle){
+DubinsPoint::DubinsPoint(double x, double y, float angle, LFile pFile){
     angle = angle * M_PI / 180.0;
-    this->point = point;
+    this->point.x = LFile_MicronsToIntU(pFile, x);
+    this->point.y = LFile_MicronsToIntU(pFile, y);
     this->angle = angle;
 }
 
-LStatus DubinsPoint::SetPoint(LPoint point){
-    this->point = point;
+LStatus DubinsPoint::SetPoint(double x, double y, LFile pFile){
+    this->point.x = LFile_MicronsToIntU(pFile, x);
+    this->point.y = LFile_MicronsToIntU(pFile, y);
+    return LStatusOK;
+}
+
+LStatus DubinsPoint::SetPointInInternalUnits( double x , double y ){
+    this->point.x = x;
+    this->point.y = y;
     return LStatusOK;
 }
 
@@ -33,8 +41,15 @@ LStatus DubinsPoint::SetAngleRadian(float angle){
         return LBadParameters;
 }
 
-LPoint DubinsPoint::GetPoint(){
+DPoint DubinsPoint::GetPoint(){
     return this->point;
+}
+
+LPoint DubinsPoint::GetLPoint(){
+    LPoint returnValue;
+    returnValue.x = (LCoord)this->point.x;
+    returnValue.y = (LCoord)this->point.y;
+    return returnValue;
 }
 
 float DubinsPoint::GetAngleRadian(){

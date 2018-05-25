@@ -5,16 +5,18 @@
 
 class DubinsPoint{
 private:
-    LPoint point;
+    DPoint point;
     float angle;
 
 public:
     DubinsPoint();
-    DubinsPoint(LPoint point, float angle);
-    LStatus SetPoint(LPoint point);
+    DubinsPoint(double x, double y, float angle, LFile pFile);
+    LStatus SetPoint(double x, double y, LFile pFile);
+    LStatus SetPointInInternalUnits( double x , double y );
     LStatus SetAngleDegre(float angle);
     LStatus SetAngleRadian(float angle);
-    LPoint GetPoint();
+    DPoint GetPoint();
+    LPoint GetLPoint();
     float GetAngleDegre();
     float GetAngleRadian();
 

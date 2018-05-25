@@ -50,10 +50,10 @@ void DubinsMacro()
     LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
     LDialog_AlertBox(LFormat("The guide will be added in Layer %s", sLayerName));
 
-    start.SetPoint(LPoint_Set(0,0));
-    start.SetAngleDegre(0);
-    end.SetPoint(LPoint_Set(20,10));
-    end.SetAngleDegre(0);
+    start.SetPoint(0.0 , 0.0, pFile);
+    start.SetAngleDegre(0.0);
+    end.SetPoint(20.0 , 10.0, pFile);
+    end.SetAngleDegre(0.0);
 
     path.SetFile(pFile);
     path.SetCell(pCell);
@@ -63,7 +63,7 @@ void DubinsMacro()
     path.SetEndPoint(end);
     path.SetRadius(10);
 
-    path.SetGuideWidth(1);
+    path.SetGuideWidth(0.5);
     
     path.ComputeDubinsPaths();
 
