@@ -123,11 +123,8 @@ float DubinsPath::ComputeRSLLength()
     float returnDistance;
 
     returnDistance = this->GetArcLength(this->centerStartRightCircle, this->startPoint.GetLPoint(), this->startTangent, false);
-LUpi_LogMessage(LFormat("dist %f\n", returnDistance));
     returnDistance += PointDistance(this->startTangent, this->endTangent);
-LUpi_LogMessage(LFormat("dist %f\n", returnDistance));
     returnDistance += this->GetArcLength(this->centerEndLeftCircle, this->endTangent, this->endPoint.GetLPoint(), true);
-LUpi_LogMessage(LFormat("dist %f\n", returnDistance));
     return returnDistance;
 }
 
@@ -308,8 +305,6 @@ void DubinsPath::ComputeDubinsPaths(){
 
     shortestDistance = 9999999999999999.9999;
 
-
-
     //RSR
     if( ! (xStart == xEnd && yStart == yEnd) ) //not the same circle == start and endpoint are different
     {
@@ -343,16 +338,15 @@ LUpi_LogMessage( LFormat("LSL distance %f\n",returnDistance) );
         }
     }
 
-    float circleDistanceSqr = (xEnd-xStart)*(xEnd-xStart)+(yEnd-yStart)*(yEnd-yStart);
-    float comparaisonDistanceSqr = (2*this->radius)*(2*this->radius);
-
+    double circleDistanceSqr = PointDistance(this->centerEndLeftCircle, this->centerStartRightCircle) * PointDistance(this->centerEndLeftCircle, this->centerStartRightCircle);
+    double comparaisonDistanceSqr = (2*this->radius)*(2*this->radius);
     //RSL
     if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
     {
         this->GetRSLorLSRTangent(this->centerStartRightCircle, this->centerEndLeftCircle, false);
 
         returnDistance = this->ComputeRSLLength();
-LUpi_LogMessage( LFormat("RSL distance %f\n",returnDistance) );
+LUpi_LogMessage( LFormat("RSL distance %lf\n",returnDistance) );
         if(returnDistance < shortestDistance){
             shortestDistance = returnDistance;
             shortestType = RSL;
@@ -361,6 +355,7 @@ LUpi_LogMessage( LFormat("RSL distance %f\n",returnDistance) );
         }
     }    
 
+    circleDistanceSqr = PointDistance(this->centerEndRightCircle, this->centerStartLeftCircle) * PointDistance(this->centerEndRightCircle, this->centerStartLeftCircle);
     //LSR
     if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
     {
@@ -451,6 +446,22 @@ LUpi_LogMessage( LFormat("LRL distance %f\n",returnDistance) );
             LDialog_AlertBox(LFormat("Path error"));
     }
 }
+
+
+void DubinsPath::DrawLine()
+{
+    LPoint point_arr[4];
+    float dx, dy;
+    dx = this->endPoint.GetPoint().x - this->startPoint.GetPoint().x;
+    dy = this->endPoint.GetPoint().y - this->startPoint.GetPoint().y;
+    point_arr[0] = LPoint_Set( this->startPoint.GetPoint().x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->startPoint.GetPoint().y-(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[1] = LPoint_Set( this->endPoint.GetPoint().x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->endPoint.GetPoint().y-(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[2] = LPoint_Set( this->endPoint.GetPoint().x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->endPoint.GetPoint().y+(cos(atan2(dy,dx))*this->guideWidth/2) );
+    point_arr[3] = LPoint_Set( this->startPoint.GetPoint().x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->startPoint.GetPoint().y+(cos(atan2(dy,dx))*this->guideWidth/2) );
+    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+}
+
+
 
 
 

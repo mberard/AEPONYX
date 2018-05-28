@@ -51,6 +51,7 @@ public:
     LLayer GetLayer();
 
     void ComputeDubinsPaths();
+    void DrawLine();
 
     float ComputeRSRLength();
     float ComputeLSLLength();

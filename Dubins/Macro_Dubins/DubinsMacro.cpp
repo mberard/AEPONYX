@@ -140,7 +140,10 @@ void DubinsMacro()
 
     path.SetGuideWidth(1);
     
-    path.ComputeDubinsPaths();
+    if(start.GetAngleRadian() == end.GetAngleRadian() && atan2(end.GetPoint().y-start.GetPoint().y , end.GetPoint().x-start.GetPoint().x) == start.GetAngleRadian()) //draw only a ligne
+        path.DrawLine();
+    else
+        path.ComputeDubinsPaths();
 
     LUpi_LogMessage( "Macro FIN\n" );
 
