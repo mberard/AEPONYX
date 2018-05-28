@@ -409,10 +409,19 @@ LUpi_LogMessage( LFormat("LRL distance %f\n",returnDistance) );
     this->startTangent = shortestStartTangent;
     this->endTangent = shortestEndTangent;
     this->distance = shortestDistance;
+    this->type = shortestType;
     if( shortestType == LRL || shortestType == RLR )
         this->centerMiddleCircle = shortestMiddleCenter;
-    else
-        this->centerMiddleCircle = LPoint_Set(0,0);
+    else //initialisation of the Middle torus to know to not draw this
+    {
+        LTorusParams params;
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 
 
 
@@ -476,11 +485,21 @@ void DubinsPath::StoreRSRPath()
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartRightCircle.y , this->startPoint.GetLPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
     
-    params.dStartAngle = angleTorusTangent;
-    params.dStopAngle = angleTorusPoint;
+    params.dStartAngle = RoundAngle(angleTorusTangent);
+    params.dStopAngle = RoundAngle(angleTorusPoint);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
+
 
     LPoint point_arr[4];
     float dx, dy;
@@ -498,11 +517,20 @@ void DubinsPath::StoreRSRPath()
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndRightCircle.y , this->endPoint.GetLPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
     
-    params.dStartAngle = angleTorusPoint;
-    params.dStopAngle = angleTorusTangent;
+    params.dStartAngle = RoundAngle(angleTorusPoint);
+    params.dStopAngle = RoundAngle(angleTorusTangent);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 }
 
 void DubinsPath::StoreLSLPath()
@@ -516,11 +544,20 @@ void DubinsPath::StoreLSLPath()
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetLPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
     
-    params.dStartAngle = angleTorusPoint;
-    params.dStopAngle = angleTorusTangent;
+    params.dStartAngle = RoundAngle(angleTorusPoint);
+    params.dStopAngle = RoundAngle(angleTorusTangent);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 
     LPoint point_arr[4];
     float dx, dy;
@@ -538,11 +575,20 @@ void DubinsPath::StoreLSLPath()
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetLPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
     
-    params.dStartAngle = angleTorusTangent;
-    params.dStopAngle = angleTorusPoint;
+    params.dStartAngle = RoundAngle(angleTorusTangent);
+    params.dStopAngle = RoundAngle(angleTorusPoint);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 }
 
 void DubinsPath::StoreRSLPath()
@@ -556,11 +602,20 @@ void DubinsPath::StoreRSLPath()
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartRightCircle.y , this->startPoint.GetLPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
     
-    params.dStartAngle = angleTorusTangent;
-    params.dStopAngle = angleTorusPoint;
+    params.dStartAngle = RoundAngle(angleTorusTangent);
+    params.dStopAngle = RoundAngle(angleTorusPoint);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 
     LPoint point_arr[4];
     float dx, dy;
@@ -578,11 +633,20 @@ void DubinsPath::StoreRSLPath()
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetLPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
 
-    params.dStartAngle = angleTorusTangent;
-    params.dStopAngle = angleTorusPoint;
+    params.dStartAngle = RoundAngle(angleTorusTangent);
+    params.dStopAngle = RoundAngle(angleTorusPoint);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 }
 
 void DubinsPath::StoreLSRPath()
@@ -596,11 +660,20 @@ void DubinsPath::StoreLSRPath()
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetLPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
 
-    params.dStartAngle = angleTorusPoint;
-    params.dStopAngle = angleTorusTangent;
+    params.dStartAngle = RoundAngle(angleTorusPoint);
+    params.dStopAngle = RoundAngle(angleTorusTangent);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 
     LPoint point_arr[4];
     float dx, dy;
@@ -618,11 +691,20 @@ void DubinsPath::StoreLSRPath()
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndRightCircle.y , this->endPoint.GetLPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
 
-    params.dStartAngle = angleTorusPoint;
-    params.dStopAngle = angleTorusTangent;
+    params.dStartAngle = RoundAngle(angleTorusPoint);
+    params.dStopAngle = RoundAngle(angleTorusTangent);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 }
 
 void DubinsPath::StoreRLRPath()
@@ -638,31 +720,58 @@ void DubinsPath::StoreRLRPath()
     params.ptCenter = this->centerStartRightCircle;
     params.nInnerRadius = this->radius - this->guideWidth / 2.0;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0;
-    params.dStartAngle = angleTorusTangentStart;
-    params.dStopAngle = angleTorusPointStart;
+    params.dStartAngle = RoundAngle(angleTorusTangentStart);
+    params.dStopAngle = RoundAngle(angleTorusPointStart);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 
 
     params.ptCenter = this->centerMiddleCircle;
     params.nInnerRadius = this->radius - this->guideWidth / 2.0;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0;
-    params.dStartAngle = fmod(angleTorusTangentStart + 180.0, 360.0);
-    params.dStopAngle =  fmod(angleTorusTangentEnd + 180.0, 360.0);
+    params.dStartAngle = RoundAngle( fmod(angleTorusTangentStart + 180.0, 360.0) );
+    params.dStopAngle =  RoundAngle( fmod(angleTorusTangentEnd + 180.0, 360.0) );
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusMiddle = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusMiddle = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 
 
     params.ptCenter = this->centerEndRightCircle;
     params.nInnerRadius = this->radius - this->guideWidth / 2.0;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0;
-    params.dStartAngle = angleTorusPointEnd;
-    params.dStopAngle = angleTorusTangentEnd;
+    params.dStartAngle = RoundAngle(angleTorusPointEnd);
+    params.dStopAngle = RoundAngle(angleTorusTangentEnd);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 }
 
 void DubinsPath::StoreLRLPath()
@@ -678,33 +787,208 @@ void DubinsPath::StoreLRLPath()
     params.ptCenter = this->centerStartLeftCircle;
     params.nInnerRadius = this->radius - this->guideWidth / 2.0;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0;
-    params.dStartAngle = angleTorusPointStart;
-    params.dStopAngle = angleTorusTangentStart;
+    params.dStartAngle = RoundAngle(angleTorusPointStart);
+    params.dStopAngle = RoundAngle(angleTorusTangentStart);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 
 
     params.ptCenter = this->centerMiddleCircle;
     params.nInnerRadius = this->radius - this->guideWidth / 2.0;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0;
-    params.dStopAngle = fmod(angleTorusTangentStart + 180.0, 360.0);
-    params.dStartAngle =  fmod(angleTorusTangentEnd + 180.0, 360.0);
+    params.dStopAngle = RoundAngle( fmod(angleTorusTangentStart + 180.0, 360.0) );
+    params.dStartAngle =  RoundAngle( fmod(angleTorusTangentEnd + 180.0, 360.0) );
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusMiddle = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusMiddle = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 
 
     params.ptCenter = this->centerEndLeftCircle;
     params.nInnerRadius = this->radius - this->guideWidth / 2.0;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0;
-    params.dStartAngle = angleTorusTangentEnd;
-    params.dStopAngle = angleTorusPointEnd;
+    params.dStartAngle = RoundAngle(angleTorusTangentEnd);
+    params.dStopAngle = RoundAngle(angleTorusPointEnd);
     
     if(params.dStartAngle != params.dStopAngle)
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    else
+    {
+        params.ptCenter = LPoint_Set(0,0);
+        params.nInnerRadius = 0.001;
+        params.nOuterRadius = 0.002;
+        params.dStartAngle = 0;
+        params.dStopAngle = 0;
+        this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
+    }
 }
 
+void DubinsPath::RasterizePath()
+{
+
+    this->nbPoints = 0;
+    double dThetaStep = 0;
+    LGrid_v16_30 grid;
+	LFile_GetGrid_v16_30( this->file, &grid );
+
+    if(type == RSL)
+    {
+
+        LTorusParams startTorusParams, endTorusParams;
+		LTorus_GetParams(this->torusStart, &startTorusParams);
+        LTorus_GetParams(this->torusEnd, &endTorusParams);
+		double dStartAngleStartTorus = startTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleStartTorus = startTorusParams.dStopAngle * M_PI / 180.0;
+        double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
+		while (dStopAngleStartTorus < dStartAngleStartTorus)
+			dStopAngleStartTorus += 2.0 * M_PI;
+        while (dStopAngleEndTorus < dStartAngleEndTorus)
+			dStopAngleEndTorus += 2.0 * M_PI;
+
+        //small radius, start torus
+        LPoint ptCenter = startTorusParams.ptCenter;
+		LCoord nRadius = startTorusParams.nInnerRadius;
+        this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
+		for (double dTheta = dStopAngleStartTorus; dTheta > dStartAngleStartTorus; dTheta -= dThetaStep )
+			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
+		this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
+
+        //long radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nOuterRadius;
+        this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
+		for (double dTheta = dStartAngleEndTorus; dTheta < dStopAngleEndTorus; dTheta += dThetaStep )
+			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
+		this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+        
+        //small radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nInnerRadius;
+        this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
+		for (double dTheta = dStopAngleEndTorus; dTheta > dStartAngleEndTorus; dTheta -= dThetaStep )
+			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
+		this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+
+        //long radius, start torus
+        ptCenter = startTorusParams.ptCenter;
+		nRadius = startTorusParams.nOuterRadius;
+        this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
+		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
+		for (double dTheta = dStartAngleStartTorus; dTheta < dStopAngleStartTorus; dTheta += dThetaStep )
+			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
+		this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+
+        LUpi_LogMessage( "RSL path\n" );
+    }
+    if(type == LSR)
+    {
+
+        LTorusParams startTorusParams, endTorusParams;
+		LTorus_GetParams(this->torusStart, &startTorusParams);
+        LTorus_GetParams(this->torusEnd, &endTorusParams);
+		double dStartAngleStartTorus = startTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleStartTorus = startTorusParams.dStopAngle * M_PI / 180.0;
+        double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
+		while (dStopAngleStartTorus < dStartAngleStartTorus)
+			dStopAngleStartTorus += 2.0 * M_PI;
+        while (dStopAngleEndTorus < dStartAngleEndTorus)
+			dStopAngleEndTorus += 2.0 * M_PI;
+
+        //small radius, start torus
+        LPoint ptCenter = startTorusParams.ptCenter;
+		LCoord nRadius = startTorusParams.nInnerRadius;
+        this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
+		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
+		for (double dTheta = dStartAngleStartTorus; dTheta < dStopAngleStartTorus; dTheta += dThetaStep )
+			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
+		this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+
+        //long radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nOuterRadius;
+        this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
+		for (double dTheta = dStopAngleEndTorus; dTheta > dStartAngleEndTorus; dTheta -= dThetaStep )
+			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
+		this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+        
+        //small radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nInnerRadius;
+        this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
+		for (double dTheta = dStartAngleEndTorus; dTheta < dStopAngleEndTorus; dTheta += dThetaStep )
+			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
+		this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+
+        //long radius, start torus
+        ptCenter = startTorusParams.ptCenter;
+		nRadius = startTorusParams.nOuterRadius;
+        this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
+		for (double dTheta = dStopAngleStartTorus; dTheta > dStartAngleStartTorus; dTheta -= dThetaStep )
+			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
+		this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
+
+        LUpi_LogMessage( "LSR path\n" );
+    }
+    else if(type == RSR || type == LSL)
+    {
+        LUpi_LogMessage( "RSR/LSL path\n" );
+    }
+    else if(type == LRL || type == RLR)
+    {
+        LUpi_LogMessage( "LRL/RLR path\n" );
+    }
+
+    if(this->nbPoints > 0)
+        LPolygon_New(this->cell, this->layer, this->point_arr, this->nbPoints);
+/*
+    LObject_Delete( this->cell, this->torusStart );
+    LObject_Delete( this->cell, this->torusEnd );
+    LObject_Delete( this->cell, this->torusMiddle );
+    LObject_Delete( this->cell, this->line );
+*/
+}
+
+
+void DubinsPath::Add( double x, double y )
+{
+	LCoord nx = Round( x );
+	LCoord ny = Round( y );
+
+	if ( this->nbPoints != 0 && nx == nLastx && ny == nLasty )
+		return; // do not duplicate vertex
+
+	this->point_arr[this->nbPoints] = LPoint_Set(nx, ny);
+    this->nbPoints = this->nbPoints + 1;
+	
+	nLastx = nx;
+	nLasty = ny;
+}
 
 
 
@@ -717,4 +1001,26 @@ double PointDistance(LPoint start, LPoint end)
     dist += (double)(end.y - start.y)*(end.y - start.y);
     dist = sqrt(dist);
     return dist;
+}
+
+double RoundAngle(double value)
+{
+    long Ltmp = 0;
+    double Dtmp = value * 1000;
+    double returnVal;
+    if(value > 0)
+        Dtmp = (double)(Dtmp + 0.5);
+    else
+        Dtmp = (double)(Dtmp - 0.5);
+    Ltmp = (long)Dtmp;
+    returnVal = Ltmp / 1000.0;
+    return returnVal;
+}
+
+LCoord Round(double d)
+{
+	if (d >= 0)
+		return d+0.5;
+	else
+		return d-0.5;
 }

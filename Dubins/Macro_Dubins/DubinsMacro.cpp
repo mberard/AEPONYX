@@ -142,8 +142,16 @@ void DubinsMacro()
     
     if(start.GetAngleRadian() == end.GetAngleRadian() && atan2(end.GetPoint().y-start.GetPoint().y , end.GetPoint().x-start.GetPoint().x) == start.GetAngleRadian()) //draw only a ligne
         path.DrawLine();
+    else if(start.GetPoint().x == end.GetPoint().x && start.GetPoint().y == end.GetPoint().y)
+        if(start.GetAngleRadian() == end.GetAngleRadian())
+            LUpi_LogMessage( LFormat("Warning: start and end points are identical\n") );
+        else
+            LDialog_AlertBox(LFormat("ERROR:  start and end points are identical but with a different angle."));
     else
+    {
         path.ComputeDubinsPaths();
+        path.RasterizePath();
+    }
 
     LUpi_LogMessage( "Macro FIN\n" );
 
