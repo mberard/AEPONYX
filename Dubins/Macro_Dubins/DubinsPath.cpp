@@ -356,6 +356,7 @@ LUpi_LogMessage( LFormat("RSL distance %lf\n",returnDistance) );
     }    
 
     circleDistanceSqr = PointDistance(this->centerEndRightCircle, this->centerStartLeftCircle) * PointDistance(this->centerEndRightCircle, this->centerStartLeftCircle);
+
     //LSR
     if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
     {
@@ -371,9 +372,7 @@ LUpi_LogMessage( LFormat("LSR distance %f\n",returnDistance) );
         }
     }
 
-
     comparaisonDistanceSqr = (4*this->radius)*(4*this->radius);
-
     //RLR
     if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
     {
@@ -428,27 +427,21 @@ LUpi_LogMessage( LFormat("LRL distance %f\n",returnDistance) );
     switch(shortestType)
     {
         case RSR:
-            LUpi_LogMessage( "RSR path\n" );
             this->StoreRSRPath();
             break;
         case LSL:
-            LUpi_LogMessage( "LSL path\n" );
             this->StoreLSLPath();
             break;
         case RSL:
-            LUpi_LogMessage( "RSL path\n" );
             this->StoreRSLPath();
             break;
         case LSR:
-            LUpi_LogMessage( "LSR path\n" );
             this->StoreLSRPath();
             break;
         case RLR:
-            LUpi_LogMessage( "RLR path\n" );
             this->StoreRLRPath();
             break;
         case LRL:
-            LUpi_LogMessage( "LRL path\n" );
             this->StoreLRLPath();
             break;
         default:
@@ -843,15 +836,14 @@ void DubinsPath::StoreLRLPath()
 
 void DubinsPath::RasterizePath()
 {
-
-    this->nbPoints = 0;
     double dThetaStep = 0;
     LGrid_v16_30 grid;
 	LFile_GetGrid_v16_30( this->file, &grid );
+    this->nbPoints = 0;
 
-    if(type == RSL)
+    if(this->type == RSL)
     {
-
+        
         LTorusParams startTorusParams, endTorusParams;
 		LTorus_GetParams(this->torusStart, &startTorusParams);
         LTorus_GetParams(this->torusEnd, &endTorusParams);
@@ -859,6 +851,7 @@ void DubinsPath::RasterizePath()
 		double dStopAngleStartTorus = startTorusParams.dStopAngle * M_PI / 180.0;
         double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
 		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
+
 		while (dStopAngleStartTorus < dStartAngleStartTorus)
 			dStopAngleStartTorus += 2.0 * M_PI;
         while (dStopAngleEndTorus < dStartAngleEndTorus)
@@ -867,42 +860,26 @@ void DubinsPath::RasterizePath()
         //small radius, start torus
         LPoint ptCenter = startTorusParams.ptCenter;
 		LCoord nRadius = startTorusParams.nInnerRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
-		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
-		for (double dTheta = dStopAngleStartTorus; dTheta > dStartAngleStartTorus; dTheta -= dThetaStep )
-			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
-		this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
-
-        //long radius, end torus
-        ptCenter = endTorusParams.ptCenter;
-		nRadius = endTorusParams.nOuterRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
-		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
-		for (double dTheta = dStartAngleEndTorus; dTheta < dStopAngleEndTorus; dTheta += dThetaStep )
-			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
-		this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
-        
-        //small radius, end torus
-        ptCenter = endTorusParams.ptCenter;
-		nRadius = endTorusParams.nInnerRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
-		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
-		for (double dTheta = dStopAngleEndTorus; dTheta > dStartAngleEndTorus; dTheta -= dThetaStep )
-			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
-		this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
 
         //long radius, start torus
         ptCenter = startTorusParams.ptCenter;
 		nRadius = startTorusParams.nOuterRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
-		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
-		for (double dTheta = dStartAngleStartTorus; dTheta < dStopAngleStartTorus; dTheta += dThetaStep )
-			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
-		this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
+
+        //small radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
+
+        //long radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
 
         LUpi_LogMessage( "RSL path\n" );
     }
-    if(type == LSR)
+    else if(this->type == LSR)
     {
 
         LTorusParams startTorusParams, endTorusParams;
@@ -920,58 +897,234 @@ void DubinsPath::RasterizePath()
         //small radius, start torus
         LPoint ptCenter = startTorusParams.ptCenter;
 		LCoord nRadius = startTorusParams.nInnerRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
-		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
-		for (double dTheta = dStartAngleStartTorus; dTheta < dStopAngleStartTorus; dTheta += dThetaStep )
-			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
-		this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
 
         //long radius, end torus
         ptCenter = endTorusParams.ptCenter;
 		nRadius = endTorusParams.nOuterRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
-		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
-		for (double dTheta = dStopAngleEndTorus; dTheta > dStartAngleEndTorus; dTheta -= dThetaStep )
-			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
-		this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
         
         //small radius, end torus
         ptCenter = endTorusParams.ptCenter;
 		nRadius = endTorusParams.nInnerRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
-		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
-		for (double dTheta = dStartAngleEndTorus; dTheta < dStopAngleEndTorus; dTheta += dThetaStep )
-			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
-		this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
 
         //long radius, start torus
         ptCenter = startTorusParams.ptCenter;
 		nRadius = startTorusParams.nOuterRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
-		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / nRadius / 10);
-		for (double dTheta = dStopAngleStartTorus; dTheta > dStartAngleStartTorus; dTheta -= dThetaStep )
-			this->Add( ptCenter.x + nRadius * cos( dTheta ), ptCenter.y + nRadius * sin( dTheta ) );
-		this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
 
         LUpi_LogMessage( "LSR path\n" );
     }
-    else if(type == RSR || type == LSL)
+    else if(this->type == LSL)
     {
-        LUpi_LogMessage( "RSR/LSL path\n" );
+        LTorusParams startTorusParams, endTorusParams;
+		LTorus_GetParams(this->torusStart, &startTorusParams);
+        LTorus_GetParams(this->torusEnd, &endTorusParams);
+		double dStartAngleStartTorus = startTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleStartTorus = startTorusParams.dStopAngle * M_PI / 180.0;
+        double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
+		while (dStopAngleStartTorus < dStartAngleStartTorus)
+			dStopAngleStartTorus += 2.0 * M_PI;
+        while (dStopAngleEndTorus < dStartAngleEndTorus)
+			dStopAngleEndTorus += 2.0 * M_PI;
+
+        //small radius, start torus
+        LPoint ptCenter = startTorusParams.ptCenter;
+		LCoord nRadius = startTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
+
+        //small radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
+
+        //long radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
+
+        //long radius, start torus
+        ptCenter = startTorusParams.ptCenter;
+		nRadius = startTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
+
+        LUpi_LogMessage( "RSR path\n" );
     }
-    else if(type == LRL || type == RLR)
+    else if(this->type == RSR)
     {
-        LUpi_LogMessage( "LRL/RLR path\n" );
+        LTorusParams startTorusParams, endTorusParams;
+		LTorus_GetParams(this->torusStart, &startTorusParams);
+        LTorus_GetParams(this->torusEnd, &endTorusParams);
+		double dStartAngleStartTorus = startTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleStartTorus = startTorusParams.dStopAngle * M_PI / 180.0;
+        double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
+		while (dStopAngleStartTorus < dStartAngleStartTorus)
+			dStopAngleStartTorus += 2.0 * M_PI;
+        while (dStopAngleEndTorus < dStartAngleEndTorus)
+			dStopAngleEndTorus += 2.0 * M_PI;
+
+        //small radius, start torus
+        LPoint ptCenter = startTorusParams.ptCenter;
+		LCoord nRadius = startTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
+
+        //long radius, start torus
+        ptCenter = startTorusParams.ptCenter;
+		nRadius = startTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
+        
+        //long radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
+
+        //small radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
+
+        LUpi_LogMessage( "LSL path\n" );
+    }
+    else if(this->type == LRL)
+    {
+        LTorusParams startTorusParams, endTorusParams, middleTorusParams;
+		LTorus_GetParams(this->torusStart, &startTorusParams);
+        LTorus_GetParams(this->torusEnd, &endTorusParams);
+        LTorus_GetParams(this->torusMiddle, &middleTorusParams);
+		double dStartAngleStartTorus = startTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleStartTorus = startTorusParams.dStopAngle * M_PI / 180.0;
+        double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
+        double dStartAngleMiddleTorus = middleTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleMiddleTorus = middleTorusParams.dStopAngle * M_PI / 180.0;
+		while (dStopAngleStartTorus < dStartAngleStartTorus)
+			dStopAngleStartTorus += 2.0 * M_PI;
+        while (dStopAngleEndTorus < dStartAngleEndTorus)
+			dStopAngleEndTorus += 2.0 * M_PI;
+        while (dStopAngleMiddleTorus < dStartAngleMiddleTorus)
+			dStopAngleMiddleTorus += 2.0 * M_PI;
+
+        //small radius, start torus
+        LPoint ptCenter = startTorusParams.ptCenter;
+		LCoord nRadius = startTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
+
+        //long radius, middle torus
+        ptCenter = middleTorusParams.ptCenter;
+		nRadius = middleTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
+
+        //small radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
+
+        //long radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
+
+        //small radius, middle torus
+        ptCenter = middleTorusParams.ptCenter;
+		nRadius = middleTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
+
+        //long radius, start torus
+        ptCenter = startTorusParams.ptCenter;
+		nRadius = startTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
+
+        LUpi_LogMessage( "LRL path\n" );
+    }
+    else if(this->type == RLR)
+    {
+        LTorusParams startTorusParams, endTorusParams, middleTorusParams;
+		LTorus_GetParams(this->torusStart, &startTorusParams);
+        LTorus_GetParams(this->torusEnd, &endTorusParams);
+        LTorus_GetParams(this->torusMiddle, &middleTorusParams);
+		double dStartAngleStartTorus = startTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleStartTorus = startTorusParams.dStopAngle * M_PI / 180.0;
+        double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
+        double dStartAngleMiddleTorus = middleTorusParams.dStartAngle * M_PI / 180.0;
+		double dStopAngleMiddleTorus = middleTorusParams.dStopAngle * M_PI / 180.0;
+		while (dStopAngleStartTorus < dStartAngleStartTorus)
+			dStopAngleStartTorus += 2.0 * M_PI;
+        while (dStopAngleEndTorus < dStartAngleEndTorus)
+			dStopAngleEndTorus += 2.0 * M_PI;
+        while (dStopAngleMiddleTorus < dStartAngleMiddleTorus)
+			dStopAngleMiddleTorus += 2.0 * M_PI;
+
+        //small radius, start torus
+        LPoint ptCenter = startTorusParams.ptCenter;
+		LCoord nRadius = startTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
+
+        //long radius, middle torus
+        ptCenter = middleTorusParams.ptCenter;
+		nRadius = middleTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
+
+        //small radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
+
+        //long radius, end torus
+        ptCenter = endTorusParams.ptCenter;
+		nRadius = endTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
+
+        //small radius, middle torus
+        ptCenter = middleTorusParams.ptCenter;
+		nRadius = middleTorusParams.nInnerRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
+
+        //long radius, start torus
+        ptCenter = startTorusParams.ptCenter;
+		nRadius = startTorusParams.nOuterRadius;
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
+
+        LUpi_LogMessage( "RLR path\n" );
     }
 
     if(this->nbPoints > 0)
         LPolygon_New(this->cell, this->layer, this->point_arr, this->nbPoints);
-/*
+
     LObject_Delete( this->cell, this->torusStart );
     LObject_Delete( this->cell, this->torusEnd );
     LObject_Delete( this->cell, this->torusMiddle );
     LObject_Delete( this->cell, this->line );
-*/
+
+
+}
+
+
+void DubinsPath::DrawArc(LPoint center, LCoord radius, double startAngle, double stopAngle, bool isCCW)
+{
+    double dThetaStep = 0;
+    LGrid_v16_30 grid;
+	LFile_GetGrid_v16_30( this->file, &grid );
+    
+    if(isCCW)
+    {
+        this->Add( center.x + radius * cos( startAngle ), center.y + radius * sin( startAngle ) );
+		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
+		for (double dTheta = startAngle; dTheta < stopAngle; dTheta += dThetaStep )
+			this->Add( center.x + radius * cos( dTheta ), center.y + radius * sin( dTheta ) );
+		this->Add( center.x + radius * cos( stopAngle ), center.y + radius * sin( stopAngle ) );
+    }
+    else
+    {
+        this->Add( center.x + radius * cos( stopAngle ), center.y + radius * sin( stopAngle ) );
+		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
+		for (double dTheta = stopAngle; dTheta > startAngle; dTheta -= dThetaStep )
+			this->Add( center.x + radius * cos( dTheta ), center.y + radius * sin( dTheta ) );
+		this->Add( center.x + radius * cos( startAngle ), center.y + radius * sin( startAngle ) );
+    }
 }
 
 
@@ -988,6 +1141,8 @@ void DubinsPath::Add( double x, double y )
 	
 	nLastx = nx;
 	nLasty = ny;
+
+    LUpi_LogMessage( LFormat("nbPoints: %d\n", this->nbPoints) );
 }
 
 

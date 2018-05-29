@@ -4,7 +4,7 @@
 #include <ldata.h>
 #include "DubinsPoint.hpp"
 
-#define MAX_POLYGON_SIZE 5000
+#define MAX_POLYGON_SIZE 10000
 
 enum PathType { RSR, LSL, RSL, LSR, RLR, LRL };
 
@@ -81,6 +81,7 @@ public:
     float GetArcLength(LPoint circleCenter, LPoint point, LPoint tangent, bool isLeftCircle);
 
     void RasterizePath();
+    void DrawArc(LPoint center, LCoord radius, double startAngle, double stopAngle, bool isCCW);
     void Add( double x, double y);
 
 };
