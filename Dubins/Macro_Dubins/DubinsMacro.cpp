@@ -7,8 +7,9 @@
 #include <string>
 
 #include <ldata.h>
+#include <unistd.h> //getcwd
 
-
+#define MAX_LENGTH_PATH 256
 
 #define EXCLUDE_LEDIT_LEGACY_UPI //This statement make the C language macros, which are now superseded by C++ functions, unavailable.
 
@@ -36,6 +37,15 @@ void DubinsMacro()
     char sLayerName[MAX_LAYER_NAME];
     char strLayer[MAX_LAYER_NAME];
 
+    char cwd[MAX_TDBFILE_NAME];
+	char strPath[MAX_LENGTH_PATH];
+    char* token;
+   	FILE * myFile = NULL;
+    char line[256];
+
+    int cpt = 0;
+    int i = 0;
+
     LPoint pLabelLocation;
     double xPosLabel, yPosLabel;
     char startLabelName[MAX_CELL_NAME];
@@ -47,6 +57,8 @@ void DubinsMacro()
 
     double dAngle;
     int nmbLabel = 0;
+    float radius;
+    float width;
 
     strcpy(strLayer, "WGUIDE"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter name of the layer of the active cell in which the guide will be loaded", strLayer) == 0)
@@ -62,146 +74,307 @@ void DubinsMacro()
     LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
     //LDialog_AlertBox(LFormat("The guide will be added in Layer %s", sLayerName));
 
-    LDialogItem DialogItems[2] = {{ "Cell","cell1"}, { "Name","P1"}};
-    if (LDialog_MultiLineInputBox("Start point",DialogItems,2) == 0)
-        return;
-    strcpy(startCellName,DialogItems[0].value);
-    strcpy(startLabelName,DialogItems[1].value);
-
-    LCell startCell = LCell_Find( pFile, startCellName );
-    if(startCell == NULL)
-    {
-        LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\n", startCellName) );
-        return;
-    }
-
-    for(LLabel pLabel = LLabel_GetList(startCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
-	{
-		LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
-		
-        if(strcmp(sLabelName, startLabelName) == 0)
-        {
-            pLabelLocation = LLabel_GetPosition( pLabel );
-            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
-            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
-
-            start.SetPoint(xPosLabel , yPosLabel, pFile);
-
-            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
-            {
-                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
-                {
-                    start.SetAngleDegre( dAngle );
-                }	
-                else
-                    LUpi_LogMessage("Angle GetPropertyValue failed\n");
-            }		
-            else
-            {
-                LUpi_LogMessage("Angle property not found\n");
-            }
-            nmbLabel++;
-            break;
-        }
-	}
-    if(nmbLabel != 1)
-    {
-        LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\n",startLabelName, startCellName) );
-        return;
-    }
-
-
-
-    LDialogItem DialogItemsEnd[2] = {{ "Cell","cell2"}, { "Name","P2"}};
-    if (LDialog_MultiLineInputBox("End point",DialogItemsEnd,2) == 0)
-        return;
-    strcpy(endCellName,DialogItemsEnd[0].value);
-    strcpy(endLabelName,DialogItemsEnd[1].value);
-
-    LCell endCell = LCell_Find( pFile, endCellName );
-    if(endCell == NULL)
-    {
-        LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\n",endCellName) );
-        return;
-    }
-
-    for(LLabel pLabel = LLabel_GetList(endCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
-	{
-		LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
-		
-        if(strcmp(sLabelName, endLabelName) == 0)
-        {
-            pLabelLocation = LLabel_GetPosition( pLabel );
-            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
-            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
-
-            end.SetPoint(xPosLabel , yPosLabel, pFile);
-
-            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
-            {
-                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
-                {
-                    end.SetAngleDegre( dAngle );
-                }	
-                else
-                    LUpi_LogMessage("Angle GetPropertyValue failed\n");
-            }		
-            else
-            {
-                LUpi_LogMessage("Angle property not found\n");
-            }
-            nmbLabel++;
-            break;
-        }
-	}
-
-    if(nmbLabel != 2)
-    {
-        LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\n",endLabelName, endCellName) );
-        return;
-    }
-
-    path.SetFile(pFile);
-    path.SetCell(pCell);
-    path.SetLayer(pLayer);
-
-    path.SetStartPoint(start);
-    path.SetEndPoint(end);
-
-    strcpy(strLayer, "10");
-    if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
-		return;
+    //get the path
+	if (getcwd(cwd, sizeof(cwd)) == NULL)
+		LUpi_LogMessage(LFormat("getcwd() error: %s\n",strerror(errno)));
 	else
-    {
-        float radius = atof(strLayer);
-        path.SetRadius(radius);
-    }
+        LUpi_LogMessage(LFormat("current working directory is: %s\n", strcat (cwd,"\\")));
 
-    strcpy(strLayer, "1");
-    if ( LDialog_InputBox("Guide width", "Select the radius of the circles in microns", strLayer) == 0)
-		return;
-	else
-    {
-        float width = atof(strLayer);
-        LUpi_LogMessage( LFormat("width %f\n",width) );
-        path.SetGuideWidth(width);
-    }
+    strcpy(strPath,"guideFile.csv");
+    LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv||", pFile );
+	strPath[strlen(strPath)-2]='\0'; //delete the last 2 char of the string ("|0")
     
-    if(start.GetAngleRadian() == end.GetAngleRadian() && atan2(end.GetPoint().y-start.GetPoint().y , end.GetPoint().x-start.GetPoint().x) == start.GetAngleRadian()) //draw only a ligne
-        path.DrawLine();
-    else if(start.GetPoint().x == end.GetPoint().x && start.GetPoint().y == end.GetPoint().y)
-        if(start.GetAngleRadian() == end.GetAngleRadian())
-            LUpi_LogMessage( LFormat("Warning: start and end points are identical\n") );
-        else
-            LDialog_AlertBox(LFormat("ERROR:  start and end points are identical but with a different angle."));
+    if (strPath != NULL)
+   	{
+        LFile_GetResolvedFileName( pFile, strPath, cwd, MAX_TDBFILE_NAME ); //get the absolute path of strPath in cwd
+        myFile = fopen(cwd,"r");
+    }
+
+    if(myFile != NULL)
+    {
+        while(!feof(myFile))
+		{
+            nmbLabel = 0;
+			// reads text until new line 
+			fscanf(myFile,"%[^\n]", line);
+			LUpi_LogMessage(LFormat("READ LINE: %s\n", line));
+			cpt=0;
+			for(i=0; i<strlen(line);i++)
+			{
+				if(line[i]==',') //count the number of ',' to know what kind of shape it is
+					cpt++;
+			}
+
+			token = strtok(line, ","); //first string before the first ',' of line
+
+			if(cpt == 6) //guide,cell1,P1,cell2,P2,radius,width
+			{
+                token = strtok(NULL, ","); //next token
+                strcpy(startCellName,token);
+                token = strtok(NULL, ",");
+                strcpy(startLabelName,token);
+                token = strtok(NULL, ",");
+                strcpy(endCellName,token);
+                token = strtok(NULL, ",");
+                strcpy(endLabelName,token);
+                token = strtok(NULL, ",");
+                radius = atof(token);
+                token = strtok(NULL, ",");
+                width = atof(token);
+            }
+
+            LCell startCell = LCell_Find( pFile, startCellName );
+            if(startCell == NULL)
+            {
+                LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\nInstruction will not be executed \n", startCellName) );
+                continue;
+            }
+
+            for(LLabel pLabel = LLabel_GetList(startCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+            {
+                LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+                
+                if(strcmp(sLabelName, startLabelName) == 0)
+                {
+                    pLabelLocation = LLabel_GetPosition( pLabel );
+                    xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+                    yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+
+                    start.SetPoint(xPosLabel , yPosLabel, pFile);
+
+                    if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+                    {
+                        if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                        {
+                            start.SetAngleDegre( dAngle );
+                        }	
+                        else
+                            LUpi_LogMessage("Angle GetPropertyValue failed\n");
+                    }		
+                    else
+                    {
+                        LUpi_LogMessage("Angle property not found\n");
+                    }
+                    nmbLabel++;
+                }
+                
+                LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+                LUpi_LogMessage( LFormat("TEST: %s\n",sLabelName) );
+                
+            }
+            if(nmbLabel != 1)
+            {
+                LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",startLabelName, startCellName) );
+                continue;
+            }
+            LCell endCell = LCell_Find( pFile, endCellName );
+
+            if(endCell == NULL)
+            {
+                LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\nInstruction will not be executed \n",endCellName) );
+                continue;
+            }
+
+            for(LLabel pLabel = LLabel_GetList(endCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+            {
+                LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+                
+                if(strcmp(sLabelName, endLabelName) == 0)
+                {
+                    pLabelLocation = LLabel_GetPosition( pLabel );
+                    xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+                    yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+
+                    end.SetPoint(xPosLabel , yPosLabel, pFile);
+
+                    if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+                    {
+                        if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                        {
+                            end.SetAngleDegre( dAngle );
+                        }	
+                        else
+                            LUpi_LogMessage("Angle GetPropertyValue failed\n");
+                    }		
+                    else
+                    {
+                        LUpi_LogMessage("Angle property not found\n");
+                    }
+                    nmbLabel++;
+                    break;
+                }
+            }
+
+            if(nmbLabel != 2)
+            {
+                LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",endLabelName, endCellName) );
+                continue;
+            }
+
+            path.SetFile(pFile);
+            path.SetCell(pCell);
+            path.SetLayer(pLayer);
+
+            path.SetStartPoint(start);
+            path.SetEndPoint(end);
+            path.SetRadius(radius);
+            path.SetGuideWidth(width);
+            
+            if(start.GetAngleRadian() == end.GetAngleRadian() && atan2(end.GetPoint().y-start.GetPoint().y , end.GetPoint().x-start.GetPoint().x) == start.GetAngleRadian()) //draw only a ligne
+                path.DrawLine();
+            else if(start.GetPoint().x == end.GetPoint().x && start.GetPoint().y == end.GetPoint().y)
+                if(start.GetAngleRadian() == end.GetAngleRadian())
+                    LUpi_LogMessage( LFormat("Warning: start and end points are identical\n") );
+                else
+                    LDialog_AlertBox(LFormat("ERROR:  start and end points are identical but with a different angle."));
+            else
+            {
+                path.ComputeDubinsPaths();
+                path.RasterizePath();
+            }
+
+            fscanf(myFile,"\n"); //got o the next line
+        }
+        fclose(myFile);
+    }
     else
     {
-        path.ComputeDubinsPaths();
-        path.RasterizePath();
+        LDialog_AlertBox(LFormat("No file found: manual selection"));
+        LDialogItem DialogItems[2] = {{ "Cell","cell1"}, { "Name","P1"}};
+        if (LDialog_MultiLineInputBox("Start point",DialogItems,2) == 0)
+            return;
+        strcpy(startCellName,DialogItems[0].value);
+        strcpy(startLabelName,DialogItems[1].value);
+
+        LCell startCell = LCell_Find( pFile, startCellName );
+        if(startCell == NULL)
+        {
+            LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\n", startCellName) );
+            return;
+        }
+
+        for(LLabel pLabel = LLabel_GetList(startCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+        {
+            LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+            
+            if(strcmp(sLabelName, startLabelName) == 0)
+            {
+                pLabelLocation = LLabel_GetPosition( pLabel );
+                xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+                yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+
+                start.SetPoint(xPosLabel , yPosLabel, pFile);
+
+                if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+                {
+                    if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                    {
+                        start.SetAngleDegre( dAngle );
+                    }	
+                    else
+                        LUpi_LogMessage("Angle GetPropertyValue failed\n");
+                }		
+                else
+                {
+                    LUpi_LogMessage("Angle property not found\n");
+                }
+                nmbLabel++;
+                break;
+            }
+        }
+        if(nmbLabel != 1)
+        {
+            LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\n",startLabelName, startCellName) );
+            return;
+        }
+
+
+
+        LDialogItem DialogItemsEnd[2] = {{ "Cell","cell2"}, { "Name","P2"}};
+        if (LDialog_MultiLineInputBox("End point",DialogItemsEnd,2) == 0)
+            return;
+        strcpy(endCellName,DialogItemsEnd[0].value);
+        strcpy(endLabelName,DialogItemsEnd[1].value);
+
+        LCell endCell = LCell_Find( pFile, endCellName );
+        if(endCell == NULL)
+        {
+            LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\n",endCellName) );
+            return;
+        }
+
+        for(LLabel pLabel = LLabel_GetList(endCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+        {
+            LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+            
+            if(strcmp(sLabelName, endLabelName) == 0)
+            {
+                pLabelLocation = LLabel_GetPosition( pLabel );
+                xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+                yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+
+                end.SetPoint(xPosLabel , yPosLabel, pFile);
+
+                if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+                {
+                    if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                    {
+                        end.SetAngleDegre( dAngle );
+                    }	
+                    else
+                        LUpi_LogMessage("Angle GetPropertyValue failed\n");
+                }		
+                else
+                {
+                    LUpi_LogMessage("Angle property not found\n");
+                }
+                nmbLabel++;
+                break;
+            }
+        }
+
+        if(nmbLabel != 2)
+        {
+            LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\n",endLabelName, endCellName) );
+            return;
+        }
+
+        strcpy(strLayer, "10");
+        if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
+            return;
+        else
+            radius = atof(strLayer);
+
+        strcpy(strLayer, "1");
+        if ( LDialog_InputBox("Guide width", "Select the radius of the circles in microns", strLayer) == 0)
+            return;
+        else
+            width = atof(strLayer);
+        
+        path.SetFile(pFile);
+        path.SetCell(pCell);
+        path.SetLayer(pLayer);
+
+        path.SetStartPoint(start);
+        path.SetEndPoint(end);
+        path.SetRadius(radius);
+        path.SetGuideWidth(width);
+        
+        if(start.GetAngleRadian() == end.GetAngleRadian() && atan2(end.GetPoint().y-start.GetPoint().y , end.GetPoint().x-start.GetPoint().x) == start.GetAngleRadian()) //draw only a ligne
+            path.DrawLine();
+        else if(start.GetPoint().x == end.GetPoint().x && start.GetPoint().y == end.GetPoint().y)
+            if(start.GetAngleRadian() == end.GetAngleRadian())
+                LUpi_LogMessage( LFormat("Warning: start and end points are identical\n") );
+            else
+                LDialog_AlertBox(LFormat("ERROR:  start and end points are identical but with a different angle."));
+        else
+        {
+            path.ComputeDubinsPaths();
+            path.RasterizePath();
+        }
     }
 
     LUpi_LogMessage( "Macro FIN\n" );
-
 }
 
 int UPI_Entry_Point(void)
