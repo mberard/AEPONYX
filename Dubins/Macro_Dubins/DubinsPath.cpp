@@ -1140,7 +1140,7 @@ void DubinsPath::Add( double x, double y )
 	nLastx = nx;
 	nLasty = ny;
 
-    LUpi_LogMessage( LFormat("nbPoints: %d\n", this->nbPoints) );
+    //LUpi_LogMessage( LFormat("nbPoints: %d\n", this->nbPoints) );
 }
 
 

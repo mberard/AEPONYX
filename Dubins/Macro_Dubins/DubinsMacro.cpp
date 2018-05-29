@@ -167,9 +167,25 @@ void DubinsMacro()
 
     path.SetStartPoint(start);
     path.SetEndPoint(end);
-    path.SetRadius(10);
 
-    path.SetGuideWidth(1);
+    strcpy(strLayer, "10");
+    if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
+		return;
+	else
+    {
+        float radius = atof(strLayer);
+        path.SetRadius(radius);
+    }
+
+    strcpy(strLayer, "1");
+    if ( LDialog_InputBox("Guide width", "Select the radius of the circles in microns", strLayer) == 0)
+		return;
+	else
+    {
+        float width = atof(strLayer);
+        LUpi_LogMessage( LFormat("width %f\n",width) );
+        path.SetGuideWidth(width);
+    }
     
     if(start.GetAngleRadian() == end.GetAngleRadian() && atan2(end.GetPoint().y-start.GetPoint().y , end.GetPoint().x-start.GetPoint().x) == start.GetAngleRadian()) //draw only a ligne
         path.DrawLine();
