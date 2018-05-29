@@ -156,10 +156,8 @@ void DubinsMacro()
                         LUpi_LogMessage("Angle property not found\n");
                     }
                     nmbLabel++;
+                    break;
                 }
-                
-                LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
-                LUpi_LogMessage( LFormat("TEST: %s\n",sLabelName) );
                 
             }
             if(nmbLabel != 1)
