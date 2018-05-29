@@ -41,9 +41,13 @@ void DubinsMacro()
     double xPosLabel, yPosLabel;
     char startLabelName[MAX_CELL_NAME];
     char endLabelName[MAX_CELL_NAME];
-    char value_buffer[MAX_CELL_NAME];
     char* token;
     char sLabelName[MAX_CELL_NAME];
+
+    char startCellName[MAX_CELL_NAME];
+    char endCellName[MAX_CELL_NAME];
+    char sCellName[MAX_CELL_NAME];
+
     double dAngle;
     int nmbLabel = 0;
 
@@ -61,16 +65,20 @@ void DubinsMacro()
     LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
     //LDialog_AlertBox(LFormat("The guide will be added in Layer %s", sLayerName));
 
-    strcpy(value_buffer, "start;end");
-    if ( LDialog_InputBox("Start/end points", "Enter the name of the start and end label separate by ';'", value_buffer) == 0)
+    LDialogItem DialogItems[2] = {{ "Cell","cell1"}, { "Name","P1"}};
+    if (LDialog_MultiLineInputBox("Start point",DialogItems,2) == 0)
         return;
+    strcpy(startCellName,DialogItems[0].value);
+    strcpy(startLabelName,DialogItems[1].value);
 
-    token = strtok(value_buffer, ";");
-    strcpy(startLabelName, token);
-    token = strtok(NULL , ";");
-    strcpy(endLabelName, token);
+    LCell startCell = LCell_Find( pFile, startCellName );
+    if(startCell == NULL)
+    {
+        LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\n", startCellName) );
+        return;
+    }
 
-    for(LLabel pLabel = LLabel_GetList(pCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+    for(LLabel pLabel = LLabel_GetList(startCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
 	{
 		LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
 		
@@ -95,10 +103,36 @@ void DubinsMacro()
             {
                 LUpi_LogMessage("Angle property not found\n");
             }
-
             nmbLabel++;
+            break;
         }
-        else if(strcmp(sLabelName, endLabelName) == 0)
+	}
+    if(nmbLabel != 1)
+    {
+        LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\n",startLabelName, startCellName) );
+        return;
+    }
+    
+
+
+    LDialogItem DialogItemsEnd[2] = {{ "Cell","cell2"}, { "Name","P2"}};
+    if (LDialog_MultiLineInputBox("End point",DialogItemsEnd,2) == 0)
+        return;
+    strcpy(endCellName,DialogItemsEnd[0].value);
+    strcpy(endLabelName,DialogItemsEnd[1].value);
+
+    LCell endCell = LCell_Find( pFile, endCellName );
+    if(endCell == NULL)
+    {
+        LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\n",endCellName) );
+        return;
+    }
+
+    for(LLabel pLabel = LLabel_GetList(endCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+	{
+		LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+		
+        if(strcmp(sLabelName, endLabelName) == 0)
         {
             pLabelLocation = LLabel_GetPosition( pLabel );
             xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
@@ -119,14 +153,14 @@ void DubinsMacro()
             {
                 LUpi_LogMessage("Angle property not found\n");
             }
-
             nmbLabel++;
+            break;
         }
 	}
 
     if(nmbLabel != 2)
     {
-        LUpi_LogMessage( LFormat("ERROR: %d LLabel(s) found instead of 2\n",nmbLabel) );
+        LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\n",endLabelName, endCellName) );
         return;
     }
 
