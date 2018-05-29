@@ -237,7 +237,7 @@ void DubinsMacro()
         }
         fclose(myFile);
     }
-    else
+    else //manual selection
     {
         LDialog_AlertBox(LFormat("No file found: manual selection"));
         LDialogItem DialogItems[2] = {{ "Cell","cell1"}, { "Name","P1"}};
@@ -346,7 +346,7 @@ void DubinsMacro()
             radius = atof(strLayer);
 
         strcpy(strLayer, "1");
-        if ( LDialog_InputBox("Guide width", "Select the radius of the circles in microns", strLayer) == 0)
+        if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
             return;
         else
             width = atof(strLayer);
