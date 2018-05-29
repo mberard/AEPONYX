@@ -836,9 +836,7 @@ void DubinsPath::StoreLRLPath()
 
 void DubinsPath::RasterizePath()
 {
-    double dThetaStep = 0;
-    LGrid_v16_30 grid;
-	LFile_GetGrid_v16_30( this->file, &grid );
+    
     this->nbPoints = 0;
 
     if(this->type == RSL)

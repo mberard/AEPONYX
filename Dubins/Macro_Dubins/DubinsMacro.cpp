@@ -36,23 +36,20 @@ void DubinsMacro()
     char sLayerName[MAX_LAYER_NAME];
     char strLayer[MAX_LAYER_NAME];
 
-    LLabel startLabel, endLabel;
     LPoint pLabelLocation;
     double xPosLabel, yPosLabel;
     char startLabelName[MAX_CELL_NAME];
     char endLabelName[MAX_CELL_NAME];
-    char* token;
     char sLabelName[MAX_CELL_NAME];
 
     char startCellName[MAX_CELL_NAME];
     char endCellName[MAX_CELL_NAME];
-    char sCellName[MAX_CELL_NAME];
 
     double dAngle;
     int nmbLabel = 0;
 
     strcpy(strLayer, "WGUIDE"); //preloaded text in the dialog box
-	if ( LDialog_InputBox("Layer", "Enter name of the layer in which the guide will be loaded", strLayer) == 0)
+	if ( LDialog_InputBox("Layer", "Enter name of the layer of the active cell in which the guide will be loaded", strLayer) == 0)
 		return;
 	else
 		pLayer = LLayer_Find(pFile, strLayer);
@@ -112,7 +109,7 @@ void DubinsMacro()
         LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\n",startLabelName, startCellName) );
         return;
     }
-    
+
 
 
     LDialogItem DialogItemsEnd[2] = {{ "Cell","cell2"}, { "Name","P2"}};
