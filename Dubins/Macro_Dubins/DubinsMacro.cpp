@@ -126,6 +126,7 @@ void DubinsMacro()
             LCell startCell = LCell_Find( pFile, startCellName );
             if(startCell == NULL)
             {
+                fscanf(myFile,"\n"); //got to the next line
                 LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\nInstruction will not be executed \n", startCellName) );
                 continue;
             }
@@ -162,6 +163,7 @@ void DubinsMacro()
             }
             if(nmbLabel != 1)
             {
+                fscanf(myFile,"\n"); //got to the next line
                 LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",startLabelName, startCellName) );
                 continue;
             }
@@ -169,6 +171,7 @@ void DubinsMacro()
 
             if(endCell == NULL)
             {
+                fscanf(myFile,"\n"); //got to the next line
                 LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\nInstruction will not be executed \n",endCellName) );
                 continue;
             }
@@ -205,6 +208,7 @@ void DubinsMacro()
 
             if(nmbLabel != 2)
             {
+                fscanf(myFile,"\n"); //got to the next line
                 LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",endLabelName, endCellName) );
                 continue;
             }
@@ -231,7 +235,7 @@ void DubinsMacro()
                 path.RasterizePath();
             }
 
-            fscanf(myFile,"\n"); //got o the next line
+            fscanf(myFile,"\n"); //got to the next line
         }
         fclose(myFile);
     }
