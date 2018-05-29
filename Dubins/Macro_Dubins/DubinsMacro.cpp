@@ -150,11 +150,16 @@ void DubinsMacro()
                             start.SetAngleDegre( dAngle );
                         }	
                         else
-                            LUpi_LogMessage("Angle GetPropertyValue failed\n");
+                        {
+                            start.SetAngleDegre( 0 );
+                            LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+                        }
+                            
                     }		
                     else
                     {
-                        LUpi_LogMessage("Angle property not found\n");
+                        start.SetAngleDegre( 0 );
+                        LUpi_LogMessage("Angle property not found, 0 by default\n");
                     }
                     nmbLabel++;
                     break;
@@ -195,11 +200,15 @@ void DubinsMacro()
                             end.SetAngleDegre( dAngle );
                         }	
                         else
-                            LUpi_LogMessage("Angle GetPropertyValue failed\n");
+                        {
+                            end.SetAngleDegre( 0 );
+                            LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+                        }
                     }		
                     else
                     {
-                        LUpi_LogMessage("Angle property not found\n");
+                        end.SetAngleDegre( 0 );
+                        LUpi_LogMessage("Angle property not found, 0 by default\n");
                     }
                     nmbLabel++;
                     break;
@@ -274,11 +283,16 @@ void DubinsMacro()
                         start.SetAngleDegre( dAngle );
                     }	
                     else
-                        LUpi_LogMessage("Angle GetPropertyValue failed\n");
+                    {
+                        start.SetAngleDegre( 0 );
+                        LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+                    }
+                        
                 }		
                 else
                 {
-                    LUpi_LogMessage("Angle property not found\n");
+                    start.SetAngleDegre( 0 );
+                    LUpi_LogMessage("Angle property not found, 0 by default\n");
                 }
                 nmbLabel++;
                 break;
@@ -324,11 +338,16 @@ void DubinsMacro()
                         end.SetAngleDegre( dAngle );
                     }	
                     else
-                        LUpi_LogMessage("Angle GetPropertyValue failed\n");
+                    {
+                        end.SetAngleDegre( 0 );
+                        LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+                    }
+                        
                 }		
                 else
                 {
-                    LUpi_LogMessage("Angle property not found\n");
+                    end.SetAngleDegre( 0 );
+                    LUpi_LogMessage("Angle property not found, 0 by default\n");
                 }
                 nmbLabel++;
                 break;
