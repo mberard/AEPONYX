@@ -20,8 +20,42 @@ extern "C" {
     #include "DubinsPath.cpp"
     #include "DubinsPoint.cpp"
 
+    bool twoLabelsHasBeenSelected(void);
     void DubinsMacro(void);
 	int UPI_Entry_Point(void);
+}
+
+bool twoLabelsHasBeenSelected()
+{
+    char strName[MAX_CELL_NAME];
+    LSelection pSelection = LSelection_GetList();
+    if(pSelection == NULL)
+        return false;
+    else
+    {
+        int cpt = 0;
+        for(pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
+        {
+            LObject object = LSelection_GetObject(pSelection);
+            if(LObject_GetShape(object) == LObjLabel)
+            {
+                cpt = cpt +1;
+                LUpi_LogMessage( LFormat("%s\n",LLabel_GetName( (LLabel)object, strName, MAX_CELL_NAME ) ) );
+            }
+            else
+            {
+                LUpi_LogMessage( "A non label object has been selected ==> manual selection\n" );
+                return false;
+            }
+        }
+        if(cpt == 2)
+            return true;
+        else
+        {
+            LUpi_LogMessage( LFormat("Need to select exactly 2 labels: %d selected ==> manual selection\n",cpt) );
+            return false;
+        }
+    }
 }
 
 void DubinsMacro()
@@ -269,6 +303,102 @@ void DubinsMacro()
         }
         fclose(myFile);
     }
+
+
+
+
+
+    else if( twoLabelsHasBeenSelected() )
+    {
+        LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));
+        LSelection pSelection = LSelection_GetList() ;
+
+        LObject object = LSelection_GetObject(pSelection); //first label is the second one selected
+        LLabel pLabel = (LLabel)object;
+
+        pLabelLocation = LLabel_GetPosition( pLabel );
+        xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+        yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+        end.SetPoint(xPosLabel , yPosLabel, pFile);
+        if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+        {
+            if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+            {
+                end.SetAngleDegre( dAngle );
+            }	
+            else
+            {
+                end.SetAngleDegre( 0 );
+                LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+            }
+        }		
+        else
+        {
+            end.SetAngleDegre( 0 );
+            LUpi_LogMessage("Angle property not found, 0 by default\n");
+        }
+
+        pSelection = LSelection_GetNext(pSelection); //second label is the first one selected
+        object = LSelection_GetObject(pSelection);
+        pLabel = (LLabel)object;
+
+        pLabelLocation = LLabel_GetPosition( pLabel );
+        xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+        yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+        start.SetPoint(xPosLabel , yPosLabel, pFile);
+        if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+        {
+            if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+            {
+                start.SetAngleDegre( dAngle );
+            }	
+            else
+            {
+                start.SetAngleDegre( 0 );
+                LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+            }
+        }		
+        else
+        {
+            start.SetAngleDegre( 0 );
+            LUpi_LogMessage("Angle property not found, 0 by default\n");
+        }
+        strcpy(strLayer, "10");
+        if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
+            return;
+        else
+            radius = atof(strLayer);
+
+        strcpy(strLayer, "1");
+        if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
+            return;
+        else
+            width = atof(strLayer);
+
+        path.SetStartPoint(start);
+        path.SetEndPoint(end);
+        path.SetRadius(radius);
+        path.SetGuideWidth(width);
+        
+        if(start.GetAngleRadian() == end.GetAngleRadian() && atan2(end.GetPoint().y-start.GetPoint().y , end.GetPoint().x-start.GetPoint().x) == start.GetAngleRadian()) //draw only a ligne
+            path.DrawLine();
+        else if(start.GetPoint().x == end.GetPoint().x && start.GetPoint().y == end.GetPoint().y)
+            if(start.GetAngleRadian() == end.GetAngleRadian())
+                LUpi_LogMessage( LFormat("Warning: start and end points are identical\n") );
+            else
+                LDialog_AlertBox(LFormat("ERROR:  start and end points are identical but with a different angle."));
+        else
+        {
+            path.ComputeDubinsPaths();
+            path.RasterizePath();
+        }
+
+    }
+
+
+
+
+
     else //manual selection
     {
         LDialog_AlertBox(LFormat("No file found: manual selection"));
