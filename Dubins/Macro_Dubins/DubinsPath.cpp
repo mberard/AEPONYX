@@ -11,26 +11,26 @@ LStatus DubinsPath::UpdateCircleCenter(){
 
     Dcenter.x = startPoint.GetPoint().x + radius*cos(startPoint.GetAngleRadian() - M_PI/2.0);
     Dcenter.y = startPoint.GetPoint().y + radius*sin(startPoint.GetAngleRadian() - M_PI/2.0);
-    Lcenter.x = Dcenter.x;
-    Lcenter.y = Dcenter.y;
+    Lcenter.x = Dcenter.x + this->offsetValue * cos(startPoint.GetAngleRadian() );
+    Lcenter.y = Dcenter.y - this->offsetValue * sin(startPoint.GetAngleRadian() );
     this->centerStartRightCircle = Lcenter;
 
     Dcenter.x = startPoint.GetPoint().x + radius*cos(startPoint.GetAngleRadian() + M_PI/2.0);
     Dcenter.y = startPoint.GetPoint().y + radius*sin(startPoint.GetAngleRadian() + M_PI/2.0);
-    Lcenter.x = Dcenter.x;
-    Lcenter.y = Dcenter.y;
+    Lcenter.x = Dcenter.x - this->offsetValue * sin(startPoint.GetAngleRadian() );
+    Lcenter.y = Dcenter.y + this->offsetValue * cos(startPoint.GetAngleRadian() );
     this->centerStartLeftCircle = Lcenter;
 
     Dcenter.x = endPoint.GetPoint().x + radius*cos(endPoint.GetAngleRadian() - M_PI/2.0);
     Dcenter.y = endPoint.GetPoint().y + radius*sin(endPoint.GetAngleRadian() - M_PI/2.0);
-    Lcenter.x = Dcenter.x;
-    Lcenter.y = Dcenter.y;
+    Lcenter.x = Dcenter.x + this->offsetValue * sin(endPoint.GetAngleRadian() );;
+    Lcenter.y = Dcenter.y - this->offsetValue * cos(endPoint.GetAngleRadian() );;
     this->centerEndRightCircle = Lcenter;
 
     Dcenter.x = endPoint.GetPoint().x + radius*cos(endPoint.GetAngleRadian() + M_PI/2.0);
     Dcenter.y = endPoint.GetPoint().y + radius*sin(endPoint.GetAngleRadian() + M_PI/2.0);
-    Lcenter.x = Dcenter.x;
-    Lcenter.y = Dcenter.y;
+    Lcenter.x = Dcenter.x - this->offsetValue * cos(endPoint.GetAngleRadian() );;
+    Lcenter.y = Dcenter.y + this->offsetValue * sin(endPoint.GetAngleRadian() );;
     this->centerEndLeftCircle = Lcenter;
     
     return LStatusOK;
@@ -83,6 +83,17 @@ LStatus DubinsPath::SetCell(LCell cell){
 LStatus DubinsPath::SetLayer(LLayer layer){
     this->layer = layer;
     return LStatusOK;
+}
+
+LStatus DubinsPath::SetOffsetCurveIsSelected(bool choice){
+    this->offsetCurveIsSelected = choice;
+    return this->UpdateCircleCenter();
+}
+
+LStatus DubinsPath::SetOffsetValue(double value){
+    value = LFile_MicronsToIntU( this->file, value );
+    this->offsetValue = value;
+    return this->UpdateCircleCenter();
 }
 
 LFile DubinsPath::GetFile(){
@@ -341,7 +352,7 @@ LUpi_LogMessage( LFormat("LSL distance %f\n",returnDistance) );
     double circleDistanceSqr = PointDistance(this->centerEndLeftCircle, this->centerStartRightCircle) * PointDistance(this->centerEndLeftCircle, this->centerStartRightCircle);
     double comparaisonDistanceSqr = (2*this->radius)*(2*this->radius);
     //RSL
-    if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
+    if( circleDistanceSqr >= comparaisonDistanceSqr ) //circle don't intersect
     {
         this->GetRSLorLSRTangent(this->centerStartRightCircle, this->centerEndLeftCircle, false);
 
@@ -358,7 +369,7 @@ LUpi_LogMessage( LFormat("RSL distance %lf\n",returnDistance) );
     circleDistanceSqr = PointDistance(this->centerEndRightCircle, this->centerStartLeftCircle) * PointDistance(this->centerEndRightCircle, this->centerStartLeftCircle);
 
     //LSR
-    if( circleDistanceSqr > comparaisonDistanceSqr ) //circle don't intersect
+    if( circleDistanceSqr >= comparaisonDistanceSqr ) //circle don't intersect
     {
         this->GetRSLorLSRTangent(this->centerStartLeftCircle, this->centerEndRightCircle, true);
          
@@ -948,7 +959,7 @@ void DubinsPath::RasterizePath()
 		nRadius = startTorusParams.nOuterRadius;
         this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
 
-        LUpi_LogMessage( "RSR path\n" );
+        LUpi_LogMessage( "LSL path\n" );
     }
     else if(this->type == RSR)
     {
@@ -984,7 +995,7 @@ void DubinsPath::RasterizePath()
 		nRadius = endTorusParams.nInnerRadius;
         this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
 
-        LUpi_LogMessage( "LSL path\n" );
+        LUpi_LogMessage( "RSR path\n" );
     }
     else if(this->type == LRL)
     {

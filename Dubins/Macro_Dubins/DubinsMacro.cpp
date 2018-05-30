@@ -46,6 +46,8 @@ void DubinsMacro()
     int cpt = 0;
     int i = 0;
 
+    char value_offset[50];
+
     LPoint pLabelLocation;
     double xPosLabel, yPosLabel;
     char startLabelName[MAX_CELL_NAME];
@@ -90,6 +92,29 @@ void DubinsMacro()
         myFile = fopen(cwd,"r");
     }
 
+    path.SetFile(pFile);
+    path.SetCell(pCell);
+    path.SetLayer(pLayer);
+
+    if ( LDialog_YesNoBox("Do you want to offset the curves?") )
+    {
+        /*Yes is clicked*/
+        path.SetOffsetCurveIsSelected(true);
+        strcpy(value_offset, "0.03");
+        if ( LDialog_InputBox("Offset", "Enter the value of the offset (in microns)", value_offset) == LCANCEL)
+            path.SetOffsetValue(0);
+        else
+        {
+            path.SetOffsetValue( atof(value_offset) );
+        }
+    }
+    else 
+    {
+        /*No is clicked*/
+        path.SetOffsetCurveIsSelected(false);
+        path.SetOffsetValue(0);
+    }
+
     if(myFile != NULL)
     {
         while(!feof(myFile))
@@ -97,7 +122,7 @@ void DubinsMacro()
             nmbLabel = 0;
 			// reads text until new line 
 			fscanf(myFile,"%[^\n]", line);
-			LUpi_LogMessage(LFormat("READ LINE: %s\n", line));
+			LUpi_LogMessage(LFormat("Read line: %s\n", line));
 			cpt=0;
 			for(i=0; i<strlen(line);i++)
 			{
@@ -221,10 +246,6 @@ void DubinsMacro()
                 LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",endLabelName, endCellName) );
                 continue;
             }
-
-            path.SetFile(pFile);
-            path.SetCell(pCell);
-            path.SetLayer(pLayer);
 
             path.SetStartPoint(start);
             path.SetEndPoint(end);
@@ -371,10 +392,6 @@ void DubinsMacro()
             return;
         else
             width = atof(strLayer);
-        
-        path.SetFile(pFile);
-        path.SetCell(pCell);
-        path.SetLayer(pLayer);
 
         path.SetStartPoint(start);
         path.SetEndPoint(end);

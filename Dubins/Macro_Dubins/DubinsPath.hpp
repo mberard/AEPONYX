@@ -34,6 +34,9 @@ private:
     LPoint startTangent;
     LPoint endTangent;
 
+    bool offsetCurveIsSelected;
+    double offsetValue;
+
     LPoint point_arr[MAX_POLYGON_SIZE];
     int nbPoints;
 
@@ -53,6 +56,9 @@ public:
     LStatus SetFile(LFile file);
     LStatus SetCell(LCell cell);
     LStatus SetLayer(LLayer layer);
+    LStatus SetOffsetCurveIsSelected(bool choice);
+    LStatus SetOffsetValue(double value);
+
     LFile GetFile();
     LCell GetCell();
     LLayer GetLayer();
