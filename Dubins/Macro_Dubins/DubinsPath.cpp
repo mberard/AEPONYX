@@ -323,7 +323,7 @@ void DubinsPath::ComputeDubinsPaths(){
     LPoint shortestStartTangent, shortestEndTangent, shortestMiddleCenter;
 
     shortestDistance = 9999999999999999.9999;
-/*
+
     //RSR
     if( ! (xStart == xEnd && yStart == yEnd) ) //not the same circle == start and endpoint are different
     {
@@ -356,11 +356,10 @@ LUpi_LogMessage( LFormat("LSL distance %f\n",returnDistance) );
             shortestEndTangent = this->endTangent;
         }
     }
-*/
 
     double circleDistanceSqr = PointDistance(this->centerEndLeftCircle, this->centerStartRightCircle) * PointDistance(this->centerEndLeftCircle, this->centerStartRightCircle);
     double comparaisonDistanceSqr = (2*this->radius)*(2*this->radius);
-/*
+
     //RSL
     if( circleDistanceSqr >= comparaisonDistanceSqr ) //circle don't intersect
     {
@@ -392,11 +391,11 @@ LUpi_LogMessage( LFormat("LSR distance %f\n",returnDistance) );
             shortestEndTangent = this->endTangent;
         }
     }
-*/
+
 
     comparaisonDistanceSqr = (4*this->radius)*(4*this->radius);
     //RLR
-/*    if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
+    if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
     {
         this->GetRLRorLRLTangent(this->centerStartRightCircle, this->centerEndRightCircle, false);
 
@@ -410,7 +409,7 @@ LUpi_LogMessage( LFormat("RLR distance %f\n",returnDistance) );
             shortestMiddleCenter = this->centerMiddleCircle;
         }
     } 
-*/
+
     //LRL
     if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
     {
@@ -858,7 +857,9 @@ void DubinsPath::StoreLRLPath()
 
 void DubinsPath::RasterizePath()
 {
-    
+    bool startTorusExist, endTorusExist;
+    LPoint ptCenter;
+    LCoord nRadius;
     this->nbPoints = 0;
 
     if(this->type == RSL)
@@ -872,34 +873,73 @@ void DubinsPath::RasterizePath()
         double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
 		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
 
+        if(startTorusParams.dStartAngle == 0.001 && startTorusParams.dStopAngle == 0.002)
+            startTorusExist = false;
+        else
+            startTorusExist = true;
+        if(endTorusParams.dStartAngle == 0.001 && endTorusParams.dStopAngle == 0.002)
+            endTorusExist = false;
+        else
+            endTorusExist = true;
+
 		while (dStopAngleStartTorus < dStartAngleStartTorus)
 			dStopAngleStartTorus += 2.0 * M_PI;
         while (dStopAngleEndTorus < dStartAngleEndTorus)
 			dStopAngleEndTorus += 2.0 * M_PI;
 
         //small radius, start torus
-        LPoint ptCenter = startTorusParams.ptCenter;
-		LCoord nRadius = startTorusParams.nInnerRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+        if(startTorusExist)
+        {
+            ptCenter = startTorusParams.ptCenter;
+            nRadius = startTorusParams.nInnerRadius;
+            this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("Start radius does not exist"));
+        }
 
         //long radius, start torus
-        ptCenter = startTorusParams.ptCenter;
-		nRadius = startTorusParams.nOuterRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
-
+        if(startTorusExist)
+        {
+            ptCenter = startTorusParams.ptCenter;
+            nRadius = startTorusParams.nOuterRadius;
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+            this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("Start radius does not exist"));
+        }
+        
         //small radius, end torus
-        ptCenter = endTorusParams.ptCenter;
-		nRadius = endTorusParams.nInnerRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+        if(endTorusExist)
+        {
+            ptCenter = endTorusParams.ptCenter;
+            nRadius = endTorusParams.nInnerRadius;
+            this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("End radius does not exist"));
+        }
+        
 
         //long radius, end torus
-        ptCenter = endTorusParams.ptCenter;
-		nRadius = endTorusParams.nOuterRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+        if(endTorusExist)
+        {
+            ptCenter = endTorusParams.ptCenter;
+            nRadius = endTorusParams.nOuterRadius;
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+            this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("End radius does not exist"));
+        }
+        
 
         LUpi_LogMessage( "RSL path\n" );
     }
@@ -913,34 +953,76 @@ void DubinsPath::RasterizePath()
 		double dStopAngleStartTorus = startTorusParams.dStopAngle * M_PI / 180.0;
         double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
 		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
+
+        if(startTorusParams.dStartAngle == 0.001 && startTorusParams.dStopAngle == 0.002)
+            startTorusExist = false;
+        else
+            startTorusExist = true;
+        if(endTorusParams.dStartAngle == 0.001 && endTorusParams.dStopAngle == 0.002)
+            endTorusExist = false;
+        else
+            endTorusExist = true;
+
 		while (dStopAngleStartTorus < dStartAngleStartTorus)
 			dStopAngleStartTorus += 2.0 * M_PI;
         while (dStopAngleEndTorus < dStartAngleEndTorus)
 			dStopAngleEndTorus += 2.0 * M_PI;
 
         //small radius, start torus
-        LPoint ptCenter = startTorusParams.ptCenter;
-		LCoord nRadius = startTorusParams.nInnerRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+        if(startTorusExist)
+        {
+            ptCenter = startTorusParams.ptCenter;
+            nRadius = startTorusParams.nInnerRadius;
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+            this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("Start radius does not exist"));
+        }
+
 
         //long radius, end torus
-        ptCenter = endTorusParams.ptCenter;
-		nRadius = endTorusParams.nOuterRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+        if(endTorusExist)
+        {
+            ptCenter = endTorusParams.ptCenter;
+            nRadius = endTorusParams.nOuterRadius;
+            this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("End radius does not exist"));
+        }
+        
         
         //small radius, end torus
-        ptCenter = endTorusParams.ptCenter;
-		nRadius = endTorusParams.nInnerRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+        if(endTorusExist)
+        {
+            ptCenter = endTorusParams.ptCenter;
+            nRadius = endTorusParams.nInnerRadius;
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+            this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("End radius does not exist"));
+        }
+        
 
         //long radius, start torus
-        ptCenter = startTorusParams.ptCenter;
-		nRadius = startTorusParams.nOuterRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+        if(startTorusExist)
+        {
+            ptCenter = startTorusParams.ptCenter;
+            nRadius = startTorusParams.nOuterRadius;
+            this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("Start radius does not exist"));
+        }
+        
 
         LUpi_LogMessage( "LSR path\n" );
     }
@@ -953,34 +1035,76 @@ void DubinsPath::RasterizePath()
 		double dStopAngleStartTorus = startTorusParams.dStopAngle * M_PI / 180.0;
         double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
 		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
+
+        if(startTorusParams.dStartAngle == 0.001 && startTorusParams.dStopAngle == 0.002)
+            startTorusExist = false;
+        else
+            startTorusExist = true;
+        if(endTorusParams.dStartAngle == 0.001 && endTorusParams.dStopAngle == 0.002)
+            endTorusExist = false;
+        else
+            endTorusExist = true;
+
 		while (dStopAngleStartTorus < dStartAngleStartTorus)
 			dStopAngleStartTorus += 2.0 * M_PI;
         while (dStopAngleEndTorus < dStartAngleEndTorus)
 			dStopAngleEndTorus += 2.0 * M_PI;
 
         //small radius, start torus
-        LPoint ptCenter = startTorusParams.ptCenter;
-		LCoord nRadius = startTorusParams.nInnerRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+        if(startTorusExist)
+        {
+            ptCenter = startTorusParams.ptCenter;
+            nRadius = startTorusParams.nInnerRadius;
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+            this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("Start radius does not exist"));
+        }
+        
 
         //small radius, end torus
-        ptCenter = endTorusParams.ptCenter;
-		nRadius = endTorusParams.nInnerRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+        if(endTorusExist)
+        {
+            ptCenter = endTorusParams.ptCenter;
+            nRadius = endTorusParams.nInnerRadius;
+            this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("End radius does not exist"));
+        }
+        
 
         //long radius, end torus
-        ptCenter = endTorusParams.ptCenter;
-		nRadius = endTorusParams.nOuterRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+        if(endTorusExist)
+        {
+            ptCenter = endTorusParams.ptCenter;
+            nRadius = endTorusParams.nOuterRadius;
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+            this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("End radius does not exist"));
+        }
+        
 
         //long radius, start torus
-        ptCenter = startTorusParams.ptCenter;
-		nRadius = startTorusParams.nOuterRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+        if(startTorusExist)
+        {
+            ptCenter = startTorusParams.ptCenter;
+            nRadius = startTorusParams.nOuterRadius;
+            this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("Start radius does not exist"));
+        }
+        
 
         LUpi_LogMessage( "LSL path\n" );
     }
@@ -993,34 +1117,76 @@ void DubinsPath::RasterizePath()
 		double dStopAngleStartTorus = startTorusParams.dStopAngle * M_PI / 180.0;
         double dStartAngleEndTorus = endTorusParams.dStartAngle * M_PI / 180.0;
 		double dStopAngleEndTorus = endTorusParams.dStopAngle * M_PI / 180.0;
+
+        if(startTorusParams.dStartAngle == 0.001 && startTorusParams.dStopAngle == 0.002)
+            startTorusExist = false;
+        else
+            startTorusExist = true;
+        if(endTorusParams.dStartAngle == 0.001 && endTorusParams.dStopAngle == 0.002)
+            endTorusExist = false;
+        else
+            endTorusExist = true;
+
 		while (dStopAngleStartTorus < dStartAngleStartTorus)
 			dStopAngleStartTorus += 2.0 * M_PI;
         while (dStopAngleEndTorus < dStartAngleEndTorus)
 			dStopAngleEndTorus += 2.0 * M_PI;
 
         //small radius, start torus
-        LPoint ptCenter = startTorusParams.ptCenter;
-		LCoord nRadius = startTorusParams.nInnerRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+        if(startTorusExist)
+        {
+            ptCenter = startTorusParams.ptCenter;
+            nRadius = startTorusParams.nInnerRadius;
+            this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("Start radius does not exist"));
+        }
+        
 
         //long radius, start torus
-        ptCenter = startTorusParams.ptCenter;
-		nRadius = startTorusParams.nOuterRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
-        this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
+        if(startTorusExist)
+        {
+            ptCenter = startTorusParams.ptCenter;
+            nRadius = startTorusParams.nOuterRadius;
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+            this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("Start radius does not exist"));
+        }
+        
         
         //long radius, end torus
-        ptCenter = endTorusParams.ptCenter;
-		nRadius = endTorusParams.nOuterRadius;
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+        if(endTorusExist)
+        {
+            ptCenter = endTorusParams.ptCenter;
+            nRadius = endTorusParams.nOuterRadius;
+            this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("End radius does not exist"));
+        }
+        
 
         //small radius, end torus
-        ptCenter = endTorusParams.ptCenter;
-		nRadius = endTorusParams.nInnerRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
-        this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+        if(endTorusExist)
+        {
+            ptCenter = endTorusParams.ptCenter;
+            nRadius = endTorusParams.nInnerRadius;
+            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+            this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
+        }
+        else
+        {
+            LUpi_LogMessage(LFormat("End radius does not exist"));
+        }
+        
 
         LUpi_LogMessage( "RSR path\n" );
     }
@@ -1044,8 +1210,8 @@ void DubinsPath::RasterizePath()
 			dStopAngleMiddleTorus += 2.0 * M_PI;
 
         //small radius, start torus
-        LPoint ptCenter = startTorusParams.ptCenter;
-		LCoord nRadius = startTorusParams.nInnerRadius;
+        ptCenter = startTorusParams.ptCenter;
+		nRadius = startTorusParams.nInnerRadius;
         this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
 
         //long radius, middle torus
@@ -1095,8 +1261,8 @@ void DubinsPath::RasterizePath()
 			dStopAngleMiddleTorus += 2.0 * M_PI;
 
         //small radius, start torus
-        LPoint ptCenter = startTorusParams.ptCenter;
-		LCoord nRadius = startTorusParams.nInnerRadius;
+        ptCenter = startTorusParams.ptCenter;
+		nRadius = startTorusParams.nInnerRadius;
         this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
 
         //long radius, middle torus
