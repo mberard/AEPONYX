@@ -154,23 +154,34 @@ void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, L
     double fillet = FILLET_VALUE;
 
     int i = (firstPointIndex - 1) % nbPointsArr;
+    int j = (firstPointIndex + 1) % nbPointsArr;
     int rightPos;
     LPoint left, right, center;
     center = point_arr[firstPointIndex];
     left = point_arr[i];
-    right = point_arr[(i+2) % nbPointsArr];
+    right = point_arr[j];
 
 LCell	pCell	=	LCell_GetVisible();
 LFile	pFile	=	LCell_GetFile(pCell);
     while(PointDistance(center, left) < fillet || PointDistance(center, right) < fillet)
     {
         left = point_arr[i];
+        right = point_arr[j];
 
-        rightPos = FindRightPointWithDistance( &right, PointDistance(point_arr[firstPointIndex], left) , firstPointIndex, point_arr, nbPointsArr, i); //find a point on the right side with a particulare distance form the angle
-        center = FindCenter(left, point_arr[ (i+1) % nbPointsArr], point_arr[ (rightPos-1) % nbPointsArr], right);
-        i = i - 1;
-        if(i < 0)
-            i = nbPointsArr -1;
+        //rightPos = FindRightPointWithDistance( &right, PointDistance(point_arr[firstPointIndex], left) , firstPointIndex, point_arr, nbPointsArr, i); //find a point on the right side with a particulare distance form the angle
+        center = FindCenter(left, point_arr[ (i+1) % nbPointsArr], point_arr[ (j-1) % nbPointsArr], right);
+        if(PointDistance(center, left) > PointDistance(center, right))
+        {
+            i = i - 1;
+            if(i < 0)
+                i = nbPointsArr -1;
+        }
+        else
+        {
+            j = j + 1;
+            if(j >= nbPointsArr)
+                j = 0;
+        }
 
 LWireConfig config;
 LPoint wire_arr[2];
@@ -317,6 +328,9 @@ void AATorusFillet(void)
                             if(cpt>=numberVertex)
                                 cpt = 0;
                         }
+
+                        LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLELEFT" ), point_arr[i], 10000);
+
                         LUpi_LogMessage(LFormat("I: %d, point: %ld %ld, angle: %lf\n", i,point_arr[i].x,point_arr[i].y, angle));
                     }
                 }
