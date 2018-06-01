@@ -22,32 +22,46 @@ double PointDistance(LPoint start, LPoint end)
     return dist;
 }
 
-
-int FindRightPointWithDistance(LPoint* right, double distance, int firstPointIndex, LPoint* point_arr, int nbPointsArr, int stopPointIndex)
+int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint center)
 {
-    int i = firstPointIndex;
-    while(PointDistance(point_arr[firstPointIndex],point_arr[i]) < distance )
-    {
-        i = i + 1;
-        if(i >= nbPointsArr)
-            i = 0;
-        if(i == stopPointIndex)
-        {
-            *right = point_arr[(firstPointIndex+1)%nbPointsArr];
-            return stopPointIndex;
-        }
-            
-        
-LCell	pCell	=	LCell_GetVisible();
-LFile	pFile	=	LCell_GetFile(pCell);
-//LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[i], 1000);
-    }
-    *right = point_arr[i];
-    return i;
-}
+    double dx1, dx2, dx3, dy1, dy2, dy3;
+    dx1 = left.x - middle.x;
+    dx2 = right.x - middle.x;
+    dx3 = center.x- middle.x;
+    dy1 = left.y - middle.y;
+    dy2 = right.y - middle.y;
+    dy3 = center.y - middle.y;
 
-double Vecto(LCoord x1, LCoord y1, LCoord x2, LCoord y2){
-    return (x1*y2-y1*x1);
+    double angleLeft = atan2( dy1 , dx1 );
+    double angleRight = atan2( dy2 , dx2 );
+    double angleCenter = atan2( dy3 , dx3 );
+
+    while(angleLeft<0)
+        angleLeft = angleLeft + 2*M_PI;
+    while(angleRight<0)
+        angleRight = angleRight + 2*M_PI;
+    while(angleCenter<0)
+        angleCenter = angleCenter + 2*M_PI;
+
+    if(abs(angleLeft - angleRight) > M_PI)
+        return 1;
+
+    if( angleLeft < angleRight )
+    {
+        if(angleCenter > angleLeft && angleCenter < angleRight)
+            return 1;
+        else
+            return 0;
+    }
+    else
+    {
+        if(angleCenter < angleLeft && angleCenter > angleRight)
+            return 1;
+        else
+            return 0;
+    }
+
+    return 0; //not between points
 }
 
 LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right  )
@@ -59,35 +73,7 @@ LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right 
     dx = right.x - prevRight.x;
     dy = right.y - prevRight.y;
     perpendiculaireRight = LPoint_Set(right.x + dy, right.y - dx);
-/*
-    //source link: https://openclassrooms.com/forum/sujet/calcul-du-point-d-intersection-de-deux-segments-21661
-    double a = (double)Vecto(perpendiculaireLeft.x-left.x, perpendiculaireLeft.y-left.y, right.x-left.x, right.y-left.y) / PointDistance(left, perpendiculaireLeft);
-    double b = (double)Vecto(perpendiculaireLeft.x-left.x, perpendiculaireLeft.y-left.y, perpendiculaireRight.x-left.x, perpendiculaireRight.y-left.y) / PointDistance(left, perpendiculaireLeft);
 
-    double newB = PointDistance(right, perpendiculaireRight) + (PointDistance(right, perpendiculaireRight)*b)/(a-b);
-    double coef = newB/PointDistance(right, perpendiculaireRight);
-*/
-/*
-    //source link: https://www.commentcamarche.net/forum/affich-3376777-algo-detecter-deux-segments-qui-se-croisent
-    double coefDirLeft, coefDirRight;
-    double b1, b2;
-    double xCommun;
-    if(perpendiculaireLeft.x != left.x)
-        coefDirLeft = (double)(perpendiculaireLeft.y - left.y)/(double)(perpendiculaireLeft.x - left.x);
-    else
-        coefDirLeft = 9999999.9999999;
-    if(perpendiculaireRight.x != right.x)
-        coefDirRight = (double)(perpendiculaireRight.y - right.y)/(double)(perpendiculaireRight.x - right.x);
-    else
-        coefDirRight = 9999999.9999999;
-    if(coefDirLeft == coefDirRight) //parallèles
-        return left;
-    b1 = left.y - (coefDirLeft*left.x);
-    b2 = right.y - (coefDirRight*right.x);
-    xCommun = (b2-b1)/(coefDirLeft-coefDirRight);
-    center.x = (LCoord) xCommun;
-    center.y = (LCoord) coefDirLeft*xCommun + b1;
-*/
     //source link: https://www.developpez.net/forums/d369370/applications/developpement-2d-3d-jeux/algo-intersection-2-segments/
     double Ax = left.x;
 	double Ay = left.y;
@@ -141,9 +127,9 @@ wire_arr[2] = center;
 wire_arr[3] = perpendiculaireRight;
 wire_arr[4] = right;
 LObject wire;
-//wire = LWire_New( pCell, LLayer_Find ( pFile, "CIRCLE" ), &config,0, wire_arr, 5);
-//LWire_SetWidth( pCell, wire, 1000 );
-//LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), center, 10000);
+wire = LWire_New( pCell, LLayer_Find ( pFile, "CIRCLE" ), &config,0, wire_arr, 5);
+LWire_SetWidth( pCell, wire, 1000 );
+LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), center, 1000);
 
     return center;
 }
@@ -159,20 +145,18 @@ void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, L
     int j = (firstPointIndex + 1);
     if(j >= nbPointsArr)
                 j = 0;
-    int rightPos;
     LPoint left, right, center;
     center = point_arr[firstPointIndex];
     left = point_arr[i];
     right = point_arr[j];
 
-LCell	pCell	=	LCell_GetVisible();
-LFile	pFile	=	LCell_GetFile(pCell);
-    while(PointDistance(center, left) < fillet || PointDistance(center, right) < fillet || PointDistance(point_arr[firstPointIndex], left) < fillet || PointDistance(point_arr[firstPointIndex], right) < fillet)
+//LCell	pCell	=	LCell_GetVisible();
+//LFile	pFile	=	LCell_GetFile(pCell);
+    while(PointDistance(center, left) < fillet || PointDistance(center, right) < fillet || PointDistance(point_arr[firstPointIndex], left) < fillet || PointDistance(point_arr[firstPointIndex], right) < fillet || centerIsBetweenPoints(left, point_arr[firstPointIndex], right, center) == 0)
     {
         left = point_arr[i];
         right = point_arr[j];
 
-        //rightPos = FindRightPointWithDistance( &right, PointDistance(point_arr[firstPointIndex], left) , firstPointIndex, point_arr, nbPointsArr, i); //find a point on the right side with a particulare distance form the angle
         center = FindCenter(left, point_arr[ (i+1) % nbPointsArr], point_arr[ (j-1) % nbPointsArr], right);
         if(PointDistance(point_arr[firstPointIndex], left) < PointDistance(point_arr[firstPointIndex], right)) //we increment the closest point from the concave angle
         {
@@ -187,14 +171,13 @@ LFile	pFile	=	LCell_GetFile(pCell);
                 j = 0;
         }
 
-LWireConfig config;
-LPoint wire_arr[2];
-wire_arr[0] = left;
-//wire_arr[1] = center;
-wire_arr[1] = right;
-LObject wire;
-wire = LWire_New( pCell, LLayer_Find ( pFile, "WGUIDE" ), &config,0, wire_arr, 2 );
-LWire_SetWidth( pCell, wire, 1000 );
+//LWireConfig config;
+//LPoint wire_arr[2];
+//wire_arr[0] = left;
+//wire_arr[1] = right;
+//LObject wire;
+//wire = LWire_New( pCell, LLayer_Find ( pFile, "WGUIDE" ), &config,0, wire_arr, 2 );
+//LWire_SetWidth( pCell, wire, 1000 );
 //LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), center, 10000);
 
     }
@@ -335,7 +318,7 @@ LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanRight , 1000);
                                 cpt = 0;
                         }
 
-LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLELEFT" ), point_arr[i] , 10000);
+LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[i] , 10000);
 
                         LUpi_LogMessage(LFormat("I: %d, point: %ld %ld, angle: %lf\n", i+1,point_arr[i].x,point_arr[i].y, angle));
                     }
@@ -360,6 +343,13 @@ LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLELEFT" ), point_arr[i] , 10000);
                 LPolygon_New(pCell, LLayer_Find ( pFile, "TEST" ), final_point_arr, nbPointsFinal);
             }
         }
+
+        for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
+        {
+            LObject object = LSelection_GetObject(pSelection);
+            LObject_Delete(pCell, object);
+        }
+
     }
     LUpi_LogMessage(LFormat("nbPointsToDelete: %d\n", nbPointsToDelete));
     LUpi_LogMessage(LFormat("nbPointsFinal: %d\n", nbPointsFinal));
