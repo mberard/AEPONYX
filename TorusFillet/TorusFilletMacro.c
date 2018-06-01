@@ -141,8 +141,8 @@ wire_arr[2] = center;
 wire_arr[3] = perpendiculaireRight;
 wire_arr[4] = right;
 LObject wire;
-wire = LWire_New( pCell, LLayer_Find ( pFile, "CIRCLE" ), &config,0, wire_arr, 5);
-LWire_SetWidth( pCell, wire, 1000 );
+//wire = LWire_New( pCell, LLayer_Find ( pFile, "CIRCLE" ), &config,0, wire_arr, 5);
+//LWire_SetWidth( pCell, wire, 1000 );
 //LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), center, 10000);
 
     return center;
@@ -153,8 +153,12 @@ void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, L
 {
     double fillet = FILLET_VALUE;
 
-    int i = (firstPointIndex - 1) % nbPointsArr;
-    int j = (firstPointIndex + 1) % nbPointsArr;
+    int i = (firstPointIndex - 1);
+    if(i < 0)
+        i = nbPointsArr -1;
+    int j = (firstPointIndex + 1);
+    if(j >= nbPointsArr)
+                j = 0;
     int rightPos;
     LPoint left, right, center;
     center = point_arr[firstPointIndex];
@@ -163,14 +167,14 @@ void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, L
 
 LCell	pCell	=	LCell_GetVisible();
 LFile	pFile	=	LCell_GetFile(pCell);
-    while(PointDistance(center, left) < fillet || PointDistance(center, right) < fillet)
+    while(PointDistance(center, left) < fillet || PointDistance(center, right) < fillet || PointDistance(point_arr[firstPointIndex], left) < fillet || PointDistance(point_arr[firstPointIndex], right) < fillet)
     {
         left = point_arr[i];
         right = point_arr[j];
 
         //rightPos = FindRightPointWithDistance( &right, PointDistance(point_arr[firstPointIndex], left) , firstPointIndex, point_arr, nbPointsArr, i); //find a point on the right side with a particulare distance form the angle
         center = FindCenter(left, point_arr[ (i+1) % nbPointsArr], point_arr[ (j-1) % nbPointsArr], right);
-        if(PointDistance(center, left) > PointDistance(center, right))
+        if(PointDistance(point_arr[firstPointIndex], left) < PointDistance(point_arr[firstPointIndex], right)) //we increment the closest point from the concave angle
         {
             i = i - 1;
             if(i < 0)
@@ -189,12 +193,10 @@ wire_arr[0] = left;
 //wire_arr[1] = center;
 wire_arr[1] = right;
 LObject wire;
-//wire = LWire_New( pCell, LLayer_Find ( pFile, "WGUIDE" ), &config,0, wire_arr, 2 );
-//LWire_SetWidth( pCell, wire, 1000 );
+wire = LWire_New( pCell, LLayer_Find ( pFile, "WGUIDE" ), &config,0, wire_arr, 2 );
+LWire_SetWidth( pCell, wire, 1000 );
 //LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), center, 10000);
 
-LUpi_LogMessage(LFormat("left: %ld %ld\nright: %ld %ld\n",left.x, left.y,right.x,right.y ));
-LUpi_LogMessage(LFormat("dist first - left: %lf\ndist first - right: %lf\n",PointDistance(center, left),PointDistance(center, right) ));
     }
 
 //LCircle_New(pCell, LLayer_Find ( pFile, "WGUIDE" ), center, 10000);
@@ -263,6 +265,9 @@ void AATorusFillet(void)
         {
 
             LObject object = LSelection_GetObject(pSelection);
+            nbPointsToDelete = 0;
+            nbPointsFinal = 0;
+
             if(LObject_GetGeometry(object) == LAllAngle || LObject_GetGeometry(object) == LOrthogonal || LObject_GetGeometry(object) == LFortyFive)
             {
                 numberVertex = LVertex_GetArray( object, point_arr, MAX_POLYGON_SIZE );
@@ -303,7 +308,8 @@ void AATorusFillet(void)
                     if( ! (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
                     {
                         FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex);
-                        
+LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanLeft , 1000);
+LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanRight , 1000);
                         cpt = (i-1)%numberVertex;
                         while(point_arr[cpt].x != tanLeft.x || point_arr[cpt].y != tanLeft.y)
                         {
@@ -329,9 +335,9 @@ void AATorusFillet(void)
                                 cpt = 0;
                         }
 
-                        LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLELEFT" ), point_arr[i], 10000);
+LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLELEFT" ), point_arr[i] , 10000);
 
-                        LUpi_LogMessage(LFormat("I: %d, point: %ld %ld, angle: %lf\n", i,point_arr[i].x,point_arr[i].y, angle));
+                        LUpi_LogMessage(LFormat("I: %d, point: %ld %ld, angle: %lf\n", i+1,point_arr[i].x,point_arr[i].y, angle));
                     }
                 }
 
@@ -340,6 +346,7 @@ void AATorusFillet(void)
                 {
                     if(isPresentInDeleteArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 1)
                     {
+                        LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[cpt] , 1000);
                         //LUpi_LogMessage(LFormat("point %d supprime\n", cpt));
                     }
                     else
