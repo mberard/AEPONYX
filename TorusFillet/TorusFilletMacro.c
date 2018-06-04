@@ -9,7 +9,7 @@
 #include <string.h>
 #include <math.h>
 
-#define MAX_POLYGON_SIZE 25000
+#define MAX_POLYGON_SIZE 40000
 #define ANGLE_LIMIT 0.2 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
 
 double PointDistance(LPoint start, LPoint end)
@@ -106,19 +106,19 @@ LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right 
     center.x = (LCoord)Sx;
     center.y = (LCoord)Sy;
 
-LCell	pCell	=	LCell_GetVisible();
-LFile	pFile	=	LCell_GetFile(pCell);
-LWireConfig config;
-LPoint wire_arr[5];
-wire_arr[0] = left;
-wire_arr[1] = perpendiculaireLeft;
-wire_arr[2] = center;
-wire_arr[3] = perpendiculaireRight;
-wire_arr[4] = right;
-LObject wire;
-wire = LWire_New( pCell, LLayer_Find ( pFile, "CIRCLE" ), &config,0, wire_arr, 5);
-LWire_SetWidth( pCell, wire, 1000 );
-LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), center, 1000);
+//LCell	pCell	=	LCell_GetVisible();
+//LFile	pFile	=	LCell_GetFile(pCell);
+//LWireConfig config;
+//LPoint wire_arr[5];
+//wire_arr[0] = left;
+//wire_arr[1] = perpendiculaireLeft;
+//wire_arr[2] = center;
+//wire_arr[3] = perpendiculaireRight;
+//wire_arr[4] = right;
+//LObject wire;
+//wire = LWire_New( pCell, LLayer_Find ( pFile, "CIRCLE" ), &config,0, wire_arr, 5);
+//LWire_SetWidth( pCell, wire, 1000 );
+//LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), center, 1000);
 
     return center;
 }
@@ -194,14 +194,16 @@ int AddPointsToArray(LPoint* point_arr, int numberVertex, double fillet, int max
     int i = 0;
     int j = 0;
     double x, y;
-    int returnValue = numberVertex;
-    if(numberVertex >= max_size)
-        return max_size;
+    
 
     for(i=0; i<numberVertex; i++)
     {
-        if(PointDistance(point_arr[i], point_arr[(i+1)%numberVertex]) > fillet)
+//LUpi_LogMessage(LFormat("i: %d\n", i));
+        if(PointDistance(point_arr[i], point_arr[(i+1)%numberVertex]) > fillet*1.5)
         {
+            if(numberVertex >= max_size-1)
+                return max_size;
+            
             x = (double)(point_arr[(i+1)%numberVertex].x - point_arr[i].x) / 2.0;
             x = point_arr[i].x + x;
             y = (double)(point_arr[(i+1)%numberVertex].y - point_arr[i].y) / 2.0;
@@ -211,15 +213,17 @@ int AddPointsToArray(LPoint* point_arr, int numberVertex, double fillet, int max
             {
                 point_arr[j+1] = point_arr[j];
             }
-LCell	pCell	=	LCell_GetVisible();
-LFile	pFile	=	LCell_GetFile(pCell);
-LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), LPoint_Set(x, y) , 1000);
+//LCell	pCell	=	LCell_GetVisible();
+//LFile	pFile	=	LCell_GetFile(pCell);
+//LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), LPoint_Set(x, y) , 1000);
             point_arr[i+1] = LPoint_Set(x, y);
-            //recall this function and return the value
-            return AddPointsToArray(point_arr, numberVertex+1, fillet, max_size);
+            numberVertex = numberVertex + 1;
+            i = i - 1; //test the same point with the new target point
         }
+        
     }
-    return returnValue;
+    
+    return numberVertex;
 }
 
 
@@ -227,6 +231,9 @@ void AATorusFillet(void)
 {
     LCell	pCell	=	LCell_GetVisible();
 	LFile	pFile	=	LCell_GetFile(pCell);
+    LLayer  pLayer;
+
+    char strLayer[MAX_LAYER_NAME];
 
     LPoint point_arr[MAX_POLYGON_SIZE];
     LPoint final_point_arr[MAX_POLYGON_SIZE];
@@ -260,6 +267,9 @@ void AATorusFillet(void)
     
     LUpi_LogMessage("\n\n\n\n\nSTART MACRO\n");
 
+    if ( LStatusOK != LFile_SaveAs( LFile_GetVisible(), "LastBackupBeforeTorrusFilletMacro", LTdbFile))
+        LDialog_AlertBox( "Failed to save new copy of current file" );
+
     if(LSelection_GetList() == NULL) //if no selection made
 	{
         LUpi_LogMessage("No selection were made\n");
@@ -272,6 +282,13 @@ void AATorusFillet(void)
 			return;
 		else
             fillet = LFile_MicronsToIntU(pFile,atof(strFillet));
+        LUpi_LogMessage(LFormat("fillet: %lf\n", fillet));
+
+        strcpy(strLayer, "WGUIDE"); //preloaded text in the dialog box
+		if ( LDialog_InputBox("Layer", "Enter name of the layer in which the polygon will be loaded", strLayer) == 0)
+			return;
+		else
+            pLayer = LLayer_Find(pFile, strLayer);
 
         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
         {
@@ -283,9 +300,14 @@ void AATorusFillet(void)
             if(LObject_GetGeometry(object) == LAllAngle || LObject_GetGeometry(object) == LOrthogonal || LObject_GetGeometry(object) == LFortyFive)
             {
                 numberVertex = LVertex_GetArray( object, point_arr, MAX_POLYGON_SIZE );
-LUpi_LogMessage(LFormat("NUMBER AVANT %d\n\n", numberVertex));
+LUpi_LogMessage(LFormat("nombrePoint: %d\n", numberVertex));
                 numberVertex = AddPointsToArray(point_arr, numberVertex, fillet, MAX_POLYGON_SIZE);
-LUpi_LogMessage(LFormat("NUMBER APRES %d\n\n", numberVertex));
+LUpi_LogMessage(LFormat("nombrePoint: %d\n", numberVertex));
+                if(numberVertex >= MAX_POLYGON_SIZE)
+                {
+                    LDialog_AlertBox( "Limit number of polygon vertex has been reach, return" );
+                    return;
+                }
 
                 for(i=0; i<numberVertex; i++) //store the current, previous and next point
                 {
@@ -324,8 +346,8 @@ LUpi_LogMessage(LFormat("NUMBER APRES %d\n\n", numberVertex));
                     {
 
                         FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex, fillet);
-LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanLeft , 1000);
-LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanRight , 1000);
+//LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanLeft , 1000);
+//LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanRight , 1000);
                         cpt = (i-1)%numberVertex;
                         while(point_arr[cpt].x != tanLeft.x || point_arr[cpt].y != tanLeft.y)
                         {
@@ -351,7 +373,7 @@ LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanRight , 1000);
                                 cpt = 0;
                         }
 
-LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[i] , 10000);
+//LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[i] , 10000);
 
                         LUpi_LogMessage(LFormat("I: %d, point: %ld %ld, angle: %lf\n", i+1,point_arr[i].x,point_arr[i].y, angle));
                     }
@@ -362,7 +384,7 @@ LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[i] , 10000);
                 {
                     if(isPresentInDeleteArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 1)
                     {
-                        LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[cpt] , 1000);
+                        //LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[cpt] , 1000);
                         //LUpi_LogMessage(LFormat("point %d supprime\n", cpt));
                     }
                     else
@@ -373,14 +395,15 @@ LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[i] , 10000);
                     }
                    
                 }
-                LPolygon_New(pCell, LLayer_Find ( pFile, "TEST" ), final_point_arr, nbPointsFinal);
+                LPolygon_New(pCell, pLayer, final_point_arr, nbPointsFinal);
             }
         }
 
         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
         {
             LObject object = LSelection_GetObject(pSelection);
-            LObject_Delete(pCell, object);
+            if(LObject_GetGeometry(object) == LAllAngle || LObject_GetGeometry(object) == LOrthogonal || LObject_GetGeometry(object) == LFortyFive)
+                LObject_Delete(pCell, object);
         }
 
     }
