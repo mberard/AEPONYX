@@ -9,9 +9,8 @@
 #include <string.h>
 #include <math.h>
 
-#define MAX_POLYGON_SIZE 5000
+#define MAX_POLYGON_SIZE 25000
 #define ANGLE_LIMIT 0.2 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
-#define FILLET_VALUE 5000 //in internal units
 
 double PointDistance(LPoint start, LPoint end)
 {
@@ -50,7 +49,7 @@ int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint cente
         return 1;
     else
         return 0;
-        
+
     return 0; //not between points
 }
 
@@ -253,7 +252,7 @@ void AATorusFillet(void)
 
     double angle, angle1, angle2;
 
-    double fillet = FILLET_VALUE;
+    double fillet;
     char strFillet[20];
 
     int i = 0;
