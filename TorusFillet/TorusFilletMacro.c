@@ -200,6 +200,39 @@ int isPresentInDeleteArray(LPoint* to_delete_point_arr, int nbPointsToDelete, LP
     return 0;
 }
 
+int AddPointsToArray(LPoint* point_arr, int numberVertex, double fillet, int max_size)
+{
+    int i = 0;
+    int j = 0;
+    double x, y;
+    int returnValue = numberVertex;
+    if(numberVertex >= max_size)
+        return max_size;
+
+    for(i=0; i<numberVertex; i++)
+    {
+        if(PointDistance(point_arr[i], point_arr[(i+1)%numberVertex]) > fillet)
+        {
+            x = (double)(point_arr[(i+1)%numberVertex].x - point_arr[i].x) / 2.0;
+            x = point_arr[i].x + x;
+            y = (double)(point_arr[(i+1)%numberVertex].y - point_arr[i].y) / 2.0;
+            y = point_arr[i].y + y;
+            //add a point to the array and shift the other value
+            for(j=numberVertex-1; j>i; j--)
+            {
+                point_arr[j+1] = point_arr[j];
+            }
+LCell	pCell	=	LCell_GetVisible();
+LFile	pFile	=	LCell_GetFile(pCell);
+LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), LPoint_Set(x, y) , 1000);
+            point_arr[i+1] = LPoint_Set(x, y);
+            //recall this function and return the value
+            return AddPointsToArray(point_arr, numberVertex+1, fillet, max_size);
+        }
+    }
+    return returnValue;
+}
+
 
 void AATorusFillet(void)
 {
@@ -254,6 +287,9 @@ void AATorusFillet(void)
             if(LObject_GetGeometry(object) == LAllAngle || LObject_GetGeometry(object) == LOrthogonal || LObject_GetGeometry(object) == LFortyFive)
             {
                 numberVertex = LVertex_GetArray( object, point_arr, MAX_POLYGON_SIZE );
+LUpi_LogMessage(LFormat("NUMBER AVANT %d\n\n", numberVertex));
+                numberVertex = AddPointsToArray(point_arr, numberVertex, fillet, MAX_POLYGON_SIZE);
+LUpi_LogMessage(LFormat("NUMBER APRES %d\n\n", numberVertex));
 
                 for(i=0; i<numberVertex; i++) //store the current, previous and next point
                 {
@@ -290,6 +326,7 @@ void AATorusFillet(void)
 
                     if( ! (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
                     {
+
                         FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex, fillet);
 LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanLeft , 1000);
 LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanRight , 1000);
