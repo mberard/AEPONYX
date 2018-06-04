@@ -38,29 +38,19 @@ int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint cente
 
     while(angleLeft<0)
         angleLeft = angleLeft + 2*M_PI;
-    while(angleRight<0)
+    while(angleRight<angleLeft)
         angleRight = angleRight + 2*M_PI;
-    while(angleCenter<0)
+    while(angleCenter<angleLeft)
         angleCenter = angleCenter + 2*M_PI;
 
     if(abs(angleLeft - angleRight) > M_PI)
         return 1;
 
-    if( angleLeft < angleRight )
-    {
-        if(angleCenter > angleLeft && angleCenter < angleRight)
-            return 1;
-        else
-            return 0;
-    }
+    if(angleCenter > angleLeft && angleCenter < angleRight)
+        return 1;
     else
-    {
-        if(angleCenter < angleLeft && angleCenter > angleRight)
-            return 1;
-        else
-            return 0;
-    }
-
+        return 0;
+        
     return 0; //not between points
 }
 
