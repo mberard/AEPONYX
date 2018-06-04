@@ -11,7 +11,7 @@
 
 #define MAX_POLYGON_SIZE 5000
 #define ANGLE_LIMIT 0.2 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
-#define FILLET_VALUE 10000 //in internal units
+#define FILLET_VALUE 5000 //in internal units
 
 double PointDistance(LPoint start, LPoint end)
 {
@@ -264,6 +264,7 @@ void AATorusFillet(void)
     double angle, angle1, angle2;
 
     double fillet = FILLET_VALUE;
+    char strFillet[20];
 
     int i = 0;
     int cpt = 0;
@@ -277,6 +278,12 @@ void AATorusFillet(void)
 	}
     else
     {
+        strcpy(strFillet, "0.5"); //preloaded text in the dialog box
+		if ( LDialog_InputBox("Fillet", "Enter the fillet value (in microns)", strFillet) == 0)
+			return;
+		else
+            fillet = LFile_MicronsToIntU(pFile,atof(strFillet));
+
         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
         {
 
