@@ -135,10 +135,8 @@ LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), center, 1000);
 }
 
 
-void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, LPoint* point_arr, int nbPointsArr )
+void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, LPoint* point_arr, int nbPointsArr, double fillet )
 {
-    double fillet = FILLET_VALUE;
-
     int i = (firstPointIndex - 1);
     if(i < 0)
         i = nbPointsArr -1;
@@ -232,6 +230,8 @@ void AATorusFillet(void)
 
     double angle, angle1, angle2;
 
+    double fillet = FILLET_VALUE;
+
     int i = 0;
     int cpt = 0;
     
@@ -290,7 +290,7 @@ void AATorusFillet(void)
 
                     if( ! (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
                     {
-                        FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex);
+                        FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex, fillet);
 LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanLeft , 1000);
 LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanRight , 1000);
                         cpt = (i-1)%numberVertex;
