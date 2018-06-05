@@ -13,6 +13,10 @@
 #define EXCLUDE_LEDIT_LEGACY_UPI //This statement make the C language macros, which are now superseded by C++ functions, unavailable.
 
 extern "C" {
+    #include "DubinsPoint.hpp"
+
+    #include "DubinsPoint.cpp"
+
     void BezierMacro(void);
 	int UPI_Entry_Point(void);
 }
