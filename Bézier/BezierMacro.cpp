@@ -11,7 +11,7 @@
 
 #define EXCLUDE_LEDIT_LEGACY_UPI //This statement make the C language macros, which are now superseded by C++ functions, unavailable.
 
-#define BEZIER_PARAM 0.30
+#define BEZIER_PARAM 0.45
 #define MAX_POLYGON_SIZE 5000
 #define WIDTH 0.05
 
@@ -23,6 +23,19 @@ extern "C" {
     long RoundToLong(double);
     void BezierMacro(void);
 	int UPI_Entry_Point(void);
+}
+
+long Round0or5ToLong(double val)
+{
+	double tmpFloat = val;
+	long tmpInt = 0;
+	if(val >= 0)
+		tmpFloat = (double)(tmpFloat + 2.5)/5.0;
+	else
+		tmpFloat = (double)(tmpFloat - 2.5)/5.0;
+	tmpInt = (long)tmpFloat; //delete the digits after the '.'
+	tmpInt = tmpInt*5;
+	return tmpInt;
 }
 
 long RoundToLong(double value)
@@ -40,6 +53,7 @@ void BezierMacro()
     LLayer pLayer = LLayer_Find(pFile, "TEST");
 
     double xStart, yStart, xEnd, yEnd;
+    double xStartChanged, yStartChanged, xEndChanged, yEndChanged;
     double angleStart, angleEnd;
     double coef;
     double distX, distY;
@@ -50,7 +64,6 @@ void BezierMacro()
     int nbPointsCurve = 0;
 
     double t;
-    int i;
     double x, y;
     double angle;
 
@@ -58,8 +71,8 @@ void BezierMacro()
 
     start.SetPoint(0,0,pFile);
     start.SetAngleDegre(0);
-    end.SetPoint(1,1,pFile);
-    end.SetAngleDegre(90);
+    end.SetPoint(10,10,pFile);
+    end.SetAngleDegre(45);
 
     xStart = start.GetPoint().x;
     yStart = start.GetPoint().y;
@@ -70,51 +83,61 @@ void BezierMacro()
 
     coef = 1 - BEZIER_PARAM;
 
-    distX = xEnd - xStart;
-    distY = yEnd - yStart;
+LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
 
-    controlStart.x = (LCoord) ( xStart + distX * coef * cos(angleStart) );
-    controlStart.y =  (LCoord) (yStart + distY * coef * sin(angleStart) );
-    controlEnd.x = (LCoord) ( xEnd + distX * coef * cos(angleEnd + M_PI) );
-    controlEnd.y = (LCoord) ( yEnd + distY * coef * sin(angleEnd + M_PI) );
+    xStartChanged = xStart+(sin(angleStart)*guideWidth/2.0);
+    yStartChanged = yStart-(cos(angleStart)*guideWidth/2.0);
+    xEndChanged = xEnd+(sin(angleEnd)*guideWidth/2.0);
+    yEndChanged = yEnd-(cos(angleEnd)*guideWidth/2.0);
 
-    LUpi_LogMessage(LFormat("controlStart %ld %ld\n", controlStart.x, controlStart.y));
-    LUpi_LogMessage(LFormat("controlEnd %ld %ld\n", controlEnd.x, controlEnd.y));
+    distX = xEndChanged - xStartChanged;
+    distY = yEndChanged - yStartChanged;
 
-    for(t=0; t<=1; t=t+0.001)
+    controlStart.x = (LCoord) ( xStartChanged + distX * coef * cos(angleStart) );
+    controlStart.y = (LCoord) ( yStartChanged + distY * coef * sin(angleStart) );
+    controlEnd.x = (LCoord) ( xEndChanged + distX * coef * cos(angleEnd + M_PI) );
+    controlEnd.y = (LCoord) ( yEndChanged + distY * coef * sin(angleEnd + M_PI) );
+
+    curve_arr[nbPointsCurve] = LPoint_Set( Round0or5ToLong(xStartChanged), Round0or5ToLong(yStartChanged) );
+    nbPointsCurve = nbPointsCurve + 1;
+    for(t=0.0005; t<1; t=t+0.0005)
     {
-        x = xStart*pow((1-t),3) + 3*controlStart.x*pow((1-t),2)*t + 3*controlEnd.x*(1-t)*pow(t,2) + xEnd*pow(t,3);
-        y = yStart*pow((1-t),3) + 3*controlStart.y*pow((1-t),2)*t + 3*controlEnd.y*(1-t)*pow(t,2) + yEnd*pow(t,3);
+        x = xStartChanged*pow((1-t),3) + 3*controlStart.x*pow((1-t),2)*t + 3*controlEnd.x*(1-t)*pow(t,2) + xEndChanged*pow(t,3);
+        y = yStartChanged*pow((1-t),3) + 3*controlStart.y*pow((1-t),2)*t + 3*controlEnd.y*(1-t)*pow(t,2) + yEndChanged*pow(t,3);
         curve_arr[nbPointsCurve] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
         nbPointsCurve = nbPointsCurve + 1;
     }
+    curve_arr[nbPointsCurve] = LPoint_Set( Round0or5ToLong(xEndChanged), Round0or5ToLong(yEndChanged) );
+    nbPointsCurve = nbPointsCurve + 1;
 
-LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
+    xStartChanged = xEnd+(sin(angleEnd + M_PI)*guideWidth/2.0);
+    yStartChanged = yEnd-(cos(angleEnd + M_PI)*guideWidth/2.0);
+    xEndChanged = xStart+(sin(angleStart + M_PI)*guideWidth/2.0);
+    yEndChanged = yStart-(cos(angleStart + M_PI)*guideWidth/2.0);
 
-    point_arr[nbPoints] = LPoint_Set((LCoord)(xStart + sin(angleStart) * guideWidth / 2.0) , (LCoord)(yStart - cos(angleStart) * guideWidth / 2.0));
-    nbPoints = nbPoints + 1;
-    for(i=1; i<nbPointsCurve-1; i++)
+    distX = xEndChanged - xStartChanged;
+    distY = yEndChanged - yStartChanged;
+
+    controlStart.x = (LCoord) ( xStartChanged + distX * coef * cos(angleEnd) );
+    controlStart.y = (LCoord) ( yStartChanged + distY * coef * sin(angleEnd) );
+    controlEnd.x = (LCoord) ( xEndChanged + distX * coef * cos(angleStart + M_PI) );
+    controlEnd.y = (LCoord) ( yEndChanged + distY * coef * sin(angleStart + M_PI) );
+
+    curve_arr[nbPointsCurve] = LPoint_Set( Round0or5ToLong(xStartChanged), Round0or5ToLong(yStartChanged) );
+    nbPointsCurve = nbPointsCurve + 1;
+    for(t=0.0005; t<1; t=t+0.0005)
     {
-        angle = atan2( curve_arr[i+1].y-curve_arr[i-1].y , curve_arr[i+1].x-curve_arr[i-1].x );
-        point_arr[nbPoints] = LPoint_Set((LCoord)(curve_arr[i].x + sin(angle) * guideWidth / 2.0) , (LCoord)(curve_arr[i].y - cos(angle) * guideWidth / 2.0));
-        nbPoints = nbPoints + 1;
+        x = xStartChanged*pow((1-t),3) + 3*controlStart.x*pow((1-t),2)*t + 3*controlEnd.x*(1-t)*pow(t,2) + xEndChanged*pow(t,3);
+        y = yStartChanged*pow((1-t),3) + 3*controlStart.y*pow((1-t),2)*t + 3*controlEnd.y*(1-t)*pow(t,2) + yEndChanged*pow(t,3);
+        curve_arr[nbPointsCurve] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
+        nbPointsCurve = nbPointsCurve + 1;
     }
-    point_arr[nbPoints] = LPoint_Set((LCoord)(xEnd + sin(angleEnd) * guideWidth / 2.0) , (LCoord)(yEnd - cos(angleEnd) * guideWidth / 2.0));
-    nbPoints = nbPoints + 1;
+    curve_arr[nbPointsCurve] = LPoint_Set( Round0or5ToLong(xEndChanged), Round0or5ToLong(yEndChanged) );
+    nbPointsCurve = nbPointsCurve + 1;
 
-    point_arr[nbPoints] = LPoint_Set((LCoord)(xEnd + sin(angleEnd + M_PI) * guideWidth / 2.0) , (LCoord)(yEnd - cos(angleEnd + M_PI) * guideWidth / 2.0));
-    nbPoints = nbPoints + 1;
-    for(i=nbPointsCurve-2; i>=1; i--)
-    {
-        angle = atan2( curve_arr[i-1].y-curve_arr[i+1].y , curve_arr[i-1].x-curve_arr[i+1].x );
-        point_arr[nbPoints] = LPoint_Set((LCoord)(curve_arr[i].x + sin(angle) * guideWidth / 2.0) , (LCoord)(curve_arr[i].y - cos(angle) * guideWidth / 2.0));
-        nbPoints = nbPoints + 1;
-    }
-    point_arr[nbPoints] = LPoint_Set((LCoord)(xStart + sin(angleStart + M_PI) * guideWidth / 2.0) , (LCoord)(yStart - cos(angleStart + M_PI) * guideWidth / 2.0));
-    nbPoints = nbPoints + 1;
-LUpi_LogMessage(LFormat("nbPoints %d\n",nbPoints));
+LUpi_LogMessage(LFormat("nbPoints %d\n",nbPointsCurve));
 
-    LPolygon_New( pCell, pLayer, point_arr, nbPoints );
+    LPolygon_New( pCell, pLayer, curve_arr, nbPointsCurve );
 
 }
 
