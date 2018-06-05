@@ -11,7 +11,7 @@
 
 #define EXCLUDE_LEDIT_LEGACY_UPI //This statement make the C language macros, which are now superseded by C++ functions, unavailable.
 
-#define BEZIER_PARAM 0.45
+#define BEZIER_PARAM 0.3
 #define MAX_POLYGON_SIZE 5000
 #define WIDTH 0.2
 
@@ -20,6 +20,7 @@ extern "C" {
 
     #include "DubinsPoint.cpp"
 
+    long Round0or5ToLong(double);
     long RoundToLong(double);
     void BezierMacro(void);
 	int UPI_Entry_Point(void);
@@ -72,8 +73,8 @@ void BezierMacro()
 
     start.SetPoint(0,0,pFile);
     start.SetAngleDegre(0);
-    end.SetPoint(5,5,pFile);
-    end.SetAngleDegre(245);
+    end.SetPoint(2,1,pFile);
+    end.SetAngleDegre(0);
 
     xStart = start.GetPoint().x;
     yStart = start.GetPoint().y;
