@@ -300,9 +300,9 @@ void AATorusFillet(void)
             if(LObject_GetGeometry(object) == LAllAngle || LObject_GetGeometry(object) == LOrthogonal || LObject_GetGeometry(object) == LFortyFive)
             {
                 numberVertex = LVertex_GetArray( object, point_arr, MAX_POLYGON_SIZE );
-LUpi_LogMessage(LFormat("nombrePoint: %d\n", numberVertex));
+LUpi_LogMessage(LFormat("Point number before AddPointsToArray: %d\n", numberVertex));
                 numberVertex = AddPointsToArray(point_arr, numberVertex, fillet, MAX_POLYGON_SIZE);
-LUpi_LogMessage(LFormat("nombrePoint: %d\n", numberVertex));
+LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVertex));
                 if(numberVertex >= MAX_POLYGON_SIZE)
                 {
                     LDialog_AlertBox( "Limit number of polygon vertex has been reach, return" );
@@ -375,7 +375,7 @@ LUpi_LogMessage(LFormat("nombrePoint: %d\n", numberVertex));
 
 //LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[i] , 10000);
 
-                        LUpi_LogMessage(LFormat("I: %d, point: %ld %ld, angle: %lf\n", i+1,point_arr[i].x,point_arr[i].y, angle));
+                        LUpi_LogMessage(LFormat("I: %d\n", i+1));
                     }
                 }
 
@@ -403,7 +403,10 @@ LUpi_LogMessage(LFormat("nombrePoint: %d\n", numberVertex));
         {
             LObject object = LSelection_GetObject(pSelection);
             if(LObject_GetGeometry(object) == LAllAngle || LObject_GetGeometry(object) == LOrthogonal || LObject_GetGeometry(object) == LFortyFive)
+            {
                 LObject_Delete(pCell, object);
+            }
+                
         }
 
     }
