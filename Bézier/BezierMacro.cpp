@@ -61,10 +61,11 @@ void BezierMacro()
     double coef;
     double distX, distY;
 
-    LPoint point_arr[MAX_POLYGON_SIZE];
-    int nbPoints = 0;
+    
     LPoint curve_arr[MAX_POLYGON_SIZE];
     int nbPointsCurve = 0;
+    LPoint point_arr[MAX_POLYGON_SIZE];
+    int nbPoints = 0;
 
     double t;
     int i = 0;
@@ -77,7 +78,7 @@ void BezierMacro()
 
     start.SetPoint(0,0,pFile);
     start.SetAngleDegre(0);
-    end.SetPoint(1,1,pFile);
+    end.SetPoint(10,10,pFile);
     end.SetAngleDegre(90);
 
     xStart = start.GetPoint().x;
@@ -100,6 +101,12 @@ void BezierMacro()
 		return;
 	else
         pLayer = LLayer_Find(pFile, strLayer);
+
+    strcpy(strLayer, "1");
+    if ( LDialog_InputBox("Guide width", "Select the width of the guide (in microns)", strLayer) == 0)
+        return;
+    else
+        guideWidth = LFile_MicronsToIntU(pFile, atof(strLayer));
 
 LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
 
