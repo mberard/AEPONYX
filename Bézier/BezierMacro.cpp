@@ -52,7 +52,9 @@ void BezierMacro()
 
     LCell	pCell	=	LCell_GetVisible();
 	LFile	pFile	=	LCell_GetFile(pCell);
-    LLayer pLayer = LLayer_Find(pFile, "WGUIDE");
+    LLayer pLayer;
+
+    char strLayer[MAX_LAYER_NAME];
 
     double xStart, yStart, xEnd, yEnd;
     double angleStart, angleEnd;
@@ -92,6 +94,12 @@ void BezierMacro()
         LDialog_AlertBox( "Start end end point has the same X or Y, unable to generate a Bezier curve" );
         return;
     }
+
+    strcpy(strLayer, "WGUIDE"); //preloaded text in the dialog box
+	if ( LDialog_InputBox("Layer", "Enter name of the layer in which the polygon will be loaded", strLayer) == 0)
+		return;
+	else
+        pLayer = LLayer_Find(pFile, strLayer);
 
 LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
 
