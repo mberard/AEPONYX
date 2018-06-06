@@ -52,7 +52,7 @@ void BezierMacro()
 
     LCell	pCell	=	LCell_GetVisible();
 	LFile	pFile	=	LCell_GetFile(pCell);
-    LLayer pLayer = LLayer_Find(pFile, "TEST");
+    LLayer pLayer = LLayer_Find(pFile, "WGUIDE");
 
     double xStart, yStart, xEnd, yEnd;
     double angleStart, angleEnd;
@@ -69,13 +69,14 @@ void BezierMacro()
     int j = 0;
     double x, y;
     double angle, angle1, angle2;
+    LPoint save1, save2, save3, save4;
 
     double guideWidth = LFile_MicronsToIntU(pFile, WIDTH);
 
     start.SetPoint(0,0,pFile);
     start.SetAngleDegre(0);
     end.SetPoint(1,1,pFile);
-    end.SetAngleDegre(0);
+    end.SetAngleDegre(90);
 
     xStart = start.GetPoint().x;
     yStart = start.GetPoint().y;
@@ -117,6 +118,7 @@ LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
 
     //construct the guide from the curve
     point_arr[nbPoints] = LPoint_Set((LCoord)(xStart + sin(angleStart) * guideWidth / 2.0) , (LCoord)(yStart - cos(angleStart) * guideWidth / 2.0));
+    save1 = point_arr[nbPoints];
     nbPoints = nbPoints + 1;
     for(i=1; i<nbPointsCurve-1; i++)
     {
@@ -125,9 +127,11 @@ LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
         nbPoints = nbPoints + 1;
     }
     point_arr[nbPoints] = LPoint_Set((LCoord)(xEnd + sin(angleEnd) * guideWidth / 2.0) , (LCoord)(yEnd - cos(angleEnd) * guideWidth / 2.0));
+    save2 = point_arr[nbPoints];
     nbPoints = nbPoints + 1;
 
     point_arr[nbPoints] = LPoint_Set((LCoord)(xEnd + sin(angleEnd + M_PI) * guideWidth / 2.0) , (LCoord)(yEnd - cos(angleEnd + M_PI) * guideWidth / 2.0));
+    save3 = point_arr[nbPoints];
     nbPoints = nbPoints + 1;
     for(i=nbPointsCurve-2; i>=1; i--)
     {
@@ -136,20 +140,20 @@ LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
         nbPoints = nbPoints + 1;
     }
     point_arr[nbPoints] = LPoint_Set((LCoord)(xStart + sin(angleStart + M_PI) * guideWidth / 2.0) , (LCoord)(yStart - cos(angleStart + M_PI) * guideWidth / 2.0));
+    save4 = point_arr[nbPoints];
     nbPoints = nbPoints + 1;
 
     LUpi_LogMessage(LFormat("nbPoints %d\n",nbPoints));
 
-    LPolygon_New( pCell, pLayer, point_arr, nbPoints );
-
+    //delete the points that intersect with the polygon
     j=1;
     while(j != 0)
     {
         j=0;
         for(i=0; i<nbPoints; i++)
         {
-            //if((point_arr[i+1].x==point_arr[i].x && point_arr[i+1].y==point_arr[i].y) || (point_arr[i-1].y==point_arr[i].y && point_arr[i-1].x==point_arr[i].x))
-            //    continue;
+            if((save1.x==point_arr[i].x && save1.y==point_arr[i].y) || (save2.x==point_arr[i].x && save2.y==point_arr[i].y) || (save3.x==point_arr[i].x && save3.y==point_arr[i].y) || (save4.x==point_arr[i].x && save4.y==point_arr[i].y))
+                continue;
             if(i==0)
                 angle1 = atan2(point_arr[0].y-point_arr[nbPoints-1].y,point_arr[0].x-point_arr[nbPoints-1].x) - M_PI;
             else
@@ -165,8 +169,6 @@ LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
 //LUpi_LogMessage(LFormat("i %d\n",i));
             if( (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
             {
-                LCircle_New( pCell, LLayer_Find(pFile,"CIRCLE"), point_arr[i+1], 1 );
-
                 //point_arr[i]=point_arr[(i+1)%nbPoints];
                 //point_arr[(i+1)%nbPoints]=point_arr[i];
                 for(j=i; j<nbPoints; j++)
@@ -175,14 +177,13 @@ LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
                 j=1;
             }                
         }
-        LUpi_LogMessage(LFormat("QWERTYUIOP J %d\n",j)); 
     }
     
-    
+    LUpi_LogMessage(LFormat("nbPoints %d\n",nbPoints));
 
 //    curve_arr[nbPointsCurve] = LPoint_Set( 1, 0 );
 //    nbPointsCurve = nbPointsCurve + 1;
-    LPolygon_New( pCell, LLayer_Find(pFile, "CIRCLE"), point_arr, nbPoints );
+    LPolygon_New( pCell, pLayer, point_arr, nbPoints );
 }
 
 int UPI_Entry_Point(void)
