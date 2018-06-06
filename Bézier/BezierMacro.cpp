@@ -14,6 +14,7 @@
 #define BEZIER_PARAM 0.3
 #define MAX_POLYGON_SIZE 5000
 #define WIDTH 0.2
+#define ANGLE_LIMIT 1.5
 
 extern "C" {
     #include "DubinsPoint.hpp"
@@ -67,13 +68,13 @@ void BezierMacro()
     int i = 0;
     int j = 0;
     double x, y;
-    double angle, prevAngle;
+    double angle, angle1, angle2;
 
     double guideWidth = LFile_MicronsToIntU(pFile, WIDTH);
 
     start.SetPoint(0,0,pFile);
     start.SetAngleDegre(0);
-    end.SetPoint(2,1,pFile);
+    end.SetPoint(1,1,pFile);
     end.SetAngleDegre(0);
 
     xStart = start.GetPoint().x;
@@ -114,7 +115,7 @@ LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
     curve_arr[nbPointsCurve] = LPoint_Set( xEnd, yEnd );
     nbPointsCurve = nbPointsCurve + 1;
 
-    //construct the guide
+    //construct the guide from the curve
     point_arr[nbPoints] = LPoint_Set((LCoord)(xStart + sin(angleStart) * guideWidth / 2.0) , (LCoord)(yStart - cos(angleStart) * guideWidth / 2.0));
     nbPoints = nbPoints + 1;
     for(i=1; i<nbPointsCurve-1; i++)
@@ -140,6 +141,48 @@ LUpi_LogMessage(LFormat("BEGIN CREATING CURVE\n"));
     LUpi_LogMessage(LFormat("nbPoints %d\n",nbPoints));
 
     LPolygon_New( pCell, pLayer, point_arr, nbPoints );
+
+    j=1;
+    while(j != 0)
+    {
+        j=0;
+        for(i=0; i<nbPoints; i++)
+        {
+            //if((point_arr[i+1].x==point_arr[i].x && point_arr[i+1].y==point_arr[i].y) || (point_arr[i-1].y==point_arr[i].y && point_arr[i-1].x==point_arr[i].x))
+            //    continue;
+            if(i==0)
+                angle1 = atan2(point_arr[0].y-point_arr[nbPoints-1].y,point_arr[0].x-point_arr[nbPoints-1].x) - M_PI;
+            else
+                angle1 = atan2(point_arr[i].y-point_arr[i-1].y,point_arr[i].x-point_arr[i-1].x) - M_PI;
+            if(i==nbPoints-1)
+                angle2 = atan2(point_arr[nbPoints-1].y-point_arr[0].y,point_arr[nbPoints-1].x-point_arr[0].x);
+            else
+                angle2 = atan2(point_arr[i].y-point_arr[i+1].y,point_arr[i].x-point_arr[i+1].x);
+            angle = angle2 - angle1;
+            angle = fmod(angle, 2*M_PI);
+            while(angle < 0)
+                angle = angle + 2*M_PI;
+//LUpi_LogMessage(LFormat("i %d\n",i));
+            if( (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
+            {
+                LCircle_New( pCell, LLayer_Find(pFile,"CIRCLE"), point_arr[i+1], 1 );
+
+                //point_arr[i]=point_arr[(i+1)%nbPoints];
+                //point_arr[(i+1)%nbPoints]=point_arr[i];
+                for(j=i; j<nbPoints; j++)
+                    point_arr[j]=point_arr[(j+1)%nbPoints];
+                nbPoints = nbPoints - 1;
+                j=1;
+            }                
+        }
+        LUpi_LogMessage(LFormat("QWERTYUIOP J %d\n",j)); 
+    }
+    
+    
+
+//    curve_arr[nbPointsCurve] = LPoint_Set( 1, 0 );
+//    nbPointsCurve = nbPointsCurve + 1;
+    LPolygon_New( pCell, LLayer_Find(pFile, "CIRCLE"), point_arr, nbPoints );
 }
 
 int UPI_Entry_Point(void)
