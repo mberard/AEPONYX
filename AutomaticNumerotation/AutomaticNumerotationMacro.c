@@ -27,6 +27,7 @@ void AutomaticNumerotationMacro()
     LCoord delta_x, delta_y;
     int nbLine, nbCol;
     LCoord textSize = 0;
+    int cpt;
 
     LCell bigCell;
     LCell smallCell;
@@ -106,27 +107,27 @@ void AutomaticNumerotationMacro()
             strcat(strText, buffer);
 
             strcpy(strName, "");
-            strcat(strName, "Text ");
-            strcpy(strName, strText);
+            strcat(strName, "T_");
+            strcat(strName, strText);
 
             smallCell = LCell_New(pFile, strName);
 
             LCell_MakeLogo( smallCell, 
-                            strText, 
-                            textSize, 
-                            labelLayer, 
-                            LFALSE, 
-                            LFALSE, 
-                            LFALSE, 
-                            0, 
-                            0, 
-                            LFALSE, 
-                            LTRUE, 
-                            LFALSE, 
-                            "", 
-                            "", 
-                            "", 
-                            NULL );
+                                strText, 
+                                textSize, 
+                                labelLayer, 
+                                LFALSE, 
+                                LFALSE, 
+                                LFALSE, 
+                                0, 
+                                0, 
+                                LFALSE, 
+                                LTRUE, 
+                                LFALSE, 
+                                "", 
+                                "", 
+                                "", 
+                                NULL );
 
             transformation.translation.x = j*delta_x;
             transformation.translation.y = i*delta_y;
@@ -136,10 +137,8 @@ void AutomaticNumerotationMacro()
             instanceCreated = LInstance_GenerateV(bigCell, smallCell, NULL);
 			if(LInstance_Set_Ex99(smallCell, instanceCreated, transformation, LPoint_Set(1, 1), LPoint_Set(delta_x, delta_y)) == LStatusOK)
 			{
-                strcpy(strName, "Die numerotation");
-				LInstance_SetName( smallCell, instanceCreated, strName );
+				LInstance_SetName( smallCell, instanceCreated, strText );
             }
-            //LInstance_New_Ex99(smallCell, bigCell, transformation, LPoint_Set(1,1), LPoint_Set(delta_x,delta_y));
         }
     }
 
@@ -149,10 +148,9 @@ void AutomaticNumerotationMacro()
     transformation.magnification.num = 1;
     transformation.magnification.denom = 1;
     instanceCreated = LInstance_GenerateV(pCell, bigCell, NULL);
-	if(LInstance_Set_Ex99(smallCell, instanceCreated, transformation, LPoint_Set(1, 1), LPoint_Set(delta_x, delta_y)) == LStatusOK)
+	if(LInstance_Set_Ex99(bigCell, instanceCreated, transformation, LPoint_Set(1, 1), LPoint_Set(delta_x, delta_y)) == LStatusOK)
 	{
-
-		LInstance_SetName( pCell, instanceCreated, strName );
+		LInstance_SetName( bigCell, instanceCreated, strName );
     }
 }
 
