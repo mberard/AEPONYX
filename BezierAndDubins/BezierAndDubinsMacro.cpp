@@ -107,7 +107,8 @@ void BezierAndDubinsMacro()
     int choice = -1;
     choice = LDialog_PickList ("Which type of curve?", Pick_List, nbChoice, 0);
 
-
+    if(choice == -1)
+        return;
 
     strcpy(strLayer, "WGUIDE"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter name of the layer of the active cell in which the guide will be loaded", strLayer) == 0)
