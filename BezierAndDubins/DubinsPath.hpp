@@ -40,6 +40,8 @@ private:
     LPoint point_arr[MAX_POLYGON_SIZE];
     int nbPoints;
 
+    double paramBezier;
+
     LCell cell;
     LFile file;
     LLayer layer;
@@ -58,6 +60,7 @@ public:
     LStatus SetLayer(LLayer layer);
     LStatus SetOffsetCurveIsSelected(bool choice);
     LStatus SetOffsetValue(double value);
+    LStatus SetParamBezier(double paramBezier);
 
     LFile GetFile();
     LCell GetCell();
@@ -89,6 +92,8 @@ public:
     void RasterizePath();
     void DrawArc(LPoint center, LCoord radius, double startAngle, double stopAngle, bool isCCW);
     void Add( double x, double y);
+
+    void DubinsPathWithBezierCurves();
 
 };
 

@@ -104,6 +104,11 @@ LStatus DubinsPath::SetOffsetValue(double value){
     return this->UpdateCircleCenter();
 }
 
+LStatus DubinsPath::SetParamBezier(double value){
+    this->paramBezier = value;
+    return LStatusOK;
+}
+
 LFile DubinsPath::GetFile(){
     return this->file;
 }
@@ -1327,6 +1332,107 @@ void DubinsPath::DrawArc(LPoint center, LCoord radius, double startAngle, double
 			this->Add( center.x + radius * cos( dTheta ), center.y + radius * sin( dTheta ) );
 		this->Add( center.x + radius * cos( startAngle ), center.y + radius * sin( startAngle ) );
     }
+}
+
+
+void DubinsPath::DubinsPathWithBezierCurves()
+{
+    double xStartCurve1, yStartCurve1, xEndCurve1, yEndCurve1;
+    double xStartCurve2, yStartCurve2, xEndCurve2, yEndCurve2;
+
+    double angleStartCurve1, angleEndCurve1;
+    double angleStartCurve2, angleEndCurve2;
+
+    double coef;
+
+    double distXCurve1, distYCurve1;
+    double distXCurve2, distYCurve2;
+
+    LPoint controlStartCurve1, controlEndCurve1, controlStartCurve2, controlEndCurve2; 
+
+    LPoint curve1_arr[MAX_POLYGON_SIZE_BEZIER];
+    int nbPointsCurve1 = 0;
+    LPoint curve2_arr[MAX_POLYGON_SIZE_BEZIER];
+    int nbPointsCurve2 = 0;
+    LPoint point_arr[MAX_POLYGON_SIZE_BEZIER];
+    int nbPoints = 0;
+
+    xStartCurve1 = this->startPoint.GetPoint().x;
+    yStartCurve1 = this->startPoint.GetPoint().y;
+    xEndCurve1 = this->startTangent.GetPoint().x;
+    yEndCurve1 = this->startTangent.GetPoint().y;
+
+    xStartCurve2 = this->endTangent.GetPoint().x;
+    yStartCurve2 = this->endTangent.GetPoint().y;
+    xEndCurve2 = this->endPoint.GetPoint().x;
+    yEndCurve2 = this->endPoint.GetPoint().y;
+
+    distXCurve1 = xEndCurve1 - xStartCurve1;
+    distYCurve1 = yEndCurve1 - yStartCurve1;
+    distXCurve2 = xEndCurve2 - xStartCurve2;
+    distYCurve2 = yEndCurve2 - yStartCurve2;
+
+    angleStartCurve1 = this->startPoint.GetAngleRadian();
+    angleEndCurve1 = atan2(yStartCurve2-yEndCurve1, xStartCurve2-xEndCurve1);
+    angleStartCurve2 = angleEndCurve1;
+    angleEndCurve2 = this->endPoint.GetAngleRadian();
+
+    coef = 1 - this->paramBezier;
+
+    controlStartCurve1.x = (LCoord) ( xStartCurve1 + distXCurve1 * coef * cos(angleStartCurve1) );
+    controlStartCurve1.y = (LCoord) ( yStartCurve1 + distYCurve1 * coef * sin(angleStartCurve1) );
+    controlEndCurve1.x = (LCoord) ( xEndCurve1 + distXCurve1 * coef * cos(angleEndCurve1 + M_PI) );
+    controlEndCurve1.y = (LCoord) ( yEndCurve1 + distYCurve1 * coef * sin(angleEndCurve1 + M_PI) );
+    controlStartCurve2.x = (LCoord) ( xStartCurve2 + distXCurve2 * coef * cos(angleStartCurve2) );
+    controlStartCurve2.y = (LCoord) ( yStartCurve2 + distYCurve2 * coef * sin(angleStartCurve2) );
+    controlEndCurve2.x = (LCoord) ( xEndCurve2 + distXCurve2 * coef * cos(angleEndCurve2 + M_PI) );
+    controlEndCurve2.y = (LCoord) ( yEndCurve2 + distYCurve2 * coef * sin(angleEndCurve2 + M_PI) );
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// EN DEV /////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //construct the curve
+    curve_arr[nbPointsCurve] = LPoint_Set( xStart, yStart );
+    nbPointsCurve = nbPointsCurve + 1;
+    for(t=0.0005; t<1; t=t+0.0005)
+    {
+        x = xStart*pow((1-t),3) + 3*controlStart.x*pow((1-t),2)*t + 3*controlEnd.x*(1-t)*pow(t,2) + xEnd*pow(t,3);
+        y = yStart*pow((1-t),3) + 3*controlStart.y*pow((1-t),2)*t + 3*controlEnd.y*(1-t)*pow(t,2) + yEnd*pow(t,3);
+        curve_arr[nbPointsCurve] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
+        nbPointsCurve = nbPointsCurve + 1;
+    }
+    curve_arr[nbPointsCurve] = LPoint_Set( xEnd, yEnd );
+    nbPointsCurve = nbPointsCurve + 1;
+
+    if(this->type == RSR)
+    {
+        
+    }
+    else if(this->type == LSL)
+    {
+        
+    }
+    else if(this->type == RSL)
+    {
+        
+    }
+    else if(this->type == LSR)
+    {
+        
+    }
+    else if(this->type == RLR)
+    {
+        
+    }
+    else if(this->type == LRL)
+    {
+        
+    }
+
+    LObject_Delete( this->cell, this->torusStart );
+    LObject_Delete( this->cell, this->torusEnd );
+    LObject_Delete( this->cell, this->torusMiddle );
+    LObject_Delete( this->cell, this->line );
 }
 
 
