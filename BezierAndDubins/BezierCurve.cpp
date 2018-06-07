@@ -38,6 +38,12 @@ LStatus BezierCurve::SetGuideWidth(double width){
 }
 
 
+LStatus BezierCurve::SetParamBezier(double value){
+    this->paramBezier = value;
+    return LStatusOK;
+}
+
+
 
 void BezierCurve::ComputeBezierCurve()
 {
@@ -65,7 +71,7 @@ void BezierCurve::ComputeBezierCurve()
     angleStart = this->startPoint.GetAngleRadian();
     angleEnd = this->endPoint.GetAngleRadian();
 
-    coef = 1 - BEZIER_PARAM;
+    coef = 1 - this->paramBezier;
 
 
 LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));

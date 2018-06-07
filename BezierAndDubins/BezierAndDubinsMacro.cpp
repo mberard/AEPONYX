@@ -98,6 +98,7 @@ void BezierAndDubinsMacro()
     int nmbLabel = 0;
     float radius;
     float width;
+    double paramBezier;
 
     const char *Pick_List [ ] = {
     "Dubins curves",
@@ -622,6 +623,12 @@ void BezierAndDubinsMacro()
                 return;
             else
                 width = atof(strLayer);
+            
+            strcpy(strLayer, "0.3");
+            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
+                return;
+            else
+                paramBezier = atof(strLayer);
 
             bezierCurve.SetFile(pFile);
             bezierCurve.SetCell(pCell);
@@ -629,6 +636,7 @@ void BezierAndDubinsMacro()
             bezierCurve.SetStartPoint(start);
             bezierCurve.SetEndPoint(end);
             bezierCurve.SetGuideWidth(width);
+            bezierCurve.SetParamBezier(paramBezier);
 
             bezierCurve.ComputeBezierCurve();
 
@@ -649,6 +657,12 @@ void BezierAndDubinsMacro()
         
         if(myFile != NULL)
         {
+            strcpy(strLayer, "0.3");
+            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
+                return;
+            else
+                paramBezier = atof(strLayer);
+
             while(!feof(myFile))
             {
                 nmbLabel = 0;
@@ -786,6 +800,7 @@ void BezierAndDubinsMacro()
                 bezierCurve.SetStartPoint(start);
                 bezierCurve.SetEndPoint(end);
                 bezierCurve.SetGuideWidth(width);
+                bezierCurve.SetParamBezier(paramBezier);
                 
                 bezierCurve.ComputeBezierCurve();
             
@@ -915,12 +930,19 @@ void BezierAndDubinsMacro()
             else
                 width = atof(strLayer);
 
+            strcpy(strLayer, "0.3");
+            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
+                return;
+            else
+                paramBezier = atof(strLayer);
+
             bezierCurve.SetFile(pFile);
             bezierCurve.SetCell(pCell);
             bezierCurve.SetLayer(pLayer);
             bezierCurve.SetStartPoint(start);
             bezierCurve.SetEndPoint(end);
             bezierCurve.SetGuideWidth(width);
+            bezierCurve.SetParamBezier(paramBezier);
             
             bezierCurve.ComputeBezierCurve();
             
