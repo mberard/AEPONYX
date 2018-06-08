@@ -1389,20 +1389,33 @@ void DubinsPath::DubinsPathWithBezierCurves()
     controlEndCurve2.y = (LCoord) ( yEndCurve2 + distYCurve2 * coef * sin(angleEndCurve2 + M_PI) );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//// EN DEV /////
+//// DEV EN COURS /////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //construct the curve
-    curve_arr[nbPointsCurve] = LPoint_Set( xStart, yStart );
-    nbPointsCurve = nbPointsCurve + 1;
+    //construct the curve1
+    curve1_arr[nbPointsCurve1] = LPoint_Set( xStartCurve1, yStartCurve1 );
+    nbPointsCurve1 = nbPointsCurve1 + 1;
     for(t=0.0005; t<1; t=t+0.0005)
     {
-        x = xStart*pow((1-t),3) + 3*controlStart.x*pow((1-t),2)*t + 3*controlEnd.x*(1-t)*pow(t,2) + xEnd*pow(t,3);
-        y = yStart*pow((1-t),3) + 3*controlStart.y*pow((1-t),2)*t + 3*controlEnd.y*(1-t)*pow(t,2) + yEnd*pow(t,3);
-        curve_arr[nbPointsCurve] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
-        nbPointsCurve = nbPointsCurve + 1;
+        x = xStartCurve1*pow((1-t),3) + 3*controlStartCurve1.x*pow((1-t),2)*t + 3*controlEndCurve1.x*(1-t)*pow(t,2) + xEndCurve1*pow(t,3);
+        y = yStartCurve1*pow((1-t),3) + 3*controlStartCurve1.y*pow((1-t),2)*t + 3*controlEndCurve1.y*(1-t)*pow(t,2) + yEndCurve1*pow(t,3);
+        curve1_arr[nbPointsCurve1] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
+        nbPointsCurve1 = nbPointsCurve1 + 1;
     }
-    curve_arr[nbPointsCurve] = LPoint_Set( xEnd, yEnd );
-    nbPointsCurve = nbPointsCurve + 1;
+    curve1_arr[nbPointsCurve1] = LPoint_Set( xEndCurve1, yEndCurve1 );
+    nbPointsCurve1 = nbPointsCurve1 + 1;
+
+    //construct the curve2
+    curve2_arr[nbPointsCurve2] = LPoint_Set( xStartCurve2, yStartCurve2 );
+    nbPointsCurve2 = nbPointsCurve2 + 1;
+    for(t=0.0005; t<1; t=t+0.0005)
+    {
+        x = xStartCurve2*pow((1-t),3) + 3*controlStartCurve2.x*pow((1-t),2)*t + 3*controlEndCurve2.x*(1-t)*pow(t,2) + xEndCurve2*pow(t,3);
+        y = yStartCurve2*pow((1-t),3) + 3*controlStartCurve2.y*pow((1-t),2)*t + 3*controlEndCurve2.y*(1-t)*pow(t,2) + yEndCurve2*pow(t,3);
+        curve2_arr[nbPointsCurve2] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
+        nbPointsCurve2 = nbPointsCurve2 + 1;
+    }
+    curve2_arr[nbPointsCurve2] = LPoint_Set( xEndCurve1, yEndCurve1 );
+    nbPointsCurve2 = nbPointsCurve2 + 1;
 
     if(this->type == RSR)
     {
