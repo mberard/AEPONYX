@@ -35,6 +35,14 @@ void AutomaticNumerotationMacro()
 
     LTransform_Ex99 transformation;
 
+    LWindow activeWindow = LWindow_GetVisible();
+    LWindow pWindow = NULL;
+    for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
+    {
+        if(pWindow != activeWindow)
+            LWindow_Close( pWindow );
+    }
+
     strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter the name of the origin label", strNameWanted) == 0)
 		return;
@@ -125,23 +133,21 @@ void AutomaticNumerotationMacro()
                 smallCell = LCell_New(pFile, strName);
             }
 
-            
-
-            LCell_MakeLogo( smallCell, 
-                                strText, 
-                                textSize, 
-                                labelLayer, 
-                                LFALSE, 
-                                LFALSE, 
-                                LFALSE, 
-                                0, 
-                                (LCoord)(textSize/2 - textSize*0.15), 
-                                LFALSE, 
-                                LTRUE, 
-                                LFALSE, 
-                                "", 
-                                "", 
-                                "", 
+            LCell_MakeLogo( smallCell,
+                                strText,
+                                textSize,
+                                labelLayer,
+                                LFALSE,
+                                LFALSE,
+                                LFALSE,
+                                0,
+                                (LCoord)(textSize/2 - textSize*0.1538),
+                                LFALSE,
+                                LTRUE,
+                                LFALSE,
+                                "",
+                                "",
+                                "",
                                 NULL );
 
             if(!(LInstance_Find(bigCell, strText))) //add the instance that not already exist
@@ -156,6 +162,12 @@ void AutomaticNumerotationMacro()
                 {
                     LInstance_SetName( smallCell, instanceCreated, strText );
                 }
+            }
+
+            for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
+            {
+                if(pWindow != activeWindow)
+                    LWindow_Close( pWindow );
             }
         }
     }
