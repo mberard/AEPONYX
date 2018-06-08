@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define MAX_NUMBER_WINDOWS 50
 
 void AutomaticNumerotationMacro()
 {
@@ -34,6 +35,17 @@ void AutomaticNumerotationMacro()
     LInstance instanceCreated;
 
     LTransform_Ex99 transformation;
+
+    LWindow activeWindows[MAX_NUMBER_WINDOWS];
+    int numberWindows = 0;
+    int hasBeenFoundInArray = 0;
+
+    LWindow pWindow = NULL;
+    for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
+    {
+        activeWindows[numberWindows] = pWindow;
+        numberWindows++;
+    }
 
     strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter the name of the origin label", strNameWanted) == 0)
@@ -125,23 +137,21 @@ void AutomaticNumerotationMacro()
                 smallCell = LCell_New(pFile, strName);
             }
 
-            
-
-            LCell_MakeLogo( smallCell, 
-                                strText, 
-                                textSize, 
-                                labelLayer, 
-                                LFALSE, 
-                                LFALSE, 
-                                LFALSE, 
-                                0, 
-                                0, 
-                                LFALSE, 
-                                LTRUE, 
-                                LFALSE, 
-                                "", 
-                                "", 
-                                "", 
+            LCell_MakeLogo( smallCell,
+                                strText,
+                                textSize,
+                                labelLayer,
+                                LFALSE,
+                                LFALSE,
+                                LFALSE,
+                                0,
+                                (LCoord)(textSize/2 - textSize*0.1538),
+                                LFALSE,
+                                LTRUE,
+                                LFALSE,
+                                "",
+                                "",
+                                "",
                                 NULL );
 
             if(!(LInstance_Find(bigCell, strText))) //add the instance that not already exist
@@ -156,6 +166,21 @@ void AutomaticNumerotationMacro()
                 {
                     LInstance_SetName( smallCell, instanceCreated, strText );
                 }
+            }
+
+            for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
+            {
+                hasBeenFoundInArray = 0;
+                for(int i = 0; i<numberWindows; i++)
+                {
+                    if(activeWindows[i] == pWindow)
+                    {
+                        hasBeenFoundInArray = 1;
+                        break;
+                    }
+                }
+                if(hasBeenFoundInArray == 0)
+                    LWindow_Close(pWindow);
             }
         }
     }
