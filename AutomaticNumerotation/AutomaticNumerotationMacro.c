@@ -4,6 +4,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+// #include <regex.h> //may be usefull to delete all the cell
+// see: https://nicolasj.developpez.com/articles/regex/
+// str_regex : "^T_C[[:digit:]]{2,3}T[[:digit:]]{2,3}"
+
 #define MAX_NUMBER_WINDOWS 50
 
 void AutomaticNumerotationMacro()
@@ -39,8 +43,60 @@ void AutomaticNumerotationMacro()
     LWindow activeWindows[MAX_NUMBER_WINDOWS];
     int numberWindows = 0;
     int hasBeenFoundInArray = 0;
-
     LWindow pWindow = NULL;
+
+
+    char *Pick_List [ ] = {
+    "Create an automatic numerotation",
+    "Delete an existing automatic numerotation"
+    };
+    int Pick_Count = 2;
+    int Picked;
+    
+    Picked = LDialog_PickList ("Select Element", Pick_List, Pick_Count, 0);
+
+    if(Picked == -1)
+        return;
+    else if(Picked == 1)
+    {
+        LCell cellListItem = LCell_GetList(pFile);
+        
+        bigCell = LCell_Find(pFile, "AutomaticNumerotation");
+
+        LInstance inst;
+        if(bigCell)
+            for( inst = LInstance_GetList(bigCell); inst != NULL; inst = LInstance_GetNext(inst)) 
+                LInstance_Delete(bigCell, inst); //deleting all the instance in bigCell
+
+        inst = LInstance_Find(pCell, "Die numerotation");
+        if(inst)
+            LInstance_Delete(pCell, inst);
+        LCell_Delete( bigCell );
+
+        while ( cellListItem != NULL )
+        {
+            LCell_GetName( cellListItem, strName, MAX_TDBFILE_NAME );
+            LUpi_LogMessage(LFormat("try cell %s\n", strName));
+            if(strlen(strName)>=8)
+            {
+                if(strName[0]=='T' && strName[1]=='_' && strName[2]=='C')
+                {
+                    LCell toBeDeleted = cellListItem;
+                    cellListItem = LCell_GetNext(cellListItem);
+                    LCell_Delete( toBeDeleted );
+                    LUpi_LogMessage(LFormat("Deleting cell %s\n", strName));
+                }
+                else
+                    cellListItem = LCell_GetNext(cellListItem);
+            }
+            else
+                cellListItem = LCell_GetNext(cellListItem);
+        }
+
+        return; //end of the macro
+    }
+
+//if we choose 0 ("Create an automatic numerotation")
     for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
     {
         activeWindows[numberWindows] = pWindow;
