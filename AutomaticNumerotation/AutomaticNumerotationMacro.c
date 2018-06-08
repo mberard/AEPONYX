@@ -45,7 +45,6 @@ void AutomaticNumerotationMacro()
     {
         activeWindows[numberWindows] = pWindow;
         numberWindows++;
-LUpi_LogMessage(LFormat("NUMBER OF WINDOWS %d\n", numberWindows));
     }
 
     strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
@@ -176,7 +175,6 @@ LUpi_LogMessage(LFormat("NUMBER OF WINDOWS %d\n", numberWindows));
                 {
                     if(activeWindows[i] == pWindow)
                     {
-                        LUpi_LogMessage(LFormat("window number %d has been found\n", i));
                         hasBeenFoundInArray = 1;
                         break;
                     }
