@@ -88,8 +88,14 @@ void AutomaticNumerotationMacro()
     else
         return;
 
-    bigCell = LCell_New(pFile, "AutomaticNumerotation");
+    if( ! (LCell_Find(pFile, "AutomaticNumerotation"))) //if not exist
+        bigCell = LCell_New(pFile, "AutomaticNumerotation"); //create
+    else
+        bigCell = LCell_Find(pFile, "AutomaticNumerotation"); //point on the existing one
 
+    for(LInstance inst = LInstance_GetList(bigCell); inst != NULL; inst = LInstance_GetNext(inst)) 
+                LInstance_Delete(bigCell, inst); //deleting all the instance in bigCell
+    
     for(int i = 0; i<nbLine; i++)
     {
         for(int j = 0; j<nbCol; j++)
@@ -110,7 +116,16 @@ void AutomaticNumerotationMacro()
             strcat(strName, "T_");
             strcat(strName, strText);
 
-            smallCell = LCell_New(pFile, strName);
+            smallCell = LCell_Find(pFile, strName);
+            if(smallCell == NULL)
+                smallCell = LCell_New(pFile, strName);
+            else
+            {
+                LCell_Delete( smallCell );
+                smallCell = LCell_New(pFile, strName);
+            }
+
+            
 
             LCell_MakeLogo( smallCell, 
                                 strText, 
@@ -129,28 +144,34 @@ void AutomaticNumerotationMacro()
                                 "", 
                                 NULL );
 
-            transformation.translation.x = j*delta_x;
-            transformation.translation.y = i*delta_y;
-            transformation.orientation = 0.0;
-            transformation.magnification.num = 1;
-            transformation.magnification.denom = 1;
-            instanceCreated = LInstance_GenerateV(bigCell, smallCell, NULL);
-			if(LInstance_Set_Ex99(smallCell, instanceCreated, transformation, LPoint_Set(1, 1), LPoint_Set(delta_x, delta_y)) == LStatusOK)
-			{
-				LInstance_SetName( smallCell, instanceCreated, strText );
+            if(!(LInstance_Find(bigCell, strText))) //add the instance that not already exist
+            {
+                transformation.translation.x = j*delta_x;
+                transformation.translation.y = i*delta_y;
+                transformation.orientation = 0.0;
+                transformation.magnification.num = 1;
+                transformation.magnification.denom = 1;
+                instanceCreated = LInstance_GenerateV(bigCell, smallCell, NULL);
+                if(LInstance_Set_Ex99(smallCell, instanceCreated, transformation, LPoint_Set(1, 1), LPoint_Set(delta_x, delta_y)) == LStatusOK)
+                {
+                    LInstance_SetName( smallCell, instanceCreated, strText );
+                }
             }
         }
     }
 
-    transformation.translation.x = ref_x;
-    transformation.translation.y = ref_y;
-    transformation.orientation = 0;
-    transformation.magnification.num = 1;
-    transformation.magnification.denom = 1;
-    instanceCreated = LInstance_GenerateV(pCell, bigCell, NULL);
-	if(LInstance_Set_Ex99(bigCell, instanceCreated, transformation, LPoint_Set(1, 1), LPoint_Set(delta_x, delta_y)) == LStatusOK)
-	{
-		LInstance_SetName( bigCell, instanceCreated, strName );
+    if(!(LInstance_Find(pCell, "Die numerotation")))
+    {
+        transformation.translation.x = ref_x;
+        transformation.translation.y = ref_y;
+        transformation.orientation = 0;
+        transformation.magnification.num = 1;
+        transformation.magnification.denom = 1;
+        instanceCreated = LInstance_GenerateV(pCell, bigCell, NULL);
+        if(LInstance_Set_Ex99(bigCell, instanceCreated, transformation, LPoint_Set(1, 1), LPoint_Set(delta_x, delta_y)) == LStatusOK)
+        {
+            LInstance_SetName( bigCell, instanceCreated, "Die numerotation" );
+        }
     }
 }
 
