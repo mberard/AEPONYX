@@ -223,22 +223,23 @@ void AutomaticNumerotationMacro()
                     LInstance_SetName( smallCell, instanceCreated, strText );
                 }
             }
+        }
+    }
 
-            for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
+    
+    for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
+    {
+        hasBeenFoundInArray = 0;
+        for(int i = 0; i<numberWindows; i++)
+        {
+            if(activeWindows[i] == pWindow)
             {
-                hasBeenFoundInArray = 0;
-                for(int i = 0; i<numberWindows; i++)
-                {
-                    if(activeWindows[i] == pWindow)
-                    {
-                        hasBeenFoundInArray = 1;
-                        break;
-                    }
-                }
-                if(hasBeenFoundInArray == 0)
-                    LWindow_Close(pWindow);
+                hasBeenFoundInArray = 1;
+                break;
             }
         }
+        if(hasBeenFoundInArray == 0)
+            LWindow_Close(pWindow);
     }
 
     if(!(LInstance_Find(pCell, "Die numerotation")))
