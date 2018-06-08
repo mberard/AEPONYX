@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define MAX_NUMBER_WINDOWS 50
 
 void AutomaticNumerotationMacro()
 {
@@ -35,12 +36,16 @@ void AutomaticNumerotationMacro()
 
     LTransform_Ex99 transformation;
 
-    LWindow activeWindow = LWindow_GetVisible();
+    LWindow activeWindows[MAX_NUMBER_WINDOWS];
+    int numberWindows = 0;
+    int hasBeenFoundInArray = 0;
+
     LWindow pWindow = NULL;
     for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
     {
-        if(pWindow != activeWindow)
-            LWindow_Close( pWindow );
+        activeWindows[numberWindows] = pWindow;
+        numberWindows++;
+LUpi_LogMessage(LFormat("NUMBER OF WINDOWS %d\n", numberWindows));
     }
 
     strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
@@ -166,8 +171,18 @@ void AutomaticNumerotationMacro()
 
             for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
             {
-                if(pWindow != activeWindow)
-                    LWindow_Close( pWindow );
+                hasBeenFoundInArray = 0;
+                for(int i = 0; i<numberWindows; i++)
+                {
+                    if(activeWindows[i] == pWindow)
+                    {
+                        LUpi_LogMessage(LFormat("window number %d has been found\n", i));
+                        hasBeenFoundInArray = 1;
+                        break;
+                    }
+                }
+                if(hasBeenFoundInArray == 0)
+                    LWindow_Close(pWindow);
             }
         }
     }
