@@ -135,7 +135,7 @@ void AutomaticNumerotationMacro()
                                 LFALSE, 
                                 LFALSE, 
                                 0, 
-                                0, 
+                                (LCoord)(textSize/2 - textSize*0.15), 
                                 LFALSE, 
                                 LTRUE, 
                                 LFALSE, 
