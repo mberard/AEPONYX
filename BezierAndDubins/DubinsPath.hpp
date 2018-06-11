@@ -3,8 +3,10 @@
 
 #include <ldata.h>
 #include "DubinsPoint.hpp"
+#include "BezierCurve.hpp"
 
 #define MAX_POLYGON_SIZE 10000
+#define ANGLE_LIMIT 1.5
 
 enum PathType { RSR, LSL, RSL, LSR, RLR, LRL };
 

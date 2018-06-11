@@ -188,5 +188,8 @@ long Round0or5ToLong(double val)
 
 long RoundToLong(double value)
 {
-    return (long)(value+0.5);
+    if(value > 0)
+        return (long)(value+0.5);
+    else
+        return (long)(value-0.5);
 }

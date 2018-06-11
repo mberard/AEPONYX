@@ -11,32 +11,24 @@ LStatus DubinsPath::UpdateCircleCenter(){
 
     Dcenter.x = startPoint.GetPoint().x + radius*cos(startPoint.GetAngleRadian() - M_PI/2.0);
     Dcenter.y = startPoint.GetPoint().y + radius*sin(startPoint.GetAngleRadian() - M_PI/2.0);
-//    Lcenter.x = Dcenter.x + this->offsetValue * cos(startPoint.GetAngleRadian() );
-//    Lcenter.y = Dcenter.y - this->offsetValue * sin(startPoint.GetAngleRadian() );
     Lcenter.x = Dcenter.x;
     Lcenter.y = Dcenter.y;
     this->centerStartRightCircle = Lcenter;
 
     Dcenter.x = startPoint.GetPoint().x + radius*cos(startPoint.GetAngleRadian() + M_PI/2.0);
     Dcenter.y = startPoint.GetPoint().y + radius*sin(startPoint.GetAngleRadian() + M_PI/2.0);
-//    Lcenter.x = Dcenter.x - this->offsetValue * sin(startPoint.GetAngleRadian() );
-//    Lcenter.y = Dcenter.y + this->offsetValue * cos(startPoint.GetAngleRadian() );
     Lcenter.x = Dcenter.x;
     Lcenter.y = Dcenter.y;
     this->centerStartLeftCircle = Lcenter;
 
     Dcenter.x = endPoint.GetPoint().x + radius*cos(endPoint.GetAngleRadian() - M_PI/2.0);
     Dcenter.y = endPoint.GetPoint().y + radius*sin(endPoint.GetAngleRadian() - M_PI/2.0);
-//    Lcenter.x = Dcenter.x + this->offsetValue * sin(endPoint.GetAngleRadian() );
-//    Lcenter.y = Dcenter.y - this->offsetValue * cos(endPoint.GetAngleRadian() );
     Lcenter.x = Dcenter.x;
     Lcenter.y = Dcenter.y;
     this->centerEndRightCircle = Lcenter;
 
     Dcenter.x = endPoint.GetPoint().x + radius*cos(endPoint.GetAngleRadian() + M_PI/2.0);
     Dcenter.y = endPoint.GetPoint().y + radius*sin(endPoint.GetAngleRadian() + M_PI/2.0);
-//    Lcenter.x = Dcenter.x - this->offsetValue * cos(endPoint.GetAngleRadian() );
-//    Lcenter.y = Dcenter.y + this->offsetValue * sin(endPoint.GetAngleRadian() );
     Lcenter.x = Dcenter.x;
     Lcenter.y = Dcenter.y;
     this->centerEndLeftCircle = Lcenter;
@@ -328,7 +320,7 @@ void DubinsPath::ComputeDubinsPaths(){
     LPoint shortestStartTangent, shortestEndTangent, shortestMiddleCenter;
 
     shortestDistance = 9999999999999999.9999;
-
+/*
     //RSR
     if( ! (xStart == xEnd && yStart == yEnd) ) //not the same circle == start and endpoint are different
     {
@@ -337,7 +329,7 @@ void DubinsPath::ComputeDubinsPaths(){
         this->GetLSLorRSRTangent(this->centerStartRightCircle, this->centerEndRightCircle, false);
         
         returnDistance = this->ComputeRSRLength();
-LUpi_LogMessage( LFormat("RSR distance %f\n",returnDistance) );
+        LUpi_LogMessage( LFormat("RSR distance %f\n",returnDistance) );
         if(returnDistance < shortestDistance){
             shortestDistance = returnDistance;
             shortestType = RSR;
@@ -353,7 +345,7 @@ LUpi_LogMessage( LFormat("RSR distance %f\n",returnDistance) );
         this->GetLSLorRSRTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, true);
         
         returnDistance = this->ComputeLSLLength();
-LUpi_LogMessage( LFormat("LSL distance %f\n",returnDistance) );
+        LUpi_LogMessage( LFormat("LSL distance %f\n",returnDistance) );
         if(returnDistance < shortestDistance){
             shortestDistance = returnDistance;
             shortestType = LSL;
@@ -361,25 +353,25 @@ LUpi_LogMessage( LFormat("LSL distance %f\n",returnDistance) );
             shortestEndTangent = this->endTangent;
         }
     }
-
+*/
     double circleDistanceSqr = PointDistance(this->centerEndLeftCircle, this->centerStartRightCircle) * PointDistance(this->centerEndLeftCircle, this->centerStartRightCircle);
     double comparaisonDistanceSqr = (2*this->radius)*(2*this->radius);
-
+/*
     //RSL
     if( circleDistanceSqr >= comparaisonDistanceSqr ) //circle don't intersect
     {
         this->GetRSLorLSRTangent(this->centerStartRightCircle, this->centerEndLeftCircle, false);
 
         returnDistance = this->ComputeRSLLength();
-LUpi_LogMessage( LFormat("RSL distance %lf\n",returnDistance) );
+        LUpi_LogMessage( LFormat("RSL distance %lf\n",returnDistance) );
         if(returnDistance < shortestDistance){
             shortestDistance = returnDistance;
             shortestType = RSL;
             shortestStartTangent = this->startTangent;
             shortestEndTangent = this->endTangent;
         }
-    }    
-
+    } 
+*/
     circleDistanceSqr = PointDistance(this->centerEndRightCircle, this->centerStartLeftCircle) * PointDistance(this->centerEndRightCircle, this->centerStartLeftCircle);
 
     //LSR
@@ -388,7 +380,7 @@ LUpi_LogMessage( LFormat("RSL distance %lf\n",returnDistance) );
         this->GetRSLorLSRTangent(this->centerStartLeftCircle, this->centerEndRightCircle, true);
          
         returnDistance = this->ComputeLSRLength();
-LUpi_LogMessage( LFormat("LSR distance %f\n",returnDistance) );
+        LUpi_LogMessage( LFormat("LSR distance %f\n",returnDistance) );
         if(returnDistance < shortestDistance){
             shortestDistance = returnDistance;
             shortestType = LSR;
@@ -396,8 +388,7 @@ LUpi_LogMessage( LFormat("LSR distance %f\n",returnDistance) );
             shortestEndTangent = this->endTangent;
         }
     }
-
-
+/*
     comparaisonDistanceSqr = (4*this->radius)*(4*this->radius);
     //RLR
     if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
@@ -405,7 +396,7 @@ LUpi_LogMessage( LFormat("LSR distance %f\n",returnDistance) );
         this->GetRLRorLRLTangent(this->centerStartRightCircle, this->centerEndRightCircle, false);
 
         returnDistance = this->ComputeRLRLength();
-LUpi_LogMessage( LFormat("RLR distance %f\n",returnDistance) );
+        LUpi_LogMessage( LFormat("RLR distance %f\n",returnDistance) );
         if(returnDistance < shortestDistance){
             shortestDistance = returnDistance;
             shortestType = RLR;
@@ -421,7 +412,7 @@ LUpi_LogMessage( LFormat("RLR distance %f\n",returnDistance) );
         this->GetRLRorLRLTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, true);
 
         returnDistance = this->ComputeLRLLength();
-LUpi_LogMessage( LFormat("LRL distance %f\n",returnDistance) );
+        LUpi_LogMessage( LFormat("LRL distance %f\n",returnDistance) );
         if(returnDistance < shortestDistance){
             shortestDistance = returnDistance;
             shortestType = LRL;
@@ -430,7 +421,7 @@ LUpi_LogMessage( LFormat("LRL distance %f\n",returnDistance) );
             shortestMiddleCenter = this->centerMiddleCircle;
         }
     }
-
+*/
     this->startTangent = shortestStartTangent;
     this->endTangent = shortestEndTangent;
     this->distance = shortestDistance;
@@ -454,15 +445,19 @@ LUpi_LogMessage( LFormat("LRL distance %f\n",returnDistance) );
     {
         case RSR:
             this->StoreRSRPath();
+            this->DubinsPathWithBezierCurves();
             break;
         case LSL:
             this->StoreLSLPath();
+            this->DubinsPathWithBezierCurves();
             break;
         case RSL:
             this->StoreRSLPath();
+            this->DubinsPathWithBezierCurves();
             break;
         case LSR:
             this->StoreLSRPath();
+            this->DubinsPathWithBezierCurves();
             break;
         case RLR:
             this->StoreRLRPath();
@@ -1357,13 +1352,26 @@ void DubinsPath::DubinsPathWithBezierCurves()
     LPoint point_arr[MAX_POLYGON_SIZE_BEZIER];
     int nbPoints = 0;
 
+    LPoint save1, save2, save3, save4;
+
+    LCoord x, y;
+    double dx, dy;
+    double dist1, dist2;
+
+    double angle, angle1, angle2;
+
+    int i = 0;
+    int j = 0;
+
+    double t = 0;
+
     xStartCurve1 = this->startPoint.GetPoint().x;
     yStartCurve1 = this->startPoint.GetPoint().y;
-    xEndCurve1 = this->startTangent.GetPoint().x;
-    yEndCurve1 = this->startTangent.GetPoint().y;
+    xEndCurve1 = this->startTangent.x;
+    yEndCurve1 = this->startTangent.y;
 
-    xStartCurve2 = this->endTangent.GetPoint().x;
-    yStartCurve2 = this->endTangent.GetPoint().y;
+    xStartCurve2 = this->endTangent.x;
+    yStartCurve2 = this->endTangent.y;
     xEndCurve2 = this->endPoint.GetPoint().x;
     yEndCurve2 = this->endPoint.GetPoint().y;
 
@@ -1371,26 +1379,46 @@ void DubinsPath::DubinsPathWithBezierCurves()
     distYCurve1 = yEndCurve1 - yStartCurve1;
     distXCurve2 = xEndCurve2 - xStartCurve2;
     distYCurve2 = yEndCurve2 - yStartCurve2;
+    if(distXCurve1<0)
+        distXCurve1=-distXCurve1;
+    if(distYCurve1<0)
+        distYCurve1=-distYCurve1;
+    if(distXCurve2<0)
+        distXCurve2=-distXCurve2;
+    if(distYCurve2<0)
+        distYCurve2=-distYCurve2;
+
+    dx = xStartCurve2 - xEndCurve1;
+    dy = yStartCurve2 - yEndCurve1;
 
     angleStartCurve1 = this->startPoint.GetAngleRadian();
-    angleEndCurve1 = atan2(yStartCurve2-yEndCurve1, xStartCurve2-xEndCurve1);
+    angleEndCurve1 = atan2(dy, dx);
     angleStartCurve2 = angleEndCurve1;
     angleEndCurve2 = this->endPoint.GetAngleRadian();
 
+this->paramBezier = 0.3;
     coef = 1 - this->paramBezier;
 
-    controlStartCurve1.x = (LCoord) ( xStartCurve1 + distXCurve1 * coef * cos(angleStartCurve1) );
-    controlStartCurve1.y = (LCoord) ( yStartCurve1 + distYCurve1 * coef * sin(angleStartCurve1) );
-    controlEndCurve1.x = (LCoord) ( xEndCurve1 + distXCurve1 * coef * cos(angleEndCurve1 + M_PI) );
-    controlEndCurve1.y = (LCoord) ( yEndCurve1 + distYCurve1 * coef * sin(angleEndCurve1 + M_PI) );
-    controlStartCurve2.x = (LCoord) ( xStartCurve2 + distXCurve2 * coef * cos(angleStartCurve2) );
-    controlStartCurve2.y = (LCoord) ( yStartCurve2 + distYCurve2 * coef * sin(angleStartCurve2) );
-    controlEndCurve2.x = (LCoord) ( xEndCurve2 + distXCurve2 * coef * cos(angleEndCurve2 + M_PI) );
-    controlEndCurve2.y = (LCoord) ( yEndCurve2 + distYCurve2 * coef * sin(angleEndCurve2 + M_PI) );
+    dist1 = PointDistance(this->startPoint.GetLPoint(), this->startTangent);
+    dist2 = PointDistance(this->endTangent, this->endPoint.GetLPoint());
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//// DEV EN COURS /////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    controlStartCurve1.x = (LCoord) ( xStartCurve1 + dist1 * coef * cos(angleStartCurve1) );
+    controlStartCurve1.y = (LCoord) ( yStartCurve1 + dist1 * coef * sin(angleStartCurve1) );
+    controlEndCurve1.x = (LCoord) ( xEndCurve1 + dist1 * coef * cos(angleEndCurve1 + M_PI) );
+    controlEndCurve1.y = (LCoord) ( yEndCurve1 + dist1 * coef * sin(angleEndCurve1 + M_PI) );
+    controlStartCurve2.x = (LCoord) ( xStartCurve2 + dist2 * coef * cos(angleStartCurve2) );
+    controlStartCurve2.y = (LCoord) ( yStartCurve2 + dist2 * coef * sin(angleStartCurve2) );
+    controlEndCurve2.x = (LCoord) ( xEndCurve2 + dist2 * coef * cos(angleEndCurve2 + M_PI) );
+    controlEndCurve2.y = (LCoord) ( yEndCurve2 + dist2 * coef * sin(angleEndCurve2 + M_PI) );
+
+LPoint tmp[5];
+tmp[0]=LPoint_Set(xStartCurve1,yStartCurve1);
+tmp[1]=controlStartCurve1;
+tmp[2]=controlEndCurve1;
+tmp[3]=LPoint_Set(xEndCurve1,yEndCurve1);
+tmp[4]=LPoint_Set(xStartCurve2,yStartCurve2);
+LPolygon_New( this->cell, LLayer_Find(this->file, "TEST"), tmp, 5 );
+
     //construct the curve1
     curve1_arr[nbPointsCurve1] = LPoint_Set( xStartCurve1, yStartCurve1 );
     nbPointsCurve1 = nbPointsCurve1 + 1;
@@ -1417,23 +1445,171 @@ void DubinsPath::DubinsPathWithBezierCurves()
     curve2_arr[nbPointsCurve2] = LPoint_Set( xEndCurve1, yEndCurve1 );
     nbPointsCurve2 = nbPointsCurve2 + 1;
 
-    if(this->type == RSR)
+
+    //right side of curve 1
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve1 + sin(angleStartCurve1) * this->guideWidth / 2.0) , (LCoord)(yStartCurve1 - cos(angleStartCurve1) * this->guideWidth / 2.0));
+        save1 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+        for(i=1; i<nbPointsCurve1-1; i++)
+        {
+            angle = atan2( curve1_arr[i+1].y-curve1_arr[i].y , curve1_arr[i+1].x-curve1_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve1_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve1_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve1 + sin(angleEndCurve1) * this->guideWidth / 2.0) , (LCoord)(yEndCurve1 - cos(angleEndCurve1) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+
+        //right side of curve 2
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve2 + sin(angleStartCurve2) * this->guideWidth / 2.0) , (LCoord)(yStartCurve2 - cos(angleStartCurve2) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+        for(i=1; i<nbPointsCurve2-1; i++)
+        {
+            angle = atan2( curve2_arr[i+1].y-curve2_arr[i].y , curve2_arr[i+1].x-curve2_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve2_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve2_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve2 + sin(angleEndCurve2) * this->guideWidth / 2.0) , (LCoord)(yEndCurve2 - cos(angleEndCurve2) * this->guideWidth / 2.0));
+        save2 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+
+        //left side of curve 2
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve2 + sin(angleEndCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yEndCurve2 - cos(angleEndCurve2 + M_PI) * this->guideWidth / 2.0));
+        save3 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+        for(i=nbPointsCurve2-2; i>=1; i--)
+        {
+            angle = atan2( curve2_arr[i-1].y-curve2_arr[i].y , curve2_arr[i-1].x-curve2_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve2_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve2_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve2 + sin(angleStartCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yStartCurve2 - cos(angleStartCurve2 + M_PI) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+
+        //left side of the curve 1
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve1 + sin(angleEndCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yEndCurve1 - cos(angleEndCurve1 + M_PI) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+        for(i=nbPointsCurve1-2; i>=1; i--)
+        {
+            angle = atan2( curve1_arr[i-1].y-curve1_arr[i].y , curve1_arr[i-1].x-curve1_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve1_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve1_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve1 + sin(angleStartCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yStartCurve1 - cos(angleStartCurve1 + M_PI) * this->guideWidth / 2.0));
+        save4 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+/*
+    if(this->type == RSR || this->type == RSL)
     {
-        
+        //right side of curve 1
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve1 + sin(angleStartCurve1) * this->guideWidth / 2.0) , (LCoord)(yStartCurve1 - cos(angleStartCurve1) * this->guideWidth / 2.0));
+        save1 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+        for(i=1; i<nbPointsCurve1-1; i++)
+        {
+            angle = atan2( curve1_arr[i+1].y-curve1_arr[i].y , curve1_arr[i+1].x-curve1_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve1_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve1_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve1 + sin(angleEndCurve1) * this->guideWidth / 2.0) , (LCoord)(yEndCurve1 - cos(angleEndCurve1) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+
+        //right side of curve 2
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve2 + sin(angleStartCurve2) * this->guideWidth / 2.0) , (LCoord)(yStartCurve2 - cos(angleStartCurve2) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+        for(i=1; i<nbPointsCurve2-1; i++)
+        {
+            angle = atan2( curve2_arr[i+1].y-curve2_arr[i].y , curve2_arr[i+1].x-curve2_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve2_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve2_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve2 + sin(angleEndCurve2) * this->guideWidth / 2.0) , (LCoord)(yEndCurve2 - cos(angleEndCurve2) * this->guideWidth / 2.0));
+        save2 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+
+        //left side of curve 2
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve2 + sin(angleEndCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yEndCurve2 - cos(angleEndCurve2 + M_PI) * this->guideWidth / 2.0));
+        save3 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+        for(i=nbPointsCurve2-2; i>=1; i--)
+        {
+            angle = atan2( curve2_arr[i-1].y-curve2_arr[i].y , curve2_arr[i-1].x-curve2_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve2_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve2_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve2 + sin(angleStartCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yStartCurve2 - cos(angleStartCurve2 + M_PI) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+
+        //left side of the curve 1
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve1 + sin(angleEndCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yEndCurve1 - cos(angleEndCurve1 + M_PI) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+        for(i=nbPointsCurve1-2; i>=1; i--)
+        {
+            angle = atan2( curve1_arr[i-1].y-curve1_arr[i].y , curve1_arr[i-1].x-curve1_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve1_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve1_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve1 + sin(angleStartCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yStartCurve1 - cos(angleStartCurve1 + M_PI) * this->guideWidth / 2.0));
+        save4 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+
     }
-    else if(this->type == LSL)
+    else if(this->type == LSL || this->type == LSR)
     {
-        
+        //left side of the curve 1
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve1 + sin(angleEndCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yEndCurve1 - cos(angleEndCurve1 + M_PI) * this->guideWidth / 2.0));
+        save1 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+        for(i=nbPointsCurve1-2; i>=1; i--)
+        {
+            angle = atan2( curve1_arr[i-1].y-curve1_arr[i].y , curve1_arr[i-1].x-curve1_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve1_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve1_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve1 + sin(angleStartCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yStartCurve1 - cos(angleStartCurve1 + M_PI) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+
+        //left side of curve 2
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve2 + sin(angleEndCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yEndCurve2 - cos(angleEndCurve2 + M_PI) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+        for(i=nbPointsCurve2-2; i>=1; i--)
+        {
+            angle = atan2( curve2_arr[i-1].y-curve2_arr[i].y , curve2_arr[i-1].x-curve2_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve2_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve2_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve2 + sin(angleStartCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)(yStartCurve2 - cos(angleStartCurve2 + M_PI) * this->guideWidth / 2.0));
+        save2 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+
+        //right side of curve 2
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve2 + sin(angleStartCurve2) * this->guideWidth / 2.0) , (LCoord)(yStartCurve2 - cos(angleStartCurve2) * this->guideWidth / 2.0));
+        save3 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
+        for(i=1; i<nbPointsCurve2-1; i++)
+        {
+            angle = atan2( curve2_arr[i+1].y-curve2_arr[i].y , curve2_arr[i+1].x-curve2_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve2_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve2_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve2 + sin(angleEndCurve2) * this->guideWidth / 2.0) , (LCoord)(yEndCurve2 - cos(angleEndCurve2) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+
+        //right side of curve 1
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xStartCurve1 + sin(angleStartCurve1) * this->guideWidth / 2.0) , (LCoord)(yStartCurve1 - cos(angleStartCurve1) * this->guideWidth / 2.0));
+        nbPoints = nbPoints + 1;
+        for(i=1; i<nbPointsCurve1-1; i++)
+        {
+            angle = atan2( curve1_arr[i+1].y-curve1_arr[i].y , curve1_arr[i+1].x-curve1_arr[i].x );
+            point_arr[nbPoints] = LPoint_Set((LCoord)(curve1_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(curve1_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+            nbPoints = nbPoints + 1;
+        }
+        point_arr[nbPoints] = LPoint_Set((LCoord)(xEndCurve1 + sin(angleEndCurve1) * this->guideWidth / 2.0) , (LCoord)(yEndCurve1 - cos(angleEndCurve1) * this->guideWidth / 2.0));
+        save4 = point_arr[nbPoints];
+        nbPoints = nbPoints + 1;
     }
-    else if(this->type == RSL)
-    {
-        
-    }
-    else if(this->type == LSR)
-    {
-        
-    }
-    else if(this->type == RLR)
+*/
+
+    if(this->type == RLR)
     {
         
     }
@@ -1442,10 +1618,46 @@ void DubinsPath::DubinsPathWithBezierCurves()
         
     }
 
-    LObject_Delete( this->cell, this->torusStart );
-    LObject_Delete( this->cell, this->torusEnd );
-    LObject_Delete( this->cell, this->torusMiddle );
-    LObject_Delete( this->cell, this->line );
+    //delete the points that intersect with the polygon
+    j=1;
+    while(j != 0)
+    {
+        j=0;
+        for(i=0; i<nbPoints; i++)
+        {
+            if((save1.x==point_arr[i].x && save1.y==point_arr[i].y) || (save2.x==point_arr[i].x && save2.y==point_arr[i].y) || (save3.x==point_arr[i].x && save3.y==point_arr[i].y) || (save4.x==point_arr[i].x && save4.y==point_arr[i].y))
+                continue;
+            if(i==0)
+                angle1 = atan2(point_arr[0].y-point_arr[nbPoints-1].y,point_arr[0].x-point_arr[nbPoints-1].x) - M_PI;
+            else
+                angle1 = atan2(point_arr[i].y-point_arr[i-1].y,point_arr[i].x-point_arr[i-1].x) - M_PI;
+            if(i==nbPoints-1)
+                angle2 = atan2(point_arr[nbPoints-1].y-point_arr[0].y,point_arr[nbPoints-1].x-point_arr[0].x);
+            else
+                angle2 = atan2(point_arr[i].y-point_arr[i+1].y,point_arr[i].x-point_arr[i+1].x);
+            angle = angle2 - angle1;
+            angle = fmod(angle, 2*M_PI);
+            while(angle < 0)
+                angle = angle + 2*M_PI;
+
+            if( (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
+            {
+                //point_arr[i]=point_arr[(i+1)%nbPoints];
+                //point_arr[(i+1)%nbPoints]=point_arr[i];
+                for(j=i; j<nbPoints; j++)
+                    point_arr[j]=point_arr[(j+1)%nbPoints];
+                nbPoints = nbPoints - 1;
+                j=1;
+            }
+        }
+    }
+
+    LPolygon_New( this->cell, this->layer, point_arr, nbPoints );
+    
+    //LObject_Delete( this->cell, this->torusStart );
+    //LObject_Delete( this->cell, this->torusEnd );
+    //LObject_Delete( this->cell, this->torusMiddle );
+    //LObject_Delete( this->cell, this->line );
 }
 
 
@@ -1463,7 +1675,6 @@ void DubinsPath::Add( double x, double y )
 	nLastx = nx;
 	nLasty = ny;
 
-    //LUpi_LogMessage( LFormat("nbPoints: %d\n", this->nbPoints) );
 }
 
 
