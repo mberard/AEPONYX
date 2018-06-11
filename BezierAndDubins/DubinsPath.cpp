@@ -446,27 +446,21 @@ void DubinsPath::ComputeDubinsPaths(){
     {
         case RSR:
             this->StoreRSRPath();
-            this->DubinsPathWithBezierCurves();
             break;
         case LSL:
             this->StoreLSLPath();
-            this->DubinsPathWithBezierCurves();
             break;
         case RSL:
             this->StoreRSLPath();
-            this->DubinsPathWithBezierCurves();
             break;
         case LSR:
             this->StoreLSRPath();
-            this->DubinsPathWithBezierCurves();
             break;
         case RLR:
             this->StoreRLRPath();
-            this->DubinsPathWithBezierCurves();
             break;
         case LRL:
             this->StoreLRLPath();
-            this->DubinsPathWithBezierCurves();
             break;
         default:
             LDialog_AlertBox(LFormat("Path error"));
@@ -1678,10 +1672,10 @@ this->paramBezier = 0.3;
 
     LPolygon_New( this->cell, this->layer, point_arr, nbPoints );
     
-    //LObject_Delete( this->cell, this->torusStart );
-    //LObject_Delete( this->cell, this->torusEnd );
-    //LObject_Delete( this->cell, this->torusMiddle );
-    //LObject_Delete( this->cell, this->line );
+    LObject_Delete( this->cell, this->torusStart );
+    LObject_Delete( this->cell, this->torusEnd );
+    LObject_Delete( this->cell, this->torusMiddle );
+    LObject_Delete( this->cell, this->line );
 }
 
 
