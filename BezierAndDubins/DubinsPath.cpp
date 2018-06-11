@@ -1393,7 +1393,6 @@ void DubinsPath::DubinsPathWithBezierCurves()
     angleStartCurve2 = angleEndCurve1;
     angleEndCurve2 = this->endPoint.GetAngleRadian();
 
-this->paramBezier = 0.3;
     coef = 1 - this->paramBezier;
 
     if(this->type == RSR || this->type == LSL || this->type== RSL || this->type == LSR)
