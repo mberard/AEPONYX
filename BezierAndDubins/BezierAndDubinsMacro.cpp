@@ -249,7 +249,7 @@ void BezierAndDubinsMacro()
 
 
         strcpy(strPath,"guideFile.csv");
-        LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv||", pFile );
+        LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv|*.txt||", pFile );
         strPath[strlen(strPath)-2]='\0'; //delete the last 2 char of the string ("|0")
         
         if (strPath != NULL)
@@ -663,7 +663,7 @@ void BezierAndDubinsMacro()
 
 
         strcpy(strPath,"guideFile.csv");
-        LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv||", pFile );
+        LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv|*.txt||", pFile );
         strPath[strlen(strPath)-2]='\0'; //delete the last 2 char of the string ("|0")
         
         if (strPath != NULL)
@@ -1063,7 +1063,7 @@ void BezierAndDubinsMacro()
 
 
         strcpy(strPath,"guideFile.csv");
-        LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv||", pFile );
+        LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv|*.txt||", pFile );
         strPath[strlen(strPath)-2]='\0'; //delete the last 2 char of the string ("|0")
         
         if (strPath != NULL)
