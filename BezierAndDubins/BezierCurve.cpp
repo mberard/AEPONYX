@@ -205,5 +205,10 @@ long RoundToLong(double value)
 double ArrayDistance(LPoint* arr, int nbPoints)
 {
     double dist = 0;
+    int i = 0;
+    for(i=0; i<nbPoints-1; i++)
+    {
+        dist += PointDistance(arr[i], arr[i+1]);
+    }
     return dist;
 }
