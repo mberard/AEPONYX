@@ -1371,7 +1371,7 @@ void BezierAndDubinsMacro()
 
 int UPI_Entry_Point(void)
 {
-    LMacro_BindToMenuAndHotKey_v9_30(NULL, "F2" /*hotkey*/, 
+    LMacro_BindToMenuAndHotKey_v9_30(NULL, "F5" /*hotkey*/, 
 			"AEPONYX\\Dubins and Bezier Macro\nWindow", "BezierAndDubinsMacro", NULL /*hotkey category*/);
 	return 1;
 }
