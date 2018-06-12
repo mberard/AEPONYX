@@ -1062,7 +1062,7 @@ void BezierAndDubinsMacro()
 
 
 
-        strcpy(strPath,"guideFile.csv");
+    strcpy(strPath,"guideFile.csv");
         LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv|*.txt||", pFile );
         strPath[strlen(strPath)-2]='\0'; //delete the last 2 char of the string ("|0")
         
@@ -1371,6 +1371,7 @@ void BezierAndDubinsMacro()
 
 int UPI_Entry_Point(void)
 {
-	LMacro_BindToMenuAndHotKey_v9_30("Tools", "F2" /*hotkey*/, "Dubins and Bezier Macro", "BezierAndDubinsMacro", NULL /*hotkey category*/);
+    LMacro_BindToMenuAndHotKey_v9_30(NULL, "F2" /*hotkey*/, 
+			"AEPONYX\\Dubins and Bezier Macro\nWindow", "BezierAndDubinsMacro", NULL /*hotkey category*/);
 	return 1;
 }
