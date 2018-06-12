@@ -595,7 +595,7 @@ void PolygonToCSV(void)
 
 int UPI_Entry_Point(void)
 {
-	LMacro_BindToMenuAndHotKey_v9_30(NULL, "F3" /*hotkey*/, 
+	LMacro_BindToMenuAndHotKey_v9_30(NULL, "F2" /*hotkey*/, 
 			"AEPONYX\\PolygonToCSV\nWindow", "PolygonToCSV", NULL /*hotkey category*/);
 	return 1;
 }
