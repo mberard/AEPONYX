@@ -259,6 +259,6 @@ void AutomaticNumerotationMacro()
 
 int UPI_Entry_Point(void)
 {
-	LMacro_BindToMenuAndHotKey_v9_30("Tools", "F2" /*hotkey*/, "Automatic Numerotation Macro", "AutomaticNumerotationMacro", NULL /*hotkey category*/);
+    LMacro_BindToMenuAndHotKey_v9_30(NULL, "F4" /*hotkey*/, "AEPONYX\\Automatic Numerotation Macro\nWindow", "AutomaticNumerotationMacro", NULL /*hotkey category*/);
 	return 1;
 }
