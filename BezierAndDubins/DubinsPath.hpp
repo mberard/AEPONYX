@@ -99,7 +99,6 @@ public:
 
 };
 
-double PointDistance(LPoint start, LPoint end);
 double RoundAngle(double value);
 LCoord Round(double d);
 

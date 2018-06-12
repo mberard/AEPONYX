@@ -1357,6 +1357,8 @@ void DubinsPath::DubinsPathWithBezierCurves()
     int nbPointsCurve2 = 0;
     LPoint point_arr[MAX_POLYGON_SIZE_BEZIER];
     int nbPoints = 0;
+    LPoint middle_arr[MAX_POLYGON_SIZE_BEZIER];
+    int nbPointsMiddle = 0;
 
     LPoint save1, save2, save3, save4;
 
@@ -1500,9 +1502,6 @@ void DubinsPath::DubinsPathWithBezierCurves()
     else if(this->type == RLR || this->type == LRL)
     {
         LPoint controlStartMiddle, controlEndMiddle; 
-
-        LPoint middle_arr[MAX_POLYGON_SIZE_BEZIER];
-        int nbPointsMiddle = 0;
 
         dist1 = PointDistance(this->startPoint.GetLPoint(), this->startTangent)/1.3;
         dist2 = PointDistance(this->endTangent, this->endPoint.GetLPoint())/1.3;
@@ -1680,8 +1679,11 @@ void DubinsPath::DubinsPathWithBezierCurves()
 
     LObject obj;
     obj = LPolygon_New( this->cell, this->layer, point_arr, nbPoints );
-    //double dist = LFile_IntUtoMicrons(this->file, this->distance);
-    //LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
+    double dist;
+    
+    dist = LFile_IntUtoMicrons(this->file, ArrayDistance(point_arr, nbPoints/2));
+    
+    LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
     
     LObject_Delete( this->cell, this->torusStart );
     LObject_Delete( this->cell, this->torusEnd );
@@ -1709,15 +1711,6 @@ void DubinsPath::Add( double x, double y )
 
 
 //NON CLASS FUNCTIONS
-
-double PointDistance(LPoint start, LPoint end)
-{
-    double dist=0.0;
-    dist = (double)(end.x - start.x)*(end.x - start.x);
-    dist += (double)(end.y - start.y)*(end.y - start.y);
-    dist = sqrt(dist);
-    return dist;
-}
 
 double RoundAngle(double value)
 {
