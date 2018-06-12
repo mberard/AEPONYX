@@ -291,7 +291,10 @@ void BezierAndDubinsMacro()
                     width = atof(token);
                 }
 
-                LCell startCell = LCell_Find( pFile, startCellName );
+                if(strcmp(startCellName,"")==0)
+                    LCell startCell = pCell;
+                else
+                    LCell startCell = LCell_Find( pFile, startCellName );
                 if(startCell == NULL)
                 {
                     fscanf(myFile,"\n"); //got to the next line
@@ -340,7 +343,11 @@ void BezierAndDubinsMacro()
                     LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",startLabelName, startCellName) );
                     continue;
                 }
-                LCell endCell = LCell_Find( pFile, endCellName );
+
+                if(strcmp(endCellName,"")==0)
+                    LCell endCell = pCell;
+                else
+                    LCell endCell = LCell_Find( pFile, endCellName );
 
                 if(endCell == NULL)
                 {
@@ -705,7 +712,10 @@ void BezierAndDubinsMacro()
                     width = atof(token);
                 }
 
-                LCell startCell = LCell_Find( pFile, startCellName );
+                if(strcmp(startCellName,"")==0)
+                    LCell startCell = pCell;
+                else
+                    LCell startCell = LCell_Find( pFile, startCellName );
                 if(startCell == NULL)
                 {
                     fscanf(myFile,"\n"); //got to the next line
@@ -754,7 +764,11 @@ void BezierAndDubinsMacro()
                     LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",startLabelName, startCellName) );
                     continue;
                 }
-                LCell endCell = LCell_Find( pFile, endCellName );
+
+                if(strcmp(endCellName,"")==0)
+                    LCell endCell = pCell;
+                else
+                    LCell endCell = LCell_Find( pFile, endCellName );
 
                 if(endCell == NULL)
                 {
@@ -1111,7 +1125,10 @@ void BezierAndDubinsMacro()
                     width = atof(token);
                 }
 
-                LCell startCell = LCell_Find( pFile, startCellName );
+                if(strcmp(startCellName,"")==0)
+                    LCell startCell = pCell;
+                else
+                    LCell startCell = LCell_Find( pFile, startCellName );
                 if(startCell == NULL)
                 {
                     fscanf(myFile,"\n"); //got to the next line
@@ -1160,7 +1177,11 @@ void BezierAndDubinsMacro()
                     LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",startLabelName, startCellName) );
                     continue;
                 }
-                LCell endCell = LCell_Find( pFile, endCellName );
+
+                if(strcmp(endCellName,"")==0)
+                    LCell endCell = pCell;
+                else
+                    LCell endCell = LCell_Find( pFile, endCellName );
 
                 if(endCell == NULL)
                 {
