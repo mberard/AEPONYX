@@ -472,6 +472,7 @@ void DubinsPath::DrawLine()
 {
     LPoint point_arr[4];
     float dx, dy;
+    double dist;
     dx = this->endPoint.GetPoint().x - this->startPoint.GetPoint().x;
     dy = this->endPoint.GetPoint().y - this->startPoint.GetPoint().y;
     point_arr[0] = LPoint_Set( this->startPoint.GetPoint().x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->startPoint.GetPoint().y-(cos(atan2(dy,dx))*this->guideWidth/2) );
@@ -479,6 +480,8 @@ void DubinsPath::DrawLine()
     point_arr[2] = LPoint_Set( this->endPoint.GetPoint().x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->endPoint.GetPoint().y+(cos(atan2(dy,dx))*this->guideWidth/2) );
     point_arr[3] = LPoint_Set( this->startPoint.GetPoint().x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->startPoint.GetPoint().y+(cos(atan2(dy,dx))*this->guideWidth/2) );
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+    dist = LFile_IntUtoMicrons(this->file, (LCoord)PointDistance(this->startPoint.GetLPoint(),this->endPoint.GetLPoint()));
+    LEntity_AssignProperty( (LEntity)this->line, "PathLength", L_real, &dist );
 }
 
 
@@ -1291,7 +1294,13 @@ void DubinsPath::RasterizePath()
     }
 
     if(this->nbPoints > 0)
-        LPolygon_New(this->cell, this->layer, this->point_arr, this->nbPoints);
+    {
+        LObject obj;
+        obj = LPolygon_New(this->cell, this->layer, this->point_arr, this->nbPoints);
+        double dist = LFile_IntUtoMicrons(this->file, this->distance);
+        LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
+    }
+        
 
     LObject_Delete( this->cell, this->torusStart );
     LObject_Delete( this->cell, this->torusEnd );
@@ -1669,7 +1678,10 @@ void DubinsPath::DubinsPathWithBezierCurves()
         }
     }
 
-    LPolygon_New( this->cell, this->layer, point_arr, nbPoints );
+    LObject obj;
+    obj = LPolygon_New( this->cell, this->layer, point_arr, nbPoints );
+    //double dist = LFile_IntUtoMicrons(this->file, this->distance);
+    //LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
     
     LObject_Delete( this->cell, this->torusStart );
     LObject_Delete( this->cell, this->torusEnd );

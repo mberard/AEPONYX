@@ -46,5 +46,6 @@ public:
 
 long Round0or5ToLong(double val);
 long RoundToLong(double value);
+double ArrayDistance(LPoint* arr, int nbPoints);
 
 #endif

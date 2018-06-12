@@ -168,7 +168,11 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
 
 //    curve_arr[nbPointsCurve] = LPoint_Set( 1, 0 );
 //    nbPointsCurve = nbPointsCurve + 1;
-    LPolygon_New( this->cell, this->layer, this->point_arr, this->nbPoints );
+    
+    LObject obj;
+    obj = LPolygon_New( this->cell, this->layer, this->point_arr, this->nbPoints );
+    //double dist = LFile_IntUtoMicrons(this->file, this->distance);
+    //LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
 }
 
 
@@ -196,4 +200,10 @@ long RoundToLong(double value)
         return (long)(value+0.5);
     else
         return (long)(value-0.5);
+}
+
+double ArrayDistance(LPoint* arr, int nbPoints)
+{
+    double dist = 0;
+    return dist;
 }
