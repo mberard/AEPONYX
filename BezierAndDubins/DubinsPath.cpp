@@ -1397,8 +1397,8 @@ void DubinsPath::DubinsPathWithBezierCurves()
 
     if(this->type == RSR || this->type == LSL || this->type== RSL || this->type == LSR)
     {
-        dist1 = PointDistance(this->startPoint.GetLPoint(), this->startTangent);
-        dist2 = PointDistance(this->endTangent, this->endPoint.GetLPoint());
+        dist1 = PointDistance(this->startPoint.GetLPoint(), this->startTangent)/1.3;
+        dist2 = PointDistance(this->endTangent, this->endPoint.GetLPoint())/1.3;
 
         controlStartCurve1.x = (LCoord) ( xStartCurve1 + dist1 * coef * cos(angleStartCurve1) );
         controlStartCurve1.y = (LCoord) ( yStartCurve1 + dist1 * coef * sin(angleStartCurve1) );
@@ -1495,9 +1495,9 @@ void DubinsPath::DubinsPathWithBezierCurves()
         LPoint middle_arr[MAX_POLYGON_SIZE_BEZIER];
         int nbPointsMiddle = 0;
 
-        dist1 = PointDistance(this->startPoint.GetLPoint(), this->startTangent);
-        dist2 = PointDistance(this->endTangent, this->endPoint.GetLPoint());
-        double distMiddle = PointDistance(this->startTangent, this->endTangent);
+        dist1 = PointDistance(this->startPoint.GetLPoint(), this->startTangent)/1.3;
+        dist2 = PointDistance(this->endTangent, this->endPoint.GetLPoint())/1.3;
+        double distMiddle = PointDistance(this->startTangent, this->endTangent)/1.3;
 
         //angleStartCurve1 and angleEndCurve2 already set to the good value
         if(this->type == LRL)
