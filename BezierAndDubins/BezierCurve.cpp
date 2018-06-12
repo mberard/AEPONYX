@@ -78,6 +78,10 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
 
     distX = xEnd - xStart;
     distY = yEnd - yStart;
+    if(distX<0)
+        distX = -distX;
+    if(distY<0)
+        distY = -distY;
 
     this->controlStart.x = (LCoord) ( xStart + distX * coef * cos(angleStart) );
     this->controlStart.y = (LCoord) ( yStart + distY * coef * sin(angleStart) );
