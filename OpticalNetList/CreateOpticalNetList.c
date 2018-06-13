@@ -92,8 +92,17 @@ void CreateOpticalNetList(void)
 			fprintf(myFile, "guide,%s,%s,%s,%s,%f,%f\n", strStartCellName, strStartLabelNameWanted, strEndCellName, strEndLabelNameWanted, radius, width);
 
 			//end become the start
-			strcpy(DialogItems[0].value, strEndLabelNameWanted);
-			strcpy(DialogItems[1].value, "");
+			if(strstr(strStartLabelNameWanted,"IN")||strstr(strStartLabelNameWanted,"in")||strstr(strStartLabelNameWanted,"In")||strstr(strStartLabelNameWanted,"OUT")||strstr(strStartLabelNameWanted,"out")||strstr(strStartLabelNameWanted,"Out")) //if contains "in" and/or "out" ==> chance that the next one would be a "in" and/or "out" to but with a different number
+			{
+				strcpy(DialogItems[0].value, strStartLabelNameWanted);
+				strcpy(DialogItems[1].value, strEndLabelNameWanted);
+			}
+			else //stock the end in the start field to be precharged
+			{
+				strcpy(DialogItems[0].value, strEndLabelNameWanted);
+				strcpy(DialogItems[1].value, "");
+			}
+			
 		}
 		userChoice = LDialog_MultiLineInputBox("Start - End (Cancel to finish)",DialogItems,2);
 	}
