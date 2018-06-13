@@ -290,11 +290,11 @@ void BezierAndDubinsMacro()
                     token = strtok(NULL, ",");
                     width = atof(token);
                 }
-
-                if(strcmp(startCellName,"")==0)
-                    LCell startCell = pCell;
+                LCell startCell;
+                if(strcmp(startCellName," ")==0)
+                    startCell = pCell;
                 else
-                    LCell startCell = LCell_Find( pFile, startCellName );
+                    startCell = LCell_Find( pFile, startCellName );
                 if(startCell == NULL)
                 {
                     fscanf(myFile,"\n"); //got to the next line
@@ -343,11 +343,12 @@ void BezierAndDubinsMacro()
                     LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",startLabelName, startCellName) );
                     continue;
                 }
-
-                if(strcmp(endCellName,"")==0)
-                    LCell endCell = pCell;
+                
+                LCell endCell;
+                if(strcmp(endCellName," ")==0)
+                    endCell = pCell;
                 else
-                    LCell endCell = LCell_Find( pFile, endCellName );
+                    endCell = LCell_Find( pFile, endCellName );
 
                 if(endCell == NULL)
                 {
@@ -711,11 +712,15 @@ void BezierAndDubinsMacro()
                     token = strtok(NULL, ",");
                     width = atof(token);
                 }
-
-                if(strcmp(startCellName,"")==0)
-                    LCell startCell = pCell;
+LUpi_LogMessage(LFormat("\nstartCellName %s\n", startCellName));
+LUpi_LogMessage(LFormat("startLabelName %s\n", startLabelName));
+LUpi_LogMessage(LFormat("endCellName %s\n", endCellName));
+LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
+                LCell startCell;
+                if(strcmp(startCellName," ")==0)
+                    startCell = pCell;
                 else
-                    LCell startCell = LCell_Find( pFile, startCellName );
+                    startCell = LCell_Find( pFile, startCellName );
                 if(startCell == NULL)
                 {
                     fscanf(myFile,"\n"); //got to the next line
@@ -765,10 +770,11 @@ void BezierAndDubinsMacro()
                     continue;
                 }
 
-                if(strcmp(endCellName,"")==0)
-                    LCell endCell = pCell;
+                LCell endCell;
+                if(strcmp(endCellName," ")==0)
+                    endCell = pCell;
                 else
-                    LCell endCell = LCell_Find( pFile, endCellName );
+                    endCell = LCell_Find( pFile, endCellName );
 
                 if(endCell == NULL)
                 {
@@ -1076,7 +1082,7 @@ void BezierAndDubinsMacro()
 
 
 
-    strcpy(strPath,"guideFile.csv");
+        strcpy(strPath,"guideFile.csv");
         LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv|*.txt||", pFile );
         strPath[strlen(strPath)-2]='\0'; //delete the last 2 char of the string ("|0")
         
@@ -1125,10 +1131,11 @@ void BezierAndDubinsMacro()
                     width = atof(token);
                 }
 
-                if(strcmp(startCellName,"")==0)
-                    LCell startCell = pCell;
+                LCell startCell;
+                if(strcmp(startCellName," ")==0)
+                    startCell = pCell;
                 else
-                    LCell startCell = LCell_Find( pFile, startCellName );
+                    startCell = LCell_Find( pFile, startCellName );
                 if(startCell == NULL)
                 {
                     fscanf(myFile,"\n"); //got to the next line
@@ -1178,10 +1185,11 @@ void BezierAndDubinsMacro()
                     continue;
                 }
 
-                if(strcmp(endCellName,"")==0)
-                    LCell endCell = pCell;
+                LCell endCell;
+                if(strcmp(endCellName," ")==0)
+                    endCell = pCell;
                 else
-                    LCell endCell = LCell_Find( pFile, endCellName );
+                    endCell = LCell_Find( pFile, endCellName );
 
                 if(endCell == NULL)
                 {
