@@ -63,12 +63,12 @@ void CreateOpticalNetList(void)
 		strcpy(strEndLabelNameWanted,DialogItems[1].value);
 
 		nbLabelFound = 0;
-		for(tmpCell = LCell_GetList(pFile); pCell != NULL; tmpCell = LCell_GetNext(tmpCell))
+		tmpCell = LCell_GetList(pFile);
+		while( tmpCell != NULL && nbLabelFound != 2)
 		{
 			for(pLab = LLabel_GetList(tmpCell); pLab != NULL; pLab = LLabel_GetNext(pLab))
 			{
 				LLabel_GetName( pLab, strLabelNameFound, MAX_LAYER_NAME );
-
 				if(strcmp(strStartLabelNameWanted, strLabelNameFound)==0)
 				{
 					LCell_GetName( tmpCell, strStartCellName, MAX_LAYER_NAME );
@@ -80,8 +80,7 @@ void CreateOpticalNetList(void)
 					nbLabelFound++;
 				}
 			}
-			if(nbLabelFound == 2)
-				break;
+			tmpCell = LCell_GetNext(tmpCell);
 		}
 		if(nbLabelFound != 2)
 		{
@@ -96,7 +95,6 @@ void CreateOpticalNetList(void)
 			strcpy(DialogItems[0].value, strEndLabelNameWanted);
 			strcpy(DialogItems[1].value, "");
 		}
-		
 		userChoice = LDialog_MultiLineInputBox("Start - End (Cancel to finish)",DialogItems,2);
 	}
 	fclose(myFile);
