@@ -1,5 +1,5 @@
 
-#include <unistd.h> //getcwd
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ldata.h>
@@ -47,14 +47,14 @@ void CreateOpticalNetList(void)
 		return;
 	else
 		radius = atof(str);
-LUpi_LogMessage(LFormat("radius %f , %s\n",radius, str));
+
 	//width
 	strcpy(str, "1");
 	if ( LDialog_InputBox("Width", "Enter the width of the guide wanted in microns", str) == 0)
 		return;
 	else
 		width = atof(str);
-LUpi_LogMessage(LFormat("width %f , %s\n",width, str));
+
 
 	userChoice = LDialog_MultiLineInputBox("Start - End (Cancel to finish)",DialogItems,2);
 	while(userChoice != LCANCEL)
