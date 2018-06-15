@@ -404,7 +404,8 @@ LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVerte
             LObject object = LSelection_GetObject(pSelection);
             if(LObject_GetGeometry(object) == LAllAngle || LObject_GetGeometry(object) == LOrthogonal || LObject_GetGeometry(object) == LFortyFive)
             {
-                LObject_Delete(pCell, object);
+                //LObject_Delete(pCell, object);
+                LDialog_AlertBox("A copy of the polygon have been made with the changement.");
             }
                 
         }
