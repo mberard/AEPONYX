@@ -3,8 +3,10 @@
 
 #include <ldata.h>
 #include "DubinsPoint.hpp"
+#include "BezierCurve.hpp"
 
 #define MAX_POLYGON_SIZE 10000
+#define ANGLE_LIMIT 1.5
 
 enum PathType { RSR, LSL, RSL, LSR, RLR, LRL };
 
@@ -40,6 +42,8 @@ private:
     LPoint point_arr[MAX_POLYGON_SIZE];
     int nbPoints;
 
+    double paramBezier;
+
     LCell cell;
     LFile file;
     LLayer layer;
@@ -58,6 +62,7 @@ public:
     LStatus SetLayer(LLayer layer);
     LStatus SetOffsetCurveIsSelected(bool choice);
     LStatus SetOffsetValue(double value);
+    LStatus SetParamBezier(double paramBezier);
 
     LFile GetFile();
     LCell GetCell();
@@ -90,9 +95,10 @@ public:
     void DrawArc(LPoint center, LCoord radius, double startAngle, double stopAngle, bool isCCW);
     void Add( double x, double y);
 
+    void DubinsPathWithBezierCurves();
+
 };
 
-double PointDistance(LPoint start, LPoint end);
 double RoundAngle(double value);
 LCoord Round(double d);
 
