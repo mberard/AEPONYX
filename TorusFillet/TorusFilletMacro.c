@@ -404,7 +404,8 @@ LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVerte
             LObject object = LSelection_GetObject(pSelection);
             if(LObject_GetGeometry(object) == LAllAngle || LObject_GetGeometry(object) == LOrthogonal || LObject_GetGeometry(object) == LFortyFive)
             {
-                LObject_Delete(pCell, object);
+                //LObject_Delete(pCell, object);
+                LDialog_AlertBox("A copy of the polygon have been made with the changement.");
             }
                 
         }
@@ -417,6 +418,6 @@ LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVerte
 
 int UPI_Entry_Point(void)
 {
-	LMacro_BindToMenuAndHotKey_v9_30("Tools", "F2" /*hotkey*/, "AA torus to be fillet", "AATorusFillet", NULL /*hotkey category*/);
+    LMacro_BindToMenuAndHotKey_v9_30(NULL, "F3" /*hotkey*/, "AEPONYX\\Fillet AA polygons\nWindow", "AATorusFillet", NULL /*hotkey category*/);
 	return 1;
 }
