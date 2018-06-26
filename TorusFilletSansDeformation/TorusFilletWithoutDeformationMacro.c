@@ -325,9 +325,6 @@ void AATorusFilletWithoutDeformation(void)
 	}
     else
     {
-        LLayer_New( pFile, NULL, "tmp");
-        tmpLayer = LLayer_Find(pFile, "tmp");
-
         strcpy(strFillet, "0.5"); //preloaded text in the dialog box
 		if ( LDialog_InputBox("Fillet", "Enter the fillet value (in microns)", strFillet) == 0)
 			return;
@@ -341,7 +338,9 @@ void AATorusFilletWithoutDeformation(void)
 		else
             pLayer = LLayer_Find(pFile, strLayer);
         
-
+        LLayer_New( pFile, NULL, "tmp");
+        tmpLayer = LLayer_Find(pFile, "tmp");
+        
         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
         {
             LObject object = LSelection_GetObject(pSelection);
