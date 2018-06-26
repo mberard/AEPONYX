@@ -1,15 +1,11 @@
 #include <unistd.h> //getcwd
 
-//#define EXCLUDE_LEDIT_LEGACY_UPI
-
 #include <ldata.h>
-/* Begin -- Uncomment this block if you are using L-Comp. */
-#include <lcomp.h>
-/* End */
 #include <string.h>
 #include <math.h>
 
-#define MAX_POLYGON_SIZE 40000
+#define MAX_POLYGON_SIZE 120000
+#define MAX_NUMBER_POLYGON 500
 #define ANGLE_LIMIT 0.2 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
 
 double PointDistance(LPoint start, LPoint end)
@@ -106,20 +102,6 @@ LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right 
     center.x = (LCoord)Sx;
     center.y = (LCoord)Sy;
 
-//LCell	pCell	=	LCell_GetVisible();
-//LFile	pFile	=	LCell_GetFile(pCell);
-//LWireConfig config;
-//LPoint wire_arr[5];
-//wire_arr[0] = left;
-//wire_arr[1] = perpendiculaireLeft;
-//wire_arr[2] = center;
-//wire_arr[3] = perpendiculaireRight;
-//wire_arr[4] = right;
-//LObject wire;
-//wire = LWire_New( pCell, LLayer_Find ( pFile, "CIRCLE" ), &config,0, wire_arr, 5);
-//LWire_SetWidth( pCell, wire, 1000 );
-//LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), center, 1000);
-
     return center;
 }
 
@@ -137,8 +119,6 @@ void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, L
     left = point_arr[i];
     right = point_arr[j];
 
-//LCell	pCell	=	LCell_GetVisible();
-//LFile	pFile	=	LCell_GetFile(pCell);
     while(PointDistance(center, left) < fillet || PointDistance(center, right) < fillet || PointDistance(point_arr[firstPointIndex], left) < fillet || PointDistance(point_arr[firstPointIndex], right) < fillet || centerIsBetweenPoints(left, point_arr[firstPointIndex], right, center) == 0)
     {
         left = point_arr[i];
@@ -158,18 +138,8 @@ void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, L
                 j = 0;
         }
 
-//LWireConfig config;
-//LPoint wire_arr[2];
-//wire_arr[0] = left;
-//wire_arr[1] = right;
-//LObject wire;
-//wire = LWire_New( pCell, LLayer_Find ( pFile, "WGUIDE" ), &config,0, wire_arr, 2 );
-//LWire_SetWidth( pCell, wire, 1000 );
-//LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), center, 10000);
-
     }
 
-//LCircle_New(pCell, LLayer_Find ( pFile, "WGUIDE" ), center, 10000);
     
     tanLeft->x = left.x;
     tanLeft->y = left.y;
@@ -178,69 +148,141 @@ void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, L
 }
 
 
-int isPresentInDeleteArray(LPoint* to_delete_point_arr, int nbPointsToDelete, LPoint point)
+int IsInArray(LPoint* point_arr_to_check, int nbPointsInArr, LPoint point)
 {
     int i = 0;
-    for(i = 0; i<nbPointsToDelete; i++)
+    for(i = 0; i<nbPointsInArr; i++)
     {
-        if(to_delete_point_arr[i].x == point.x && to_delete_point_arr[i].y == point.y)
+        if(point_arr_to_check[i].x == point.x && point_arr_to_check[i].y == point.y)
             return 1;
     }
     return 0;
 }
 
-int AddPointsToArray(LPoint* point_arr, int numberVertex, double fillet, int max_size)
+LPoint FindClosestPoint(LPoint point, LPoint* point_arr, int numberVertex)
 {
     int i = 0;
-    int j = 0;
-    double x, y;
-    
+    LPoint closestPoint;
+    double smallestDistance = 999999999;
 
     for(i=0; i<numberVertex; i++)
     {
-//LUpi_LogMessage(LFormat("i: %d\n", i));
-        if(PointDistance(point_arr[i], point_arr[(i+1)%numberVertex]) > fillet*1.5)
+        if(PointDistance(point_arr[i], point) < smallestDistance)
+        {
+            closestPoint = point_arr[i];
+            smallestDistance = PointDistance(point_arr[i], point);
+        }
+    }
+    return closestPoint;
+}
+
+
+int AddPointsToArray(LPoint* point_arr, int numberVertex, int step, double fillet, int max_size)
+{
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    double x, y;
+    LPoint point;
+    int numberVertexSaved = numberVertex;
+
+LCell	pCell	=	LCell_GetVisible();
+LFile	pFile	=	LCell_GetFile(pCell);
+
+    LPoint saved_point_arr[numberVertex];
+
+    for(i=0; i<numberVertex; i++)
+        saved_point_arr[i] = point_arr[i];
+
+    for(i=0; i<numberVertex; i++)
+    {
+        
+        if(PointDistance(point_arr[i], point_arr[(i+1)%numberVertex]) > step)
         {
             if(numberVertex >= max_size-1)
-                return max_size;
+            {
+                for(j=0; j<numberVertex; j++)
+                {
+                    if(IsInArray(saved_point_arr, numberVertexSaved, point_arr[j]) == 0 && !(point_arr[j].x==point_arr[i].x && point_arr[j].y==point_arr[i].y) )
+                    {
+                        point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
+                        if(PointDistance(point, point_arr[j]) > fillet*2)
+                        {
+            LCircle_New( pCell, LLayer_Find(pFile, "TEST"), point_arr[j], 10 );
+                            //delete the point
+                            for(k=j; k<numberVertex; k++)
+                            {
+                                point_arr[k]=point_arr[k+1];
+                            }
+                            numberVertex=numberVertex-1;
+                            j=j-1;
+                            i=i-1;
+                        }
+                    }
+                }
+
+                if(numberVertex >= max_size-1)
+                    return max_size;
+            }
             
             x = (double)(point_arr[(i+1)%numberVertex].x - point_arr[i].x) / 2.0;
             x = point_arr[i].x + x;
             y = (double)(point_arr[(i+1)%numberVertex].y - point_arr[i].y) / 2.0;
             y = point_arr[i].y + y;
+            
             //add a point to the array and shift the other value
             for(j=numberVertex-1; j>i; j--)
             {
                 point_arr[j+1] = point_arr[j];
             }
-//LCell	pCell	=	LCell_GetVisible();
-//LFile	pFile	=	LCell_GetFile(pCell);
-//LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), LPoint_Set(x, y) , 1000);
             point_arr[i+1] = LPoint_Set(x, y);
             numberVertex = numberVertex + 1;
-            i = i - 1; //test the same point with the new target point
+            i = i - 1; //test the same point with the new target point 
         }
-        
+    }
+
+    for(j=0; j<numberVertex; j++)
+    {
+        if(IsInArray(saved_point_arr, numberVertexSaved, point_arr[j]) == 0)
+        {
+            point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
+            if(PointDistance(point, point_arr[j]) > fillet*2)
+            {
+LCircle_New( pCell, LLayer_Find(pFile, "TEST"), point_arr[j], 10 );
+                //delete the point
+                for(k=j; k<numberVertex; k++)
+                {
+                    point_arr[k]=point_arr[k+1];   
+                }
+                numberVertex=numberVertex-1;
+                j=j-1;
+            }
+        }
     }
     
     return numberVertex;
 }
 
 
-void AATorusFillet(void)
+void AATorusFilletWithoutDeformation(void)
 {
     LCell	pCell	=	LCell_GetVisible();
 	LFile	pFile	=	LCell_GetFile(pCell);
     LLayer  pLayer;
 
+    LObject obj_arr[MAX_NUMBER_POLYGON];
+    int nbPolygonSelected = 0;
+
+    LLayer tmpLayer;
+
     char strLayer[MAX_LAYER_NAME];
 
     LPoint point_arr[MAX_POLYGON_SIZE];
-    LPoint final_point_arr[MAX_POLYGON_SIZE];
-    LPoint to_delete_point_arr[MAX_POLYGON_SIZE];
+//    LPoint final_point_arr[MAX_POLYGON_SIZE];
+//    LPoint to_delete_point_arr[MAX_POLYGON_SIZE];
     long numberVertex = 0;
-    int nbPointsFinal = 0;
-    int nbPointsToDelete = 0;
+//    int nbPointsFinal = 0;
+//    int nbPointsToDelete = 0;
 
     LCoord prevX = 0;
     LCoord prevY = 0;
@@ -263,8 +305,9 @@ void AATorusFillet(void)
     char strFillet[20];
 
     int i = 0;
-    int cpt = 0;
-    
+//    int cpt = 0;
+
+
     LUpi_LogMessage("\n\n\n\n\nSTART MACRO\n");
 
     if ( LStatusOK != LFile_SaveAs( LFile_GetVisible(), "LastBackupBeforeTorrusFilletMacro", LTdbFile))
@@ -277,6 +320,135 @@ void AATorusFillet(void)
 	}
     else
     {
+        LLayer_New( pFile, NULL, "tmp");
+        tmpLayer = LLayer_Find(pFile, "tmp");
+
+        strcpy(strFillet, "0.5"); //preloaded text in the dialog box
+		if ( LDialog_InputBox("Fillet", "Enter the fillet value (in microns)", strFillet) == 0)
+			return;
+		else
+            fillet = LFile_MicronsToIntU(pFile,atof(strFillet));
+        LUpi_LogMessage(LFormat("fillet: %lf\n", fillet));
+
+        strcpy(strLayer, "WGUIDE"); //preloaded text in the dialog box
+		if ( LDialog_InputBox("Layer", "Enter name of the layer in which the polygon will be loaded", strLayer) == 0)
+			return;
+		else
+            pLayer = LLayer_Find(pFile, strLayer);
+        
+
+        for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
+        {
+            LObject object = LSelection_GetObject(pSelection);
+            obj_arr[nbPolygonSelected] = object;
+            nbPolygonSelected++;
+        }
+        LUpi_LogMessage(LFormat("nbPolygonSelected %d\n", nbPolygonSelected));    
+
+        LCell_BooleanOperation(pCell, LBoolOp_OR , NULL, obj_arr, nbPolygonSelected, NULL, 0, tmpLayer, LFALSE );
+
+        for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
+        {
+            numberVertex = LVertex_GetArray( obj, point_arr, MAX_POLYGON_SIZE );
+            numberVertex = AddPointsToArray(point_arr, numberVertex, 10, fillet, MAX_POLYGON_SIZE);
+
+            if(numberVertex >= MAX_POLYGON_SIZE)
+            {
+                LDialog_AlertBox( "Limit number of polygon vertex has been reach, return" );
+                return;
+            }
+            for(i=0; i<numberVertex; i++) //store the current, previous and next point
+            {
+                x = point_arr[i].x;
+                y = point_arr[i].y;
+                if(i == 0){
+                    prevX = point_arr[numberVertex-1].x;
+                    prevY = point_arr[numberVertex-1].y;
+                }
+                else{
+                    prevX = point_arr[i-1].x;
+                    prevY = point_arr[i-1].y;
+                }
+                if(i == numberVertex-1){
+                    nextX = point_arr[0].x;
+                    nextY = point_arr[0].y;
+                }
+                else{
+                    nextX = point_arr[i+1].x;
+                    nextY = point_arr[i+1].y;
+                }
+                dxPrev = x-prevX;
+                dyPrev = y-prevY;
+                dxNext = nextX-x;
+                dyNext = nextY-y;
+                angle1 = atan2(dyPrev,dxPrev) - M_PI;
+                angle2 = atan2(dyNext,dxNext);
+                angle = angle2 - angle1;
+                angle = fmod(angle, 2*M_PI);
+                while(angle < 0)
+                    angle = angle + 2*M_PI;
+                //if( ! (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
+                if( ! (angle > M_PI - ANGLE_LIMIT) ) //if not in the limit range and concave
+                {
+                    FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex, fillet);
+LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanLeft, 100 );
+LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanRight, 100 );
+                    
+                    
+/*
+                    cpt = (i-1)%numberVertex;
+                    while(point_arr[cpt].x != tanLeft.x || point_arr[cpt].y != tanLeft.y)
+                    {
+                        if(IsInArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 0)
+                        {
+                            to_delete_point_arr[nbPointsToDelete] = point_arr[cpt];
+                            nbPointsToDelete = nbPointsToDelete + 1;
+                        }
+                        cpt = cpt - 1;
+                        if(cpt<0)
+                            cpt = numberVertex-1;
+                    }
+                    cpt = (i+1)%numberVertex;
+                    while(point_arr[cpt].x != tanRight.x || point_arr[cpt].y != tanRight.y)
+                    {
+                        if(IsInArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 0)
+                        {
+                            to_delete_point_arr[nbPointsToDelete] = point_arr[cpt];
+                            nbPointsToDelete = nbPointsToDelete + 1;
+                        }
+                        cpt = cpt + 1;
+                        if(cpt>=numberVertex)
+                            cpt = 0;
+                    }
+                    LUpi_LogMessage(LFormat("I: %d\n", i+1));
+*/
+                }
+            }
+/*
+            cpt = 0;
+            for( cpt=0; cpt < numberVertex; cpt++ )
+            {
+                if(IsInArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 1)
+                {
+                    //do not store this point
+                }
+                else
+                {
+                    final_point_arr[nbPointsFinal].x = point_arr[cpt].x;
+                    final_point_arr[nbPointsFinal].y = point_arr[cpt].y;
+                    nbPointsFinal = nbPointsFinal + 1; 
+                }
+               
+            }
+            LPolygon_New(pCell, pLayer, final_point_arr, nbPointsFinal);
+*/
+        }
+
+
+
+
+
+/*
         strcpy(strFillet, "0.5"); //preloaded text in the dialog box
 		if ( LDialog_InputBox("Fillet", "Enter the fillet value (in microns)", strFillet) == 0)
 			return;
@@ -346,12 +518,10 @@ LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVerte
                     {
 
                         FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex, fillet);
-//LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanLeft , 1000);
-//LCircle_New(pCell, LLayer_Find ( pFile, "TANCIRCLE" ), tanRight , 1000);
                         cpt = (i-1)%numberVertex;
                         while(point_arr[cpt].x != tanLeft.x || point_arr[cpt].y != tanLeft.y)
                         {
-                            if(isPresentInDeleteArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 0)
+                            if(IsInArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 0)
                             {
                                 to_delete_point_arr[nbPointsToDelete] = point_arr[cpt];
                                 nbPointsToDelete = nbPointsToDelete + 1;
@@ -363,7 +533,7 @@ LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVerte
                         cpt = (i+1)%numberVertex;
                         while(point_arr[cpt].x != tanRight.x || point_arr[cpt].y != tanRight.y)
                         {
-                            if(isPresentInDeleteArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 0)
+                            if(IsInArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 0)
                             {
                                 to_delete_point_arr[nbPointsToDelete] = point_arr[cpt];
                                 nbPointsToDelete = nbPointsToDelete + 1;
@@ -373,7 +543,6 @@ LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVerte
                                 cpt = 0;
                         }
 
-//LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[i] , 10000);
 
                         LUpi_LogMessage(LFormat("I: %d\n", i+1));
                     }
@@ -382,10 +551,9 @@ LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVerte
                 cpt = 0;
                 for( cpt=0; cpt < numberVertex; cpt++ )
                 {
-                    if(isPresentInDeleteArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 1)
+                    if(IsInArray(to_delete_point_arr, nbPointsToDelete, point_arr[cpt]) == 1)
                     {
-                        //LCircle_New(pCell, LLayer_Find ( pFile, "CIRCLE" ), point_arr[cpt] , 1000);
-                        //LUpi_LogMessage(LFormat("point %d supprime\n", cpt));
+                        //do not store this point
                     }
                     else
                     {
@@ -410,14 +578,14 @@ LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVerte
                 
         }
 
+*/
+
     }
-    LUpi_LogMessage(LFormat("nbPointsToDelete: %d\n", nbPointsToDelete));
-    LUpi_LogMessage(LFormat("nbPointsFinal: %d\n", nbPointsFinal));
     LUpi_LogMessage(LFormat("\nEND MACRO\n"));
 }
 
 int UPI_Entry_Point(void)
 {
-    LMacro_BindToMenuAndHotKey_v9_30(NULL, "F3" /*hotkey*/, "AEPONYX\\Fillet AA polygons\nWindow", "AATorusFillet", NULL /*hotkey category*/);
+    LMacro_BindToMenuAndHotKey_v9_30(NULL, "F3" /*hotkey*/, "AEPONYX\\Fillet AA polygons without deformation\nWindow", "AATorusFilletWithoutDeformation", NULL /*hotkey category*/);
 	return 1;
 }
