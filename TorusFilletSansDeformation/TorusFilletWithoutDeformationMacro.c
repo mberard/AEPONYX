@@ -16,15 +16,7 @@ double PointDistance(LPoint start, LPoint end)
     dist = sqrt(dist);
     return dist;
 }
-/*
-double max(double a, double b)
-{
-    if(a>b)
-        return a;
-    else
-        return b;
-}
-*/
+
 int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint center)
 {
     double dx1, dx2, dx3, dy1, dy2, dy3;
@@ -611,6 +603,15 @@ LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVerte
 */
 
     }
+
+    for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        LObject_Delete( pCell, obj );
+    }
+
+    int res;
+    res = LLayer_Delete( pFile, tmpLayer );
+LUpi_LogMessage(LFormat("resultat: %d", res));
     LUpi_LogMessage(LFormat("\nEND MACRO\n"));
 }
 
