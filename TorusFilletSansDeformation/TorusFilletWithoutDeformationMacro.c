@@ -608,10 +608,8 @@ LUpi_LogMessage(LFormat("Point number after AddPointsToArray: %d\n", numberVerte
     {
         LObject_Delete( pCell, obj );
     }
+    LLayer_Delete( pFile, tmpLayer );
 
-    int res;
-    res = LLayer_Delete( pFile, tmpLayer );
-LUpi_LogMessage(LFormat("resultat: %d", res));
     LUpi_LogMessage(LFormat("\nEND MACRO\n"));
 }
 
