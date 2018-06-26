@@ -16,7 +16,15 @@ double PointDistance(LPoint start, LPoint end)
     dist = sqrt(dist);
     return dist;
 }
-
+/*
+double max(double a, double b)
+{
+    if(a>b)
+        return a;
+    else
+        return b;
+}
+*/
 int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint center)
 {
     double dx1, dx2, dx3, dy1, dy2, dy3;
@@ -106,7 +114,7 @@ LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right 
 }
 
 
-void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, LPoint* point_arr, int nbPointsArr, double fillet )
+LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, LPoint* point_arr, int nbPointsArr, double fillet )
 {
     int i = (firstPointIndex - 1);
     if(i < 0)
@@ -114,7 +122,9 @@ void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, L
     int j = (firstPointIndex + 1);
     if(j >= nbPointsArr)
                 j = 0;
+
     LPoint left, right, center;
+    
     center = point_arr[firstPointIndex];
     left = point_arr[i];
     right = point_arr[j];
@@ -145,6 +155,8 @@ void FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, L
     tanLeft->y = left.y;
     tanRight->x = right.x;
     tanRight->y = right.y;
+
+    return center;
 }
 
 
@@ -208,7 +220,6 @@ LFile	pFile	=	LCell_GetFile(pCell);
                         point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
                         if(PointDistance(point, point_arr[j]) > fillet*2)
                         {
-            LCircle_New( pCell, LLayer_Find(pFile, "TEST"), point_arr[j], 10 );
                             //delete the point
                             for(k=j; k<numberVertex; k++)
                             {
@@ -248,7 +259,6 @@ LFile	pFile	=	LCell_GetFile(pCell);
             point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
             if(PointDistance(point, point_arr[j]) > fillet*2)
             {
-LCircle_New( pCell, LLayer_Find(pFile, "TEST"), point_arr[j], 10 );
                 //delete the point
                 for(k=j; k<numberVertex; k++)
                 {
@@ -293,6 +303,7 @@ void AATorusFilletWithoutDeformation(void)
 
     LPoint tanLeft;
     LPoint tanRight;
+    LPoint center;
 
     long dxPrev;
     long dyPrev;
@@ -303,6 +314,8 @@ void AATorusFilletWithoutDeformation(void)
 
     double fillet;
     char strFillet[20];
+
+    LTorusParams tParams;
 
     int i = 0;
 //    int cpt = 0;
@@ -350,7 +363,7 @@ void AATorusFilletWithoutDeformation(void)
         for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
             numberVertex = LVertex_GetArray( obj, point_arr, MAX_POLYGON_SIZE );
-            numberVertex = AddPointsToArray(point_arr, numberVertex, 10, fillet, MAX_POLYGON_SIZE);
+            numberVertex = AddPointsToArray(point_arr, numberVertex, 50, fillet, MAX_POLYGON_SIZE);
 
             if(numberVertex >= MAX_POLYGON_SIZE)
             {
@@ -390,11 +403,28 @@ void AATorusFilletWithoutDeformation(void)
                 //if( ! (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
                 if( ! (angle > M_PI - ANGLE_LIMIT) ) //if not in the limit range and concave
                 {
-                    FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex, fillet);
+                    center = FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex, fillet);
 LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanLeft, 100 );
 LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanRight, 100 );
+LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
                     
-                    
+                    tParams.ptCenter = center;
+                    tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
+                    tParams.nOuterRadius = PointDistance(point_arr[i], center)*1.1; //can be compute better
+                    angle1 = (angle1 - M_PI/2)*180/M_PI;
+                    angle2 = (angle2 + M_PI/2)*180/M_PI;
+                    while(angle1<0)
+                        angle1 = angle1 + 360;
+                    while(angle1>360)
+                        angle1 = angle1 - 360;
+                    while(angle2<0)
+                        angle2 = angle2 + 360;
+                    while(angle2>360)
+                        angle2 = angle2 - 360;
+                    tParams.dStartAngle = angle2;
+                    tParams.dStopAngle = angle1;
+
+                    LTorus_CreateNew( pCell, pLayer, &tParams );
 /*
                     cpt = (i-1)%numberVertex;
                     while(point_arr[cpt].x != tanLeft.x || point_arr[cpt].y != tanLeft.y)
