@@ -145,9 +145,6 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
                 j = 0;
         }
 
-LCell	pCell	=	LCell_GetVisible();
-LFile	pFile	=	LCell_GetFile(pCell);
-
         result1 = IsInArray(original_point_arr, originalNumberVertex, left);
         result2 = IsInArray(original_point_arr, originalNumberVertex, right);
 
@@ -176,7 +173,6 @@ LFile	pFile	=	LCell_GetFile(pCell);
 
     }
 
-    
     tanLeft->x = left.x;
     tanLeft->y = left.y;
     tanRight->x = right.x;
@@ -262,7 +258,7 @@ int AddPointsToArray(LPoint* point_arr, int numberVertex, int step, double fille
             x = point_arr[i].x + x;
             y = (double)(point_arr[(i+1)%numberVertex].y - point_arr[i].y) / 2.0;
             y = point_arr[i].y + y;
-            
+
             //add a point to the array and shift the other value
             for(j=numberVertex-1; j>i; j--)
             {
@@ -428,10 +424,13 @@ void AATorusFilletWithoutDeformation(void)
 
                     if( !(center.x == -1 && center.y == -1) )
                     {
+                        center.x = (tanLeft.x + tanRight.x + center.x)/3;
+                        center.y = (tanLeft.y + tanRight.y + center.y)/3;
+
 LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanLeft, 100 );
 LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanRight, 100 );
 LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
-                        
+
                         tParams.ptCenter = center;
                         tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
                         tParams.nOuterRadius = PointDistance(point_arr[i], center)*1.05;
