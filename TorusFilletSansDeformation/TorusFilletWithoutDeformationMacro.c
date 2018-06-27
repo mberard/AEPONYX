@@ -140,6 +140,11 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
                 j = 0;
         }
 
+LCell	pCell	=	LCell_GetVisible();
+LFile	pFile	=	LCell_GetFile(pCell);
+LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), right, 10 );
+LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), left, 10 );
+
     }
 
     
@@ -190,9 +195,6 @@ int AddPointsToArray(LPoint* point_arr, int numberVertex, int step, double fille
     LPoint point;
     int numberVertexSaved = numberVertex;
 
-LCell	pCell	=	LCell_GetVisible();
-LFile	pFile	=	LCell_GetFile(pCell);
-
     LPoint saved_point_arr[numberVertex];
 
     for(i=0; i<numberVertex; i++)
@@ -210,7 +212,7 @@ LFile	pFile	=	LCell_GetFile(pCell);
                     if(IsInArray(saved_point_arr, numberVertexSaved, point_arr[j]) == 0 && !(point_arr[j].x==point_arr[i].x && point_arr[j].y==point_arr[i].y) )
                     {
                         point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
-                        if(PointDistance(point, point_arr[j]) > fillet*2)
+                        if(PointDistance(point, point_arr[j]) > fillet*8)
                         {
                             //delete the point
                             for(k=j; k<numberVertex; k++)
@@ -249,7 +251,7 @@ LFile	pFile	=	LCell_GetFile(pCell);
         if(IsInArray(saved_point_arr, numberVertexSaved, point_arr[j]) == 0)
         {
             point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
-            if(PointDistance(point, point_arr[j]) > fillet*2)
+            if(PointDistance(point, point_arr[j]) > fillet*8)
             {
                 //delete the point
                 for(k=j; k<numberVertex; k++)
@@ -354,7 +356,7 @@ void AATorusFilletWithoutDeformation(void)
         for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
             numberVertex = LVertex_GetArray( obj, point_arr, MAX_POLYGON_SIZE );
-            numberVertex = AddPointsToArray(point_arr, numberVertex, 50, fillet, MAX_POLYGON_SIZE);
+            numberVertex = AddPointsToArray(point_arr, numberVertex, 20, fillet, MAX_POLYGON_SIZE);
 
             if(numberVertex >= MAX_POLYGON_SIZE)
             {
@@ -401,7 +403,7 @@ LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
                     
                     tParams.ptCenter = center;
                     tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
-                    tParams.nOuterRadius = PointDistance(point_arr[i], center)*1.05; //can be compute better
+                    tParams.nOuterRadius = PointDistance(point_arr[i], center)*1.05;
                     angle1 = (angle1 - M_PI/2)*180/M_PI;
                     angle2 = (angle2 + M_PI/2)*180/M_PI;
                     while(angle1<0)
