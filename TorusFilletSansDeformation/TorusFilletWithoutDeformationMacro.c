@@ -424,8 +424,6 @@ void AATorusFilletWithoutDeformation(void)
 
                     if( !(center.x == -1 && center.y == -1) )
                     {
-                        center.x = (tanLeft.x + tanRight.x + center.x)/3;
-                        center.y = (tanLeft.y + tanRight.y + center.y)/3;
 
 LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanLeft, 100 );
 LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanRight, 100 );
