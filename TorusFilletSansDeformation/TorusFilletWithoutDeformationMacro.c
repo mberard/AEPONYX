@@ -108,6 +108,7 @@ LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right 
 
 LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, LPoint* point_arr, int nbPointsArr, double fillet, LPoint* original_point_arr, int originalNumberVertex )
 {
+    int result1, result2;
     int i = (firstPointIndex - 1);
     if(i < 0)
         i = nbPointsArr -1;
@@ -116,13 +117,17 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
                 j = 0;
 
     LPoint left, right, center;
+    LPoint precLeft, precRight;
     
     center = point_arr[firstPointIndex];
+    precLeft = point_arr[firstPointIndex];
+    precRight = point_arr[firstPointIndex];
     left = point_arr[i];
     right = point_arr[j];
 
     while(PointDistance(center, left) < fillet || PointDistance(center, right) < fillet || PointDistance(point_arr[firstPointIndex], left) < fillet || PointDistance(point_arr[firstPointIndex], right) < fillet || centerIsBetweenPoints(left, point_arr[firstPointIndex], right, center) == 0)
     {
+
         left = point_arr[i];
         right = point_arr[j];
 
@@ -140,23 +145,34 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
                 j = 0;
         }
 
-        if( IsInArray(original_point_arr, originalNumberVertex, left) != -1 || IsInArray(original_point_arr, originalNumberVertex, right) != -1 )
-        {
-            /*
-            int result;
-            result = IsInArray(original_point_arr, originalNumberVertex, left);
-            if(result == -1)
-                result = IsInArray(original_point_arr, originalNumberVertex, right);
-            LDialog_AlertBox(LFormat("Vertex number %d could not be fillet", result+1));
-            */
-            LDialog_AlertBox(LFormat("An angle could not be fillet"));
-            return LPoint_Set(-1,-1);
-        }
-
 LCell	pCell	=	LCell_GetVisible();
 LFile	pFile	=	LCell_GetFile(pCell);
-LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), right, 10 );
-LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), left, 10 );
+
+        result1 = IsInArray(original_point_arr, originalNumberVertex, left);
+        result2 = IsInArray(original_point_arr, originalNumberVertex, right);
+
+        if( result2 != -1 )
+        {
+            if(PointDistance(original_point_arr[result2], original_point_arr[(result2+1)%originalNumberVertex]) > fillet)
+            {
+                LDialog_AlertBox(LFormat("An angle could not be fillet automatically"));
+                return LPoint_Set(-1,-1);
+            }
+        }
+        else if( result1 != -1 )
+        {
+            if(result1 == 0)
+                result1 = originalNumberVertex;
+            if(PointDistance(original_point_arr[result1], original_point_arr[(result1-1)%originalNumberVertex]) > fillet)
+            {
+                LDialog_AlertBox(LFormat("An angle could not be fillet automatically"));
+                return LPoint_Set(-1,-1);
+            }
+        }
+
+        precLeft = left;
+        precRight = right;
+
 
     }
 
@@ -175,9 +191,6 @@ int IsInArray(LPoint* point_arr_to_check, int nbPointsInArr, LPoint point)
     int i = 0;
     for(i = 0; i<nbPointsInArr; i++)
     {
-LCell	pCell	=	LCell_GetVisible();
-LFile	pFile	=	LCell_GetFile(pCell);
-LCircle_New( pCell, LLayer_Find(pFile, "TEST"), point_arr_to_check[i], 10 );
         if(point_arr_to_check[i].x == point.x && point_arr_to_check[i].y == point.y)
             return i;
     }
