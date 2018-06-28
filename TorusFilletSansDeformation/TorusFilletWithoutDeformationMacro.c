@@ -172,7 +172,7 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
 
         if( result2 != -1 )
         {
-            if(PointDistance(original_point_arr[result2], original_point_arr[(result2+1)%originalNumberVertex]) > fillet)
+            if(PointDistance(original_point_arr[result2], original_point_arr[(result2+1)%originalNumberVertex]) > fillet*10)
             {
                 LDialog_AlertBox(LFormat("An angle could not be fillet automatically"));
                 return LPoint_Set(-1,-1);
@@ -182,7 +182,7 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
         {
             if(result1 == 0)
                 result1 = originalNumberVertex;
-            if(PointDistance(original_point_arr[result1], original_point_arr[(result1-1)%originalNumberVertex]) > fillet)
+            if(PointDistance(original_point_arr[result1], original_point_arr[(result1-1)%originalNumberVertex]) > fillet*10)
             {
                 LDialog_AlertBox(LFormat("An angle could not be fillet automatically"));
                 return LPoint_Set(-1,-1);
