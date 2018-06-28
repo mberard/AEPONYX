@@ -49,6 +49,31 @@ int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint cente
     return 0; //not between points
 }
 
+LPoint FindBetterCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right  )
+{
+    LPoint perpendiculaireLeft, perpendiculaireRight, center;
+    long dx = nextLeft.x - left.x;
+    long dy = nextLeft.y - left.y;
+    perpendiculaireLeft = LPoint_Set(left.x + dy, left.y - dx);
+    dx = right.x - prevRight.x;
+    dy = right.y - prevRight.y;
+    perpendiculaireRight = LPoint_Set(right.x + dy, right.y - dx);
+
+    center = perpendiculaireRight;
+
+LCell pCell = LCell_GetVisible();
+LFile pFile = LCell_GetFile(pCell);
+
+    while(PointDistance(right, center) < PointDistance(left, center))
+    {
+        center.x = center.x + 0.1*dy;
+        center.y = center.y - 0.1*dx;
+LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), center, 10 );
+    }
+
+    return center;
+}
+
 LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right  )
 {
     LPoint perpendiculaireLeft, perpendiculaireRight, center;
@@ -109,6 +134,7 @@ LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right 
 LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex, LPoint* point_arr, int nbPointsArr, double fillet, LPoint* original_point_arr, int originalNumberVertex )
 {
     int result1, result2;
+    LPoint betterCenter;
     int i = (firstPointIndex - 1);
     if(i < 0)
         i = nbPointsArr -1;
@@ -132,11 +158,13 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
         right = point_arr[j];
 
         center = FindCenter(left, point_arr[ (i+1) % nbPointsArr], point_arr[ (j-1) % nbPointsArr], right);
+        betterCenter = FindBetterCenter(left, point_arr[ (i+1) % nbPointsArr], point_arr[ (j-1) % nbPointsArr], right);
+        
         if(PointDistance(point_arr[firstPointIndex], left) < PointDistance(point_arr[firstPointIndex], right)) //we increment the closest point from the concave angle
         {
             i = i - 1;
             if(i < 0)
-                i = nbPointsArr -1;
+                i = nbPointsArr - 1;
         }
         else
         {
@@ -170,13 +198,14 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
         precLeft = left;
         precRight = right;
 
-
     }
 
     tanLeft->x = left.x;
     tanLeft->y = left.y;
     tanRight->x = right.x;
     tanRight->y = right.y;
+
+    center = betterCenter;
 
     return center;
 }
@@ -424,7 +453,6 @@ void AATorusFilletWithoutDeformation(void)
 
                     if( !(center.x == -1 && center.y == -1) )
                     {
-
 LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanLeft, 100 );
 LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanRight, 100 );
 LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
