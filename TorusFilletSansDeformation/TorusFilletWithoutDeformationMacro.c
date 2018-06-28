@@ -259,7 +259,7 @@ int AddPointsToArray(LPoint* point_arr, int numberVertex, int step, double fille
                     if(IsInArray(saved_point_arr, numberVertexSaved, point_arr[j]) == -1 && !(point_arr[j].x==point_arr[i].x && point_arr[j].y==point_arr[i].y) )
                     {
                         point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
-                        if(PointDistance(point, point_arr[j]) > fillet*8)
+                        if(PointDistance(point, point_arr[j]) > fillet*8 || PointDistance(point, point_arr[j]) < fillet*0.6)
                         {
                             //delete the point
                             for(k=j; k<numberVertex; k++)
@@ -298,7 +298,7 @@ int AddPointsToArray(LPoint* point_arr, int numberVertex, int step, double fille
         if(IsInArray(saved_point_arr, numberVertexSaved, point_arr[j]) == -1)
         {
             point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
-            if(PointDistance(point, point_arr[j]) > fillet*8)
+            if(PointDistance(point, point_arr[j]) > fillet*8 || PointDistance(point, point_arr[j]) < fillet*0.6)
             {
                 //delete the point
                 for(k=j; k<numberVertex; k++)
