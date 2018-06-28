@@ -61,8 +61,8 @@ LPoint FindBetterCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint 
 
     while(PointDistance(right, center) < PointDistance(left, center))
     {
-        center.x = center.x + 0.25*dy;
-        center.y = center.y - 0.25*dx;
+        center.x = center.x + 0.1*dy;
+        center.y = center.y - 0.1*dx;
     }
 
     return center;
@@ -403,7 +403,7 @@ void AATorusFilletWithoutDeformation(void)
             originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
             
             numberVertex = LVertex_GetArray( obj, point_arr, MAX_POLYGON_SIZE );
-            numberVertex = AddPointsToArray(point_arr, numberVertex, 100, fillet, MAX_POLYGON_SIZE);
+            numberVertex = AddPointsToArray(point_arr, numberVertex, 200, fillet, MAX_POLYGON_SIZE);
 
             if(numberVertex >= MAX_POLYGON_SIZE)
             {
