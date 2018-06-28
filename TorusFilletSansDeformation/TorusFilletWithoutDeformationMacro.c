@@ -51,12 +51,10 @@ int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint cente
 
 LPoint FindBetterCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right  )
 {
-    LPoint perpendiculaireLeft, perpendiculaireRight, center;
-    long dx = nextLeft.x - left.x;
-    long dy = nextLeft.y - left.y;
-    perpendiculaireLeft = LPoint_Set(left.x + dy, left.y - dx);
-    dx = right.x - prevRight.x;
-    dy = right.y - prevRight.y;
+    LPoint perpendiculaireRight, center;
+
+    double dx = right.x - prevRight.x;
+    double dy = right.y - prevRight.y;
     perpendiculaireRight = LPoint_Set(right.x + dy, right.y - dx);
 
     center = perpendiculaireRight;
@@ -66,8 +64,8 @@ LFile pFile = LCell_GetFile(pCell);
 
     while(PointDistance(right, center) < PointDistance(left, center))
     {
-        center.x = center.x + 0.1*dy;
-        center.y = center.y - 0.1*dx;
+        center.x = center.x + 0.25*dy;
+        center.y = center.y - 0.25*dx;
 LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), center, 10 );
     }
 
