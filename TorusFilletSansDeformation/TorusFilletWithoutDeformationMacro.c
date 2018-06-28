@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>
 
-#define MAX_POLYGON_SIZE 60000
+#define MAX_POLYGON_SIZE 50000
 #define MAX_NUMBER_POLYGON 500
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
 
@@ -403,7 +403,7 @@ void AATorusFilletWithoutDeformation(void)
             originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
             
             numberVertex = LVertex_GetArray( obj, point_arr, MAX_POLYGON_SIZE );
-            numberVertex = AddPointsToArray(point_arr, numberVertex, 20, fillet, MAX_POLYGON_SIZE);
+            numberVertex = AddPointsToArray(point_arr, numberVertex, 100, fillet, MAX_POLYGON_SIZE);
 
             if(numberVertex >= MAX_POLYGON_SIZE)
             {
