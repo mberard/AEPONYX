@@ -458,8 +458,8 @@ LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
                         tParams.ptCenter = center;
                         tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
                         tParams.nOuterRadius = PointDistance(point_arr[i], center)*1.05;
-                        angle1 = (angle1 - M_PI/2)*180/M_PI;
-                        angle2 = (angle2 + M_PI/2)*180/M_PI;
+                        angle1 = atan2(tanLeft.y - center.y, tanLeft.x - center.x )*180/M_PI;
+                        angle2 = atan2(tanRight.y - center.y, tanRight.x - center.x )*180/M_PI;
                         while(angle1<0)
                             angle1 = angle1 + 360;
                         while(angle1>360)
