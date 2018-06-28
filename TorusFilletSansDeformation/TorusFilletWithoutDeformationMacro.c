@@ -59,19 +59,6 @@ LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right 
     dy = right.y - prevRight.y;
     perpendiculaireRight = LPoint_Set(right.x + dy, right.y - dx);
 
-    center = perpendiculaireRight;
-
-LCell pCell = LCell_GetVisible();
-LFile pFile = LCell_GetFile(pCell);
-
-    while(PointDistance(right, center) < PointDistance(left, center))
-    {
-        center.x = center.x + 0.1*dy;
-        center.y = center.y - 0.1*dx;
-    }
-LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), center, 10 );
-
-/*
     //source link: https://www.developpez.net/forums/d369370/applications/developpement-2d-3d-jeux/algo-intersection-2-segments/
     double Ax = left.x;
 	double Ay = left.y;
@@ -114,8 +101,6 @@ LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), center, 10 );
 	}
     center.x = (LCoord)Sx;
     center.y = (LCoord)Sy;
-*/
-
 
     return center;
 }
@@ -184,6 +169,7 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
 
         precLeft = left;
         precRight = right;
+
 
     }
 
@@ -308,8 +294,8 @@ int AddPointsToArray(LPoint* point_arr, int numberVertex, int step, double fille
 
 void AATorusFilletWithoutDeformation(void)
 {
-    LCell pCell = LCell_GetVisible();
-	LFile pFile = LCell_GetFile(pCell);
+    LCell	pCell	=	LCell_GetVisible();
+	LFile	pFile	=	LCell_GetFile(pCell);
     LLayer  pLayer;
 
     LObject obj_arr[MAX_NUMBER_POLYGON];
@@ -444,7 +430,7 @@ LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanRight, 100 );
 LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
 
                         tParams.ptCenter = center;
-                        tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight) );
+                        tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
                         tParams.nOuterRadius = PointDistance(point_arr[i], center)*1.05;
                         angle1 = (angle1 - M_PI/2)*180/M_PI;
                         angle2 = (angle2 + M_PI/2)*180/M_PI;
