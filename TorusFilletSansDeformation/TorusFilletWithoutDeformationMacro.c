@@ -59,14 +59,10 @@ LPoint FindBetterCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint 
 
     center = perpendiculaireRight;
 
-LCell pCell = LCell_GetVisible();
-LFile pFile = LCell_GetFile(pCell);
-
     while(PointDistance(right, center) < PointDistance(left, center))
     {
         center.x = center.x + 0.25*dy;
         center.y = center.y - 0.25*dx;
-LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), center, 10 );
     }
 
     return center;
@@ -451,9 +447,9 @@ void AATorusFilletWithoutDeformation(void)
 
                     if( !(center.x == -1 && center.y == -1) )
                     {
-LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanLeft, 100 );
-LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanRight, 100 );
-LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
+//LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanLeft, 100 );
+//LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanRight, 100 );
+//LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
 
                         tParams.ptCenter = center;
                         tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
@@ -473,8 +469,8 @@ LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
 
                         LTorus_CreateNew( pCell, pLayer, &tParams );                        
                     }
-                    else
-LCircle_New( pCell, LLayer_Find(pFile, "TEST"), point_arr[i], 200 );
+//                    else
+//LCircle_New( pCell, LLayer_Find(pFile, "TEST"), point_arr[i], 200 );
 
                 }
             }
