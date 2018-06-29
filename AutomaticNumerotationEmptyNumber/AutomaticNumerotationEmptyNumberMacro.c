@@ -27,12 +27,14 @@ void AutomaticNumerotationEmptyNumberMacro()
 
     LDialogItem DialogItems[4] = {{ "Start number","0"}, { "increment","1"}, { "Stop number","0"}, { "Space between two numbers (in microns)","1000"}};
 
-    double tmp;
+    double tmpDouble;
     LCoord delta;
     int startNumber, increment, stopNumber;
     LCoord textSize = 0;
-    int cpt;
+    int tmp;
     int diff;
+    int value;
+    int cpt;
 
     LCell bigCell;
     LCell smallCell;
@@ -44,12 +46,6 @@ void AutomaticNumerotationEmptyNumberMacro()
     int numberWindows = 0;
     int hasBeenFoundInArray = 0;
     LWindow pWindow = NULL;
-
-    for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
-    {
-        activeWindows[numberWindows] = pWindow;
-        numberWindows++;
-    }
 
     strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter the name of the origin label", strNameWanted) == 0)
@@ -80,21 +76,18 @@ void AutomaticNumerotationEmptyNumberMacro()
 			return;
 	else
     {
-        tmp = atof(buffer);
-        textSize = LFile_MicronsToIntU(pFile, tmp);
+        tmpDouble = atof(buffer);
+        textSize = LFile_MicronsToIntU(pFile, tmpDouble);
     }
         
 
 	if(LDialog_MultiLineInputBox("User input",DialogItems,4))
     {
-        tmp = atoi(DialogItems[0].value);
-        startNumber = LFile_MicronsToIntU(pFile, tmp);
+        startNumber = atoi(DialogItems[0].value);
 
-        tmp = atoi(DialogItems[1].value);
-        increment = LFile_MicronsToIntU(pFile, tmp);
+        increment = atoi(DialogItems[1].value);
     
-        tmp = atoi(DialogItems[2].value);
-        stopNumber = LFile_MicronsToIntU(pFile, tmp);
+        stopNumber = atoi(DialogItems[2].value);
 
         tmp = atoi(DialogItems[3].value);
         delta = LFile_MicronsToIntU(pFile, tmp);
@@ -113,8 +106,35 @@ void AutomaticNumerotationEmptyNumberMacro()
         return;
     }
 
+    cpt = 0;
+    value = startNumber;
+    while(value != stopNumber)
+    {
+        itoa(value, strText, 10);
+
+        LCell_MakeLogo( pCell,
+                        strText,
+                        textSize,
+                        labelLayer,
+                        LFALSE,
+                        LFALSE,
+                        LFALSE,
+                        ref_x,
+                        (LCoord)(textSize/2 - textSize*0.1538 + ref_y + cpt * delta),
+                        LFALSE,
+                        LTRUE,
+                        LFALSE,
+                        "",
+                        "",
+                        "",
+                        NULL );
+
+        value = value + increment;
+        cpt= cpt + 1;
+    }
+
 /*
-            LCell_MakeLogo( smallCell,
+         LCell_MakeLogo( smallCell,
                                 strText,
                                 textSize,
                                 labelLayer,
@@ -129,7 +149,7 @@ void AutomaticNumerotationEmptyNumberMacro()
                                 "",
                                 "",
                                 "",
-                                NULL );
+                                NULL );   
 */
 
 }
