@@ -10,7 +10,7 @@
 
 #define MAX_NUMBER_WINDOWS 50
 
-void AutomaticNumerotationMacro()
+void AutomaticNumerotationEmptyNumberMacro()
 {
     LCell	pCell	=	LCell_GetVisible();
 	LFile	pFile	=	LCell_GetFile(pCell);
@@ -259,6 +259,6 @@ void AutomaticNumerotationMacro()
 
 int UPI_Entry_Point(void)
 {
-    LMacro_BindToMenuAndHotKey_v9_30(NULL, "F4" /*hotkey*/, "AEPONYX\\Automatic Numerotation Macro\nWindow", "AutomaticNumerotationMacro", NULL /*hotkey category*/);
+    LMacro_BindToMenuAndHotKey_v9_30(NULL, "F4" /*hotkey*/, "AEPONYX\\Automatic Numerotation with empty number (E-Beam) Macro\nWindow", "AutomaticNumerotationEmptyNumberMacro", NULL /*hotkey category*/);
 	return 1;
 }
