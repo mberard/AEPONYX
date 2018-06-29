@@ -160,7 +160,7 @@ void AutomaticNumerotationEmptyNumberMacro()
     diff = abs(stopNumber - startNumber);
     while(diff > 0)
     {
-        diff = diff - increment;
+        diff = diff - abs(increment);
     }
     if(diff != 0 || (stopNumber == startNumber && increment != 0 ) )
     {
