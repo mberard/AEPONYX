@@ -60,6 +60,55 @@ void AutomaticNumerotationEmptyNumberMacro()
     LObject obj_already_grouped_arr[MAX_NUMBER_OBJECT];
     int numberObjectAlreadyGrouped = 0;
 
+
+    char *Pick_List [ ] = {
+        "Create an automatic numerotation with empty digits",
+        "Delete an existing automatic numerotation with empty digits"
+    };
+    int Pick_Count = 2;
+    int Picked;
+    
+    Picked = LDialog_PickList ("Select Element", Pick_List, Pick_Count, 0);
+
+    if(Picked == -1)
+        return;
+    else if(Picked == 1)
+    {
+        LCell cellListItem = LCell_GetList(pFile);
+
+        LInstance inst;
+        for( inst = LInstance_GetList(pCell); inst != NULL; inst = LInstance_GetNext(inst)) 
+        {
+            LInstance_GetName(inst, strName, MAX_TDBFILE_NAME );
+            if(strName[0]=='A' && strName[1]=='U' && strName[2]=='T' && strName[3]=='O' && strName[4]=='_')
+            {
+                LInstance_Delete( pCell, inst);
+            }
+        }
+
+        while ( cellListItem != NULL )
+        {
+            LCell_GetName( cellListItem, strName, MAX_TDBFILE_NAME );
+            if(strlen(strName)>=8)
+            {
+                if(strName[0]=='A' && strName[1]=='U' && strName[2]=='T' && strName[3]=='O' && strName[4]=='_')
+                {
+                    LCell toBeDeleted = cellListItem;
+                    cellListItem = LCell_GetNext(cellListItem);
+                    LCell_Delete( toBeDeleted );
+                    LUpi_LogMessage(LFormat("Deleting cell %s\n", strName));
+                }
+                else
+                    cellListItem = LCell_GetNext(cellListItem);
+            }
+            else
+                cellListItem = LCell_GetNext(cellListItem);
+        }
+
+        return; //end of the macro
+    }
+
+
     strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter the name of the origin label", strNameWanted) == 0)
 		return;
@@ -166,7 +215,7 @@ void AutomaticNumerotationEmptyNumberMacro()
                         "",
                         "",
                         "",
-                        NULL );
+                        NULL);
 
         numberObject = 0;
         for(LObject obj = LObject_GetList(pCell, tmp) ; obj != NULL; obj = LObject_GetNext(obj) )
@@ -203,11 +252,10 @@ void AutomaticNumerotationEmptyNumberMacro()
             strcat(strName, strText);
             strcpy(strText, strName);
             strcat(strText, "_");
-            strcat(strText, LLayer_GetName( labelLayer, strName, 256 ));
+            strcat(strText, LLayer_GetName( labelLayer, strName, MAX_TDBFILE_NAME ));
             result = LSelection_Group(strText);
             LUpi_LogMessage(LFormat("Group %s result: %d\n", strText, result ));
         }
-
 
         value = value + increment;
         cpt= cpt + 1;
@@ -271,6 +319,15 @@ void AutomaticNumerotationEmptyNumberMacro()
         strcat(strText, LLayer_GetName( labelLayer, strName, 256 ));
         result = LSelection_Group(strText);
         LUpi_LogMessage(LFormat("Group %s result: %d\n", strText, result ));
+    }
+
+
+    LInstance inst;
+    for( inst = LInstance_GetList(pCell); inst != NULL; inst = LInstance_GetNext(inst))
+    {
+        LCell tmpCell = LInstance_GetCell( inst );
+        LCell_GetName( tmpCell, strName, MAX_TDBFILE_NAME );
+        LInstance_SetName( pCell, inst, strName );
     }
 
 
