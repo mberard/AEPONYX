@@ -4,8 +4,8 @@
 #include <string.h>
 #include <math.h>
 
-#define MAX_POLYGON_SIZE 50000
-#define MAX_NUMBER_POLYGON 500
+#define MAX_POLYGON_SIZE 30000
+#define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
 
 double PointDistance(LPoint start, LPoint end)
@@ -261,14 +261,14 @@ int AddPointsToArray(LPoint* point_arr, int numberVertex, int step, double fille
                         point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
                         if(PointDistance(point, point_arr[j]) > fillet*8 || PointDistance(point, point_arr[j]) < fillet*0.6)
                         {
+LUpi_LogMessage("Intermediate clean up\n");
                             //delete the point
-                            for(k=j; k<numberVertex; k++)
+                            for(k=j; k<numberVertex-1; k++)
                             {
                                 point_arr[k]=point_arr[k+1];
                             }
                             numberVertex=numberVertex-1;
                             j=j-1;
-                            i=i-1;
                         }
                     }
                 }
@@ -293,6 +293,7 @@ int AddPointsToArray(LPoint* point_arr, int numberVertex, int step, double fille
         }
     }
 
+LUpi_LogMessage("Final clean up\n");
     for(j=0; j<numberVertex; j++)
     {
         if(IsInArray(saved_point_arr, numberVertexSaved, point_arr[j]) == -1)
@@ -397,13 +398,17 @@ void AATorusFilletWithoutDeformation(void)
         LUpi_LogMessage(LFormat("nbPolygonSelected %d\n", nbPolygonSelected));    
 
         LCell_BooleanOperation(pCell, LBoolOp_OR , NULL, obj_arr, nbPolygonSelected, NULL, 0, tmpLayer, LFALSE );
+LUpi_LogMessage("Bool operation has been made\n");
 
         for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
+LUpi_LogMessage("New object\n");
             originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
             
             numberVertex = LVertex_GetArray( obj, point_arr, MAX_POLYGON_SIZE );
+LUpi_LogMessage("Begin adding points\n");
             numberVertex = AddPointsToArray(point_arr, numberVertex, 200, fillet, MAX_POLYGON_SIZE);
+LUpi_LogMessage("Points has been add\n");
 
             if(numberVertex >= MAX_POLYGON_SIZE)
             {
@@ -443,7 +448,9 @@ void AATorusFilletWithoutDeformation(void)
                 //if( ! (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
                 if( ! (angle > M_PI - ANGLE_LIMIT) ) //if not in the limit range and concave
                 {
+LUpi_LogMessage("Need to be fillet\n");
                     center = FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex, fillet, original_point_arr, originalNumberVertex);
+LUpi_LogMessage("Tan and center has been found\n");
 
                     if( !(center.x == -1 && center.y == -1) )
                     {
@@ -467,7 +474,8 @@ void AATorusFilletWithoutDeformation(void)
                         tParams.dStartAngle = angle2;
                         tParams.dStopAngle = angle1;
 
-                        LTorus_CreateNew( pCell, pLayer, &tParams );                        
+                        LTorus_CreateNew( pCell, pLayer, &tParams );
+LUpi_LogMessage("Torus has been creating\n");
                     }
 //                    else
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), point_arr[i], 200 );
