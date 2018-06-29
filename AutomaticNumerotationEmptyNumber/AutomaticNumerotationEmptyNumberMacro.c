@@ -41,6 +41,8 @@ void AutomaticNumerotationEmptyNumberMacro()
 
     LObject obj_arr[MAX_NUMBER_OBJECT];
     int numberObject = 0;
+    LObject obj_arr_shrink[MAX_NUMBER_OBJECT];
+    int numberObjectShrink = 0;
 
     strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter the name of the origin label", strNameWanted) == 0)
@@ -170,7 +172,13 @@ void AutomaticNumerotationEmptyNumberMacro()
 
     LCell_BooleanOperation(pCell, LBoolOp_SHRINK, shrinkValue, obj_arr, numberObject, NULL, 0, tmpLayerShrink, LFALSE);
 
+    for(LObject obj = LObject_GetList(pCell, tmpLayerShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        obj_arr_shrink[numberObjectShrink] = obj;
+        numberObjectShrink = numberObjectShrink + 1;
+    }
 
+    LCell_BooleanOperation(pCell, LBoolOp_XOR, 0, obj_arr, numberObject, obj_arr_shrink, numberObjectShrink, labelLayer, LTRUE);
 /*
     for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
