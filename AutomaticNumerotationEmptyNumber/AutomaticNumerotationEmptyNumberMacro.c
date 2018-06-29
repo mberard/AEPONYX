@@ -144,7 +144,6 @@ void AutomaticNumerotationEmptyNumberMacro()
             numberObjectAlreadyGrouped = numberObjectAlreadyGrouped + 1;
         }
     }
-LUpi_LogMessage(LFormat("%d objects before computing\n", numberObjectAlreadyGrouped));
 
     cpt = 0;
     value = startNumber;
