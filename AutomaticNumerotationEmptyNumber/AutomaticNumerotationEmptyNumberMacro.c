@@ -10,13 +10,24 @@
 
 #define MAX_NUMBER_OBJECT 500
 
+int ObjectIsInArray(LObject obj, LObject* array, int number)
+{
+    int i;
+    for(i=0; i<number; i++)
+    {
+        if(array[i] == obj)
+            return 1;
+    }
+    return 0;
+}
+
 void AutomaticNumerotationEmptyNumberMacro()
 {
     LCell pCell	= LCell_GetVisible();
 	LFile pFile	= LCell_GetFile(pCell);
     LLayer pLayer;
-    LLayer tmpLayer;
-    LLayer tmpLayerShrink;
+    LLayer tmp;
+    LLayer tmpShrink;
   
     char strNameWanted[MAX_TDBFILE_NAME];
     char strName[MAX_TDBFILE_NAME];
@@ -33,16 +44,21 @@ void AutomaticNumerotationEmptyNumberMacro()
     LCoord delta;
     int startNumber, increment, stopNumber;
     LCoord textSize = 0;
-    int tmp;
+    int tmpInt;
     double shrinkValue;
     int diff;
     int value;
     int cpt;
+    int result;
+    int numberInSelection;
 
     LObject obj_arr[MAX_NUMBER_OBJECT];
     int numberObject = 0;
     LObject obj_arr_shrink[MAX_NUMBER_OBJECT];
     int numberObjectShrink = 0;
+
+    LObject obj_already_grouped_arr[MAX_NUMBER_OBJECT];
+    int numberObjectAlreadyGrouped = 0;
 
     strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter the name of the origin label", strNameWanted) == 0)
@@ -86,8 +102,8 @@ void AutomaticNumerotationEmptyNumberMacro()
     
         stopNumber = atoi(DialogItems[2].value);
 
-        tmp = atoi(DialogItems[3].value);
-        delta = LFile_MicronsToIntU(pFile, tmp);
+        tmpInt = atoi(DialogItems[3].value);
+        delta = LFile_MicronsToIntU(pFile, tmpInt);
     }
     else
         return;
@@ -113,11 +129,22 @@ void AutomaticNumerotationEmptyNumberMacro()
     }
 
     //create tmp layers
-    LLayer_New( pFile, NULL, "tmpLayerNum");
-    tmpLayer = LLayer_Find(pFile, "tmpLayerNum");
+    LLayer_New( pFile, NULL, "tmpNum");
+    tmp = LLayer_Find(pFile, "tmpNum");
 
-    LLayer_New( pFile, NULL, "tmpLayerShrink");
-    tmpLayerShrink = LLayer_Find(pFile, "tmpLayerShrink");
+    LLayer_New( pFile, NULL, "tmpShrink");
+    tmpShrink = LLayer_Find(pFile, "tmpShrink");
+
+    //before computing, store the object already in the layer to not group them
+    for(LObject obj = LObject_GetList(pCell, labelLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        if(ObjectIsInArray(obj, obj_already_grouped_arr, numberObjectAlreadyGrouped) == 0)
+        {
+            obj_already_grouped_arr[numberObjectAlreadyGrouped] = obj;
+            numberObjectAlreadyGrouped = numberObjectAlreadyGrouped + 1;
+        }
+    }
+LUpi_LogMessage(LFormat("%d objects before computing\n", numberObjectAlreadyGrouped));
 
     cpt = 0;
     value = startNumber;
@@ -128,7 +155,7 @@ void AutomaticNumerotationEmptyNumberMacro()
         LCell_MakeLogo( pCell,
                         strText,
                         textSize,
-                        tmpLayer,
+                        tmp,
                         LFALSE,
                         LFALSE,
                         LFALSE,
@@ -142,6 +169,47 @@ void AutomaticNumerotationEmptyNumberMacro()
                         "",
                         NULL );
 
+        numberObject = 0;
+        for(LObject obj = LObject_GetList(pCell, tmp) ; obj != NULL; obj = LObject_GetNext(obj) )
+        {
+            obj_arr[numberObject] = obj;
+            numberObject = numberObject + 1;
+        }
+        //shrink to a new layer
+        LCell_BooleanOperation(pCell, LBoolOp_SHRINK, shrinkValue, obj_arr, numberObject, NULL, 0, tmpShrink, LFALSE);
+        //find all the shrink object
+        numberObjectShrink = 0;
+        for(LObject obj = LObject_GetList(pCell, tmpShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
+        {
+            obj_arr_shrink[numberObjectShrink] = obj;
+            numberObjectShrink = numberObjectShrink + 1;
+        }
+        //made the XOR to the good layer
+        LCell_BooleanOperation(pCell, LBoolOp_XOR, 0, obj_arr, numberObject, obj_arr_shrink, numberObjectShrink, labelLayer, LTRUE);
+        //group all the new objects
+        LSelection_DeselectAll();
+
+        for(LObject obj = LObject_GetList(pCell, labelLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
+        {
+            if(ObjectIsInArray(obj, obj_already_grouped_arr, numberObjectAlreadyGrouped) == 0)
+            {
+                obj_already_grouped_arr[numberObjectAlreadyGrouped] = obj;
+                numberObjectAlreadyGrouped = numberObjectAlreadyGrouped + 1;
+                LSelection_AddObject( obj );
+            }
+        }
+        if(LSelection_GetList() != NULL)
+        {
+            strcpy(strName, "AUTO_");
+            strcat(strName, strText);
+            strcpy(strText, strName);
+            strcat(strText, "_");
+            strcat(strText, LLayer_GetName( labelLayer, strName, 256 ));
+            result = LSelection_Group(strText);
+            LUpi_LogMessage(LFormat("Group %s result: %d\n", strText, result ));
+        }
+
+
         value = value + increment;
         cpt= cpt + 1;
     }
@@ -150,7 +218,7 @@ void AutomaticNumerotationEmptyNumberMacro()
     LCell_MakeLogo( pCell,
                     strText,
                     textSize,
-                    tmpLayer,
+                    tmp,
                     LFALSE,
                     LFALSE,
                     LFALSE,
@@ -164,34 +232,61 @@ void AutomaticNumerotationEmptyNumberMacro()
                     "",
                     NULL );
 
-    for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
+    numberObject = 0;
+    for(LObject obj = LObject_GetList(pCell, tmp) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
-        obj_arr[numberObject] = obj;
-        numberObject = numberObject + 1;
+        if(ObjectIsInArray(obj, obj_already_grouped_arr, numberObjectAlreadyGrouped) == 0)
+        {
+            obj_arr[numberObject] = obj;
+            numberObject = numberObject + 1;
+        }
     }
-
-    LCell_BooleanOperation(pCell, LBoolOp_SHRINK, shrinkValue, obj_arr, numberObject, NULL, 0, tmpLayerShrink, LFALSE);
-
-    for(LObject obj = LObject_GetList(pCell, tmpLayerShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
+    //shrink to a new layer
+    LCell_BooleanOperation(pCell, LBoolOp_SHRINK, shrinkValue, obj_arr, numberObject, NULL, 0, tmpShrink, LFALSE);
+    //find all the shrink object
+    numberObjectShrink = 0;
+    for(LObject obj = LObject_GetList(pCell, tmpShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
         obj_arr_shrink[numberObjectShrink] = obj;
         numberObjectShrink = numberObjectShrink + 1;
     }
-
+    //made the XOR to the good layer
     LCell_BooleanOperation(pCell, LBoolOp_XOR, 0, obj_arr, numberObject, obj_arr_shrink, numberObjectShrink, labelLayer, LTRUE);
+    //group all the new objects
+    LSelection_DeselectAll();
+    for(LObject obj = LObject_GetList(pCell, labelLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        if(ObjectIsInArray(obj, obj_already_grouped_arr, numberObjectAlreadyGrouped) == 0)
+        {
+            obj_already_grouped_arr[numberObjectAlreadyGrouped] = obj;
+            numberObjectAlreadyGrouped = numberObjectAlreadyGrouped + 1;
+            LSelection_AddObject( obj );
+        }
+    }
+    if(LSelection_GetList() != NULL)
+    {
+        strcpy(strName, "AUTO_");
+        strcat(strName, strText);
+        strcpy(strText, strName);
+        strcat(strText, "_");
+        strcat(strText, LLayer_GetName( labelLayer, strName, 256 ));
+        result = LSelection_Group(strText);
+        LUpi_LogMessage(LFormat("Group %s result: %d\n", strText, result ));
+    }
+
 
     //delete the tmp layer
-    for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
+    for(LObject obj = LObject_GetList(pCell, tmp) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
         LObject_Delete( pCell, obj );
     }
-    LLayer_Delete( pFile, tmpLayer );
+    LLayer_Delete( pFile, tmp );
 
-    for(LObject obj = LObject_GetList(pCell, tmpLayerShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
+    for(LObject obj = LObject_GetList(pCell, tmpShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
         LObject_Delete( pCell, obj );
     }
-    LLayer_Delete( pFile, tmpLayerShrink );
+    LLayer_Delete( pFile, tmpShrink );
 
 
 }
