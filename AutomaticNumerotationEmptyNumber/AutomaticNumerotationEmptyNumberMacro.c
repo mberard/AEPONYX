@@ -157,6 +157,17 @@ void AutomaticNumerotationEmptyNumberMacro()
     else
         return;
 
+    if(stopNumber < startNumber && increment > 0 )
+    {
+        LUpi_LogMessage("Impossible to reach the stop number from the start number with this increment");
+        return;
+    }
+    if(stopNumber > startNumber && increment < 0 )
+    {
+        LUpi_LogMessage("Impossible to reach the stop number from the start number with this increment");
+        return;
+    }
+
     diff = abs(stopNumber - startNumber);
     while(diff > 0)
     {
