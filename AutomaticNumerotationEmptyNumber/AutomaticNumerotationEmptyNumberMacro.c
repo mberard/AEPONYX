@@ -32,6 +32,7 @@ void AutomaticNumerotationEmptyNumberMacro()
     int startNumber, increment, stopNumber;
     LCoord textSize = 0;
     int cpt;
+    int diff;
 
     LCell bigCell;
     LCell smallCell;
@@ -101,6 +102,16 @@ void AutomaticNumerotationEmptyNumberMacro()
     else
         return;
 
+    diff = abs(stopNumber - startNumber);
+    while(diff > 0)
+    {
+        diff = diff - increment;
+    }
+    if(diff != 0 || stopNumber == startNumber)
+    {
+        LUpi_LogMessage("Impossible to reach the stop number from the start number with this increment");
+        return;
+    }
 
 /*
             LCell_MakeLogo( smallCell,
