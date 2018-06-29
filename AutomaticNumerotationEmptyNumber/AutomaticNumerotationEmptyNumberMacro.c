@@ -179,7 +179,8 @@ void AutomaticNumerotationEmptyNumberMacro()
     }
 
     LCell_BooleanOperation(pCell, LBoolOp_XOR, 0, obj_arr, numberObject, obj_arr_shrink, numberObjectShrink, labelLayer, LTRUE);
-/*
+
+    //delete the tmp layer
     for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
         LObject_Delete( pCell, obj );
@@ -191,7 +192,7 @@ void AutomaticNumerotationEmptyNumberMacro()
         LObject_Delete( pCell, obj );
     }
     LLayer_Delete( pFile, tmpLayerShrink );
-*/
+
 
 }
 
