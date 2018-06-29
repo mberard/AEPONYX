@@ -234,83 +234,46 @@ LPoint FindClosestPoint(LPoint point, LPoint* point_arr, int numberVertex)
 }
 
 
-int AddPointsToArray(LPoint* point_arr, int numberVertex, int step, double fillet, int max_size)
+int AddPointsToArray(int angleNumber, LPoint* point_arr, int numberVertex, int step, double fillet, int max_size)
 {
+    LPoint current, previous, next, pointToAdd;
+    double dx, dy;
     int i = 0;
-    int j = 0;
-    int k = 0;
-    double x, y;
-    LPoint point;
-    int numberVertexSaved = numberVertex;
 
-    LPoint saved_point_arr[numberVertex];
+    current = point_arr[angleNumber];
+    if(angleNumber == 0)
+        previous = point_arr[numberVertex-1];
+    else
+        previous = point_arr[angleNumber-1];
+    
+    if(angleNumber == numberVertex-1)
+        next = point_arr[0];
+    else
+        next = point_arr[angleNumber+1];
 
-    for(i=0; i<numberVertex; i++)
-        saved_point_arr[i] = point_arr[i];
+    pointToAdd = current;
 
-    for(i=0; i<numberVertex; i++)
+    //for previous point
+    dx = previous.x - current.x;
+    dy = previous.y - current.y;
+
+    while(PointDistance(current, pointToAdd) < 10*fillet)
     {
-        if(PointDistance(point_arr[i], point_arr[(i+1)%numberVertex]) > step)
+        //calcul du nouveau point
+
+        if() //si on dépasse le point previous/next: on continue a en ajouter mais entre prev et prev-1 ou next et next+1
         {
-            if(numberVertex >= max_size-1)
-            {
-                for(j=0; j<numberVertex; j++)
-                {
-                    if(IsInArray(saved_point_arr, numberVertexSaved, point_arr[j]) == -1 && !(point_arr[j].x==point_arr[i].x && point_arr[j].y==point_arr[i].y) )
-                    {
-                        point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
-                        if(PointDistance(point, point_arr[j]) > fillet*8 || PointDistance(point, point_arr[j]) < fillet*0.6)
-                        {
-LUpi_LogMessage("Intermediate clean up\n");
-                            //delete the point
-                            for(k=j; k<numberVertex-1; k++)
-                            {
-                                point_arr[k]=point_arr[k+1];
-                            }
-                            numberVertex=numberVertex-1;
-                            j=j-1;
-                        }
-                    }
-                }
 
-                if(numberVertex >= max_size-1)
-                    return max_size;
-            }
-            
-            x = (double)(point_arr[(i+1)%numberVertex].x - point_arr[i].x) / 2.0;
-            x = point_arr[i].x + x;
-            y = (double)(point_arr[(i+1)%numberVertex].y - point_arr[i].y) / 2.0;
-            y = point_arr[i].y + y;
-
-            //add a point to the array and shift the other value
-            for(j=numberVertex-1; j>i; j--)
-            {
-                point_arr[j+1] = point_arr[j];
-            }
-            point_arr[i+1] = LPoint_Set(x, y);
-            numberVertex = numberVertex + 1;
-            i = i - 1; //test the same point with the new target point 
+        }
+        else //sinon, on ajoute le point
+        {
+            for(i=)
         }
     }
 
-LUpi_LogMessage("Final clean up\n");
-    for(j=0; j<numberVertex; j++)
-    {
-        if(IsInArray(saved_point_arr, numberVertexSaved, point_arr[j]) == -1)
-        {
-            point = FindClosestPoint(point_arr[j], saved_point_arr, numberVertexSaved);
-            if(PointDistance(point, point_arr[j]) > fillet*8 || PointDistance(point, point_arr[j]) < fillet*0.6)
-            {
-                //delete the point
-                for(k=j; k<numberVertex; k++)
-                {
-                    point_arr[k]=point_arr[k+1];   
-                }
-                numberVertex=numberVertex-1;
-                j=j-1;
-            }
-        }
-    }
+    //for next point
+    dx = next.x - current.x;
+    dy = next.y - current.y;
     
     return numberVertex;
 }
@@ -398,18 +361,11 @@ void AATorusFilletWithoutDeformation(void)
         LUpi_LogMessage(LFormat("nbPolygonSelected %d\n", nbPolygonSelected));    
 
         LCell_BooleanOperation(pCell, LBoolOp_OR , NULL, obj_arr, nbPolygonSelected, NULL, 0, tmpLayer, LFALSE );
-LUpi_LogMessage("Bool operation has been made\n");
 
         for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
-LUpi_LogMessage("New object\n");
             originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
             
-            numberVertex = LVertex_GetArray( obj, point_arr, MAX_POLYGON_SIZE );
-LUpi_LogMessage("Begin adding points\n");
-            numberVertex = AddPointsToArray(point_arr, numberVertex, 200, fillet, MAX_POLYGON_SIZE);
-LUpi_LogMessage("Points has been add\n");
-
             if(numberVertex >= MAX_POLYGON_SIZE)
             {
                 LDialog_AlertBox( "Limit number of polygon vertex has been reach, return" );
@@ -448,9 +404,12 @@ LUpi_LogMessage("Points has been add\n");
                 //if( ! (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
                 if( ! (angle > M_PI - ANGLE_LIMIT) ) //if not in the limit range and concave
                 {
-LUpi_LogMessage("Need to be fillet\n");
+                    //add points around the angle to fillet
+                    numberVertex = LVertex_GetArray( obj, point_arr, MAX_POLYGON_SIZE );
+                    numberVertex = AddPointsToArray(i, point_arr, numberVertex, 200, fillet, MAX_POLYGON_SIZE);
+
+
                     center = FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex, fillet, original_point_arr, originalNumberVertex);
-LUpi_LogMessage("Tan and center has been found\n");
 
                     if( !(center.x == -1 && center.y == -1) )
                     {
@@ -475,7 +434,6 @@ LUpi_LogMessage("Tan and center has been found\n");
                         tParams.dStopAngle = angle1;
 
                         LTorus_CreateNew( pCell, pLayer, &tParams );
-LUpi_LogMessage("Torus has been creating\n");
                     }
 //                    else
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), point_arr[i], 200 );
