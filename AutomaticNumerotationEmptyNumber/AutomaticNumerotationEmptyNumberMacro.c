@@ -8,13 +8,15 @@
 // see: https://nicolasj.developpez.com/articles/regex/
 // str_regex : "^T_C[[:digit:]]{2,3}T[[:digit:]]{2,3}"
 
-#define MAX_NUMBER_WINDOWS 50
+#define MAX_NUMBER_OBJECT 500
 
 void AutomaticNumerotationEmptyNumberMacro()
 {
-    LCell	pCell	=	LCell_GetVisible();
-	LFile	pFile	=	LCell_GetFile(pCell);
+    LCell pCell	= LCell_GetVisible();
+	LFile pFile	= LCell_GetFile(pCell);
     LLayer pLayer;
+    LLayer tmpLayer;
+    LLayer tmpLayerShrink;
   
     char strNameWanted[MAX_TDBFILE_NAME];
     char strName[MAX_TDBFILE_NAME];
@@ -32,20 +34,13 @@ void AutomaticNumerotationEmptyNumberMacro()
     int startNumber, increment, stopNumber;
     LCoord textSize = 0;
     int tmp;
+    double shrinkValue;
     int diff;
     int value;
     int cpt;
 
-    LCell bigCell;
-    LCell smallCell;
-    LInstance instanceCreated;
-
-    LTransform_Ex99 transformation;
-
-    LWindow activeWindows[MAX_NUMBER_WINDOWS];
-    int numberWindows = 0;
-    int hasBeenFoundInArray = 0;
-    LWindow pWindow = NULL;
+    LObject obj_arr[MAX_NUMBER_OBJECT];
+    int numberObject = 0;
 
     strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter the name of the origin label", strNameWanted) == 0)
@@ -100,11 +95,27 @@ void AutomaticNumerotationEmptyNumberMacro()
     {
         diff = diff - increment;
     }
-    if(diff != 0 || stopNumber == startNumber)
+    if(diff != 0 || (stopNumber == startNumber && increment != 0 ) )
     {
         LUpi_LogMessage("Impossible to reach the stop number from the start number with this increment");
         return;
     }
+
+    strcpy(buffer, "0.5");
+    if ( LDialog_InputBox("Shrink value", "Enter the shrink value (in microns)", buffer) == 0)
+			return;
+	else
+    {
+        tmpDouble = atof(buffer);
+        shrinkValue = LFile_MicronsToIntU(pFile, tmpDouble);
+    }
+
+    //create tmp layers
+    LLayer_New( pFile, NULL, "tmpLayerNum");
+    tmpLayer = LLayer_Find(pFile, "tmpLayerNum");
+
+    LLayer_New( pFile, NULL, "tmpLayerShrink");
+    tmpLayerShrink = LLayer_Find(pFile, "tmpLayerShrink");
 
     cpt = 0;
     value = startNumber;
@@ -115,7 +126,7 @@ void AutomaticNumerotationEmptyNumberMacro()
         LCell_MakeLogo( pCell,
                         strText,
                         textSize,
-                        labelLayer,
+                        tmpLayer,
                         LFALSE,
                         LFALSE,
                         LFALSE,
@@ -132,24 +143,46 @@ void AutomaticNumerotationEmptyNumberMacro()
         value = value + increment;
         cpt= cpt + 1;
     }
+    //generate the last value = stopNumber
+    itoa(value, strText, 10);
+    LCell_MakeLogo( pCell,
+                    strText,
+                    textSize,
+                    tmpLayer,
+                    LFALSE,
+                    LFALSE,
+                    LFALSE,
+                    ref_x,
+                    (LCoord)(textSize/2 - textSize*0.1538 + ref_y + cpt * delta),
+                    LFALSE,
+                    LTRUE,
+                    LFALSE,
+                    "",
+                    "",
+                    "",
+                    NULL );
+
+    for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        obj_arr[numberObject] = obj;
+        numberObject = numberObject + 1;
+    }
+
+    LCell_BooleanOperation(pCell, LBoolOp_SHRINK, shrinkValue, obj_arr, numberObject, NULL, 0, tmpLayerShrink, LFALSE);
+
 
 /*
-         LCell_MakeLogo( smallCell,
-                                strText,
-                                textSize,
-                                labelLayer,
-                                LFALSE,
-                                LFALSE,
-                                LFALSE,
-                                0,
-                                (LCoord)(textSize/2 - textSize*0.1538),
-                                LFALSE,
-                                LTRUE,
-                                LFALSE,
-                                "",
-                                "",
-                                "",
-                                NULL );   
+    for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        LObject_Delete( pCell, obj );
+    }
+    LLayer_Delete( pFile, tmpLayer );
+
+    for(LObject obj = LObject_GetList(pCell, tmpLayerShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        LObject_Delete( pCell, obj );
+    }
+    LLayer_Delete( pFile, tmpLayerShrink );
 */
 
 }
