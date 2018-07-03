@@ -108,8 +108,26 @@ void AutomaticNumerotationEmptyNumberMacro()
         return; //end of the macro
     }
 
-
-    strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
+    LSelection pSelection = LSelection_GetList();
+    if(pSelection)
+    {
+        int cpt = 0;
+        for(pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
+        {
+            LObject object = LSelection_GetObject(pSelection);
+            if(LObject_GetShape(object) == LObjLabel)
+            {
+                cpt = cpt +1;
+                LUpi_LogMessage( LFormat("%s\n",LLabel_GetName( (LLabel)object, strName, MAX_CELL_NAME ) ) );
+            }
+        }
+        if(cpt == 1)
+            strcpy(strNameWanted, strName); //preloaded text in the dialog box
+        else
+        {
+            strcpy(strNameWanted, "labelName"); //preloaded text in the dialog box
+        }
+    }
 	if ( LDialog_InputBox("Layer", "Enter the name of the origin label", strNameWanted) == 0)
 		return;
 
