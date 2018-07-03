@@ -236,44 +236,84 @@ LPoint FindClosestPoint(LPoint point, LPoint* point_arr, int numberVertex)
 
 int AddPointsToArray(int angleNumber, LPoint* point_arr, int numberVertex, int step, double fillet, int max_size)
 {
-    LPoint current, previous, next, pointToAdd;
-    double dx, dy;
-    int i = 0;
+    LPoint prevLeft, left, right, nextRight, pointToAdd, lastPointAdded, origin;
+    LPoint* saved_point_arr;
+    double dxLeft, dyLeft, dxRight, dyRight;
+    int i;
 
-    current = point_arr[angleNumber];
-    if(angleNumber == 0)
-        previous = point_arr[numberVertex-1];
+    for(i=0; i<numberVertex; i++)
+        saved_point_arr[i] = point_arr[i];
+
+    i = angleNumber;
+
+    origin = point_arr[i];
+    if(i == 0)
+        prevLeft = point_arr[numberVertex-1];
     else
-        previous = point_arr[angleNumber-1];
+        prevLeft = point_arr[i-1];
     
-    if(angleNumber == numberVertex-1)
-        next = point_arr[0];
+    if(i == numberVertex-1)
+        nextRight = point_arr[0];
     else
-        next = point_arr[angleNumber+1];
+        nextRight = point_arr[i+1];
 
-    pointToAdd = current;
+    left = origin;
+    right = origin;
+    pointToAdd = origin;
+    lastPointAdded = origin;
 
-    //for previous point
-    dx = previous.x - current.x;
-    dy = previous.y - current.y;
+    dxLeft = prevLeft.x - left.x;
+    dyLeft = prevLeft.y - left.y;
 
-    while(PointDistance(current, pointToAdd) < 10*fillet)
+    dxRight = nextRight.x - right.x;
+    dyRight = nextRight.y - right.y;
+
+    //for left side
+    while(PointDistance(origin, pointToAdd) < 10*fillet)
     {
         //calcul du nouveau point
+        pointToAdd.x = lastPointAdded.x + dxLeft * 0.1;
+        pointToAdd.y = lastPointAdded.y + dyLeft * 0.1;
 
+        while(PointDistance(lastPointAdded, pointToAdd) > step)
+        {
+            pointToAdd.x = pointToAdd.x/2.0;
+            pointToAdd.y = pointToAdd.y/2.0;
+        }
+
+        if(PointDistance(origin, prevLeft) < PointDistance(origin, pointToAdd)) //si on dépasse le point previous/next: on continue a en ajouter mais entre prev et prev-1 ou next et next+1
+        {
+            i = i - 1;
+            if(i<0)
+                i = numberVertex - 1;
+            left = prevLeft;
+            prevLeft = saved_point_arr[i];
+
+            dxLeft = prevLeft.x - left.x;
+            dyLeft = prevLeft.y - left.y;
+
+            pointToAdd = prevLeft;
+        }
+        
+        //on ajoute le point
+
+        lastPointAdded = pointToAdd;
+    }
+
+    //for right side
+    while(PointDistance(origin, pointToAdd) < 10*fillet)
+    {
+        //calcul du nouveau point
+        
         if() //si on dépasse le point previous/next: on continue a en ajouter mais entre prev et prev-1 ou next et next+1
         {
 
         }
         else //sinon, on ajoute le point
         {
-            for(i=)
+            
         }
     }
-
-    //for next point
-    dx = next.x - current.x;
-    dy = next.y - current.y;
     
     return numberVertex;
 }
