@@ -124,10 +124,10 @@ void AutomaticNumerotationEmptyNumberMacro()
         if(cpt == 1)
             strcpy(strNameWanted, strName); //preloaded text in the dialog box
         else
-        {
             strcpy(strNameWanted, "labelName"); //preloaded text in the dialog box
-        }
     }
+    else
+        strcpy(strNameWanted, "labelName"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter the name of the origin label", strNameWanted) == 0)
 		return;
 
