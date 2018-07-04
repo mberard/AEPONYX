@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>
 
-#define MAX_POLYGON_SIZE 30000
+#define MAX_POLYGON_SIZE 20000
 #define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
 
@@ -61,8 +61,8 @@ LPoint FindBetterCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint 
 
     while(PointDistance(right, center) < PointDistance(left, center))
     {
-        center.x = center.x + 0.1*dy;
-        center.y = center.y - 0.1*dx;
+        center.x = center.x + 0.2*dy;
+        center.y = center.y - 0.2*dx;
     }
 
     return center;
@@ -172,7 +172,7 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
 
         if( result2 != -1 )
         {
-            if(PointDistance(original_point_arr[result2], original_point_arr[(result2+1)%originalNumberVertex]) > fillet*10)
+            if(PointDistance(original_point_arr[result2], original_point_arr[(result2+1)%originalNumberVertex]) > fillet*12)
             {
                 LDialog_AlertBox(LFormat("An angle could not be fillet automatically"));
                 return LPoint_Set(-1,-1);
@@ -182,7 +182,7 @@ LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int firstPointIndex,
         {
             if(result1 == 0)
                 result1 = originalNumberVertex;
-            if(PointDistance(original_point_arr[result1], original_point_arr[(result1-1)%originalNumberVertex]) > fillet*10)
+            if(PointDistance(original_point_arr[result1], original_point_arr[(result1-1)%originalNumberVertex]) > fillet*12)
             {
                 LDialog_AlertBox(LFormat("An angle could not be fillet automatically"));
                 return LPoint_Set(-1,-1);
@@ -239,10 +239,16 @@ int AddPointsToArray(int angleNumber, LPoint* point_arr, int numberVertex, int s
     LPoint prevLeft, left, right, nextRight, pointToAdd, lastPointAdded, origin;
     LPoint* saved_point_arr;
     double dxLeft, dyLeft, dxRight, dyRight;
-    int i;
+    int i, j;
+    double cpt;
 
     for(i=0; i<numberVertex; i++)
+    {
         saved_point_arr[i] = point_arr[i];
+    }
+
+LCell	pCell	=	LCell_GetVisible();
+LFile	pFile	=	LCell_GetFile(pCell);
 
     i = angleNumber;
 
@@ -261,27 +267,33 @@ int AddPointsToArray(int angleNumber, LPoint* point_arr, int numberVertex, int s
     right = origin;
     pointToAdd = origin;
     lastPointAdded = origin;
+    
 
     dxLeft = prevLeft.x - left.x;
     dyLeft = prevLeft.y - left.y;
+    while(dxLeft*dxLeft+dyLeft*dyLeft > step*step)
+    {
+        dxLeft = dxLeft/2.0;
+        dyLeft = dyLeft/2.0;
+    }
 
     dxRight = nextRight.x - right.x;
     dyRight = nextRight.y - right.y;
+    while(dxRight*dxRight+dyRight*dyRight > step*step)
+    {
+        dxRight = dxRight/2.0;
+        dyRight = dyRight/2.0;
+    }
+
 
     //for left side
-    while(PointDistance(origin, pointToAdd) < 10*fillet)
+    while(PointDistance(origin, pointToAdd) < 12*fillet)
     {
         //calcul du nouveau point
-        pointToAdd.x = lastPointAdded.x + dxLeft * 0.1;
-        pointToAdd.y = lastPointAdded.y + dyLeft * 0.1;
+        pointToAdd.x = lastPointAdded.x + dxLeft;
+        pointToAdd.y = lastPointAdded.y + dyLeft;
 
-        while(PointDistance(lastPointAdded, pointToAdd) > step)
-        {
-            pointToAdd.x = pointToAdd.x/2.0;
-            pointToAdd.y = pointToAdd.y/2.0;
-        }
-
-        if(PointDistance(origin, prevLeft) < PointDistance(origin, pointToAdd)) //si on dépasse le point previous/next: on continue a en ajouter mais entre prev et prev-1 ou next et next+1
+        if(PointDistance(left, prevLeft) < PointDistance(left, pointToAdd)) //si on dépasse le point previous/next: on continue a en ajouter mais entre prev et prev-1 ou next et next+1
         {
             i = i - 1;
             if(i<0)
@@ -291,30 +303,69 @@ int AddPointsToArray(int angleNumber, LPoint* point_arr, int numberVertex, int s
 
             dxLeft = prevLeft.x - left.x;
             dyLeft = prevLeft.y - left.y;
-
-            pointToAdd = prevLeft;
+            while(dxLeft*dxLeft+dyLeft*dyLeft > step*step)
+            {
+                dxLeft = dxLeft/2.0;
+                dyLeft = dyLeft/2.0;
+            }
+            pointToAdd = left;
         }
         
         //on ajoute le point
-
+        j = numberVertex-1;
+        while( ! (point_arr[j].x == prevLeft.x && point_arr[j].y == prevLeft.y) )
+        {
+            point_arr[j+1] = point_arr[j];
+            j = j - 1;
+        }
+        point_arr[j+1] = pointToAdd;
+        numberVertex = numberVertex + 1;
+LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), pointToAdd, 100 );
         lastPointAdded = pointToAdd;
     }
 
+    pointToAdd = origin;
+    lastPointAdded = origin;
+    i = angleNumber;
     //for right side
-    while(PointDistance(origin, pointToAdd) < 10*fillet)
+    while(PointDistance(origin, pointToAdd) < 12*fillet)
     {
         //calcul du nouveau point
+        pointToAdd.x = lastPointAdded.x + dxRight;
+        pointToAdd.y = lastPointAdded.y + dyRight;
         
-        if() //si on dépasse le point previous/next: on continue a en ajouter mais entre prev et prev-1 ou next et next+1
+        if(PointDistance(right, nextRight) < PointDistance(right, pointToAdd)) //si on dépasse le point previous/next: on continue a en ajouter mais entre prev et prev-1 ou next et next+1
         {
+            i = i + 1;
+            if(i > numberVertex - 1)
+                i = 0;
+            right = nextRight;
+            nextRight = saved_point_arr[i];
 
+            dxRight = nextRight.x - right.x;
+            dyRight = nextRight.y - right.y;
+            while(dxRight*dxRight+dyRight*dyRight > step*step)
+            {
+                dxRight = dxRight/2.0;
+                dyRight = dyRight/2.0;
+            }
+            pointToAdd = right;
         }
-        else //sinon, on ajoute le point
+
+        //on ajoute le point
+        j = numberVertex-1;
+        while( ! (point_arr[j].x == nextRight.x && point_arr[j].y == nextRight.y) )
         {
-            
+            point_arr[j+1] = point_arr[j];
+            j = j - 1;
         }
+        point_arr[j+1] = point_arr[j]; //shift nextRight
+        point_arr[j] = pointToAdd;
+        numberVertex = numberVertex + 1;
+LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), pointToAdd, 100 );
+        lastPointAdded = pointToAdd;
+
     }
-    
     return numberVertex;
 }
 
@@ -361,7 +412,8 @@ void AATorusFilletWithoutDeformation(void)
     LTorusParams tParams;
 
     int i = 0;
-//    int cpt = 0;
+    int j = 0;
+    int cpt = 0;
 
 
     LUpi_LogMessage("\n\n\n\n\nSTART MACRO\n");
@@ -406,30 +458,31 @@ void AATorusFilletWithoutDeformation(void)
         {
             originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
             
-            if(numberVertex >= MAX_POLYGON_SIZE)
+            if(originalNumberVertex >= MAX_POLYGON_SIZE)
             {
                 LDialog_AlertBox( "Limit number of polygon vertex has been reach, return" );
                 return;
             }
-            for(i=0; i<numberVertex; i++) //store the current, previous and next point
+            for(i=0; i<originalNumberVertex; i++) //store the current, previous and next point
             {
-                x = point_arr[i].x;
-                y = point_arr[i].y;
+LUpi_LogMessage(LFormat("test %d sur %d\n", i, originalNumberVertex));
+                x = original_point_arr[i].x;
+                y = original_point_arr[i].y;
                 if(i == 0){
-                    prevX = point_arr[numberVertex-1].x;
-                    prevY = point_arr[numberVertex-1].y;
+                    prevX = original_point_arr[originalNumberVertex-1].x;
+                    prevY = original_point_arr[originalNumberVertex-1].y;
                 }
                 else{
-                    prevX = point_arr[i-1].x;
-                    prevY = point_arr[i-1].y;
+                    prevX = original_point_arr[i-1].x;
+                    prevY = original_point_arr[i-1].y;
                 }
-                if(i == numberVertex-1){
-                    nextX = point_arr[0].x;
-                    nextY = point_arr[0].y;
+                if(i == originalNumberVertex-1){
+                    nextX = original_point_arr[0].x;
+                    nextY = original_point_arr[0].y;
                 }
                 else{
-                    nextX = point_arr[i+1].x;
-                    nextY = point_arr[i+1].y;
+                    nextX = original_point_arr[i+1].x;
+                    nextY = original_point_arr[i+1].y;
                 }
                 dxPrev = x-prevX;
                 dyPrev = y-prevY;
@@ -444,22 +497,29 @@ void AATorusFilletWithoutDeformation(void)
                 //if( ! (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
                 if( ! (angle > M_PI - ANGLE_LIMIT) ) //if not in the limit range and concave
                 {
+                    LUpi_LogMessage("Point need to be fillet\n");
                     //add points around the angle to fillet
                     numberVertex = LVertex_GetArray( obj, point_arr, MAX_POLYGON_SIZE );
-                    numberVertex = AddPointsToArray(i, point_arr, numberVertex, 200, fillet, MAX_POLYGON_SIZE);
+                    numberVertex = AddPointsToArray(i, point_arr, numberVertex, 100, fillet, MAX_POLYGON_SIZE);
 
+                    for(cpt = 0; cpt<numberVertex; cpt++)
+                    {
+                        if(point_arr[cpt].x==x && point_arr[cpt].y==y)
+                        {
+                            j = cpt;
+                        }
+                    }
 
-                    center = FindTangentPoints(&tanLeft, &tanRight, i, point_arr, numberVertex, fillet, original_point_arr, originalNumberVertex);
-
+                    center = FindTangentPoints(&tanLeft, &tanRight, j, point_arr, numberVertex, fillet, original_point_arr, originalNumberVertex);
                     if( !(center.x == -1 && center.y == -1) )
                     {
-//LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanLeft, 100 );
-//LCircle_New( pCell, LLayer_Find(pFile, "CIRCLE"), tanRight, 100 );
-//LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
+LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanLeft, 100 );
+LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanRight, 100 );
+LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
 
                         tParams.ptCenter = center;
                         tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
-                        tParams.nOuterRadius = PointDistance(point_arr[i], center)*1.05;
+                        tParams.nOuterRadius = PointDistance(point_arr[j], center)*1.05;
                         angle1 = atan2(tanLeft.y - center.y, tanLeft.x - center.x )*180/M_PI;
                         angle2 = atan2(tanRight.y - center.y, tanRight.x - center.x )*180/M_PI;
                         while(angle1<0)
@@ -475,10 +535,8 @@ void AATorusFilletWithoutDeformation(void)
 
                         LTorus_CreateNew( pCell, pLayer, &tParams );
                     }
-//                    else
-//LCircle_New( pCell, LLayer_Find(pFile, "TEST"), point_arr[i], 200 );
-
                 }
+                LUpi_LogMessage("Test the next point\n");
             }
         }
     }
