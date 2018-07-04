@@ -28,6 +28,7 @@ void AutomaticNumerotationEmptyNumberMacro()
     LLayer pLayer;
     LLayer tmp;
     LLayer tmpShrink;
+    LLayer tmpPreviousPolygons;
   
     char strNameWanted[MAX_TDBFILE_NAME];
     char strName[MAX_TDBFILE_NAME];
@@ -56,10 +57,6 @@ void AutomaticNumerotationEmptyNumberMacro()
     int numberObject = 0;
     LObject obj_arr_shrink[MAX_NUMBER_OBJECT];
     int numberObjectShrink = 0;
-
-    LObject obj_already_grouped_arr[MAX_NUMBER_OBJECT];
-    int numberObjectAlreadyGrouped = 0;
-
 
     char *Pick_List [ ] = {
         "Create an automatic numerotation with empty digits",
@@ -108,8 +105,26 @@ void AutomaticNumerotationEmptyNumberMacro()
         return; //end of the macro
     }
 
-
-    strcpy(strNameWanted, "die_id"); //preloaded text in the dialog box
+    LSelection pSelection = LSelection_GetList();
+    if(pSelection)
+    {
+        int cpt = 0;
+        for(pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
+        {
+            LObject object = LSelection_GetObject(pSelection);
+            if(LObject_GetShape(object) == LObjLabel)
+            {
+                cpt = cpt +1;
+                LUpi_LogMessage( LFormat("%s\n",LLabel_GetName( (LLabel)object, strName, MAX_CELL_NAME ) ) );
+            }
+        }
+        if(cpt == 1)
+            strcpy(strNameWanted, strName); //preloaded text in the dialog box
+        else
+            strcpy(strNameWanted, "labelName"); //preloaded text in the dialog box
+    }
+    else
+        strcpy(strNameWanted, "labelName"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter the name of the origin label", strNameWanted) == 0)
 		return;
 
@@ -195,14 +210,12 @@ void AutomaticNumerotationEmptyNumberMacro()
     LLayer_New( pFile, NULL, "tmpShrink");
     tmpShrink = LLayer_Find(pFile, "tmpShrink");
 
-    //before computing, store the object already in the layer to not group them
+    //before computing, change the layer of the existing polygons to not group them with digits
+    LLayer_New( pFile, NULL, "tmpPreviousPolygons");
+    tmpPreviousPolygons = LLayer_Find(pFile, "tmpPreviousPolygons");
     for(LObject obj = LObject_GetList(pCell, labelLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
-        if(ObjectIsInArray(obj, obj_already_grouped_arr, numberObjectAlreadyGrouped) == 0)
-        {
-            obj_already_grouped_arr[numberObjectAlreadyGrouped] = obj;
-            numberObjectAlreadyGrouped = numberObjectAlreadyGrouped + 1;
-        }
+        LObject_ChangeLayer(pCell, obj, tmpPreviousPolygons );
     }
 
     cpt = 0;
@@ -247,15 +260,9 @@ void AutomaticNumerotationEmptyNumberMacro()
         LCell_BooleanOperation(pCell, LBoolOp_XOR, 0, obj_arr, numberObject, obj_arr_shrink, numberObjectShrink, labelLayer, LTRUE);
         //group all the new objects
         LSelection_DeselectAll();
-
         for(LObject obj = LObject_GetList(pCell, labelLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
-            if(ObjectIsInArray(obj, obj_already_grouped_arr, numberObjectAlreadyGrouped) == 0)
-            {
-                obj_already_grouped_arr[numberObjectAlreadyGrouped] = obj;
-                numberObjectAlreadyGrouped = numberObjectAlreadyGrouped + 1;
-                LSelection_AddObject( obj );
-            }
+            LSelection_AddObject( obj );
         }
         if(LSelection_GetList() != NULL)
         {
@@ -293,11 +300,8 @@ void AutomaticNumerotationEmptyNumberMacro()
     numberObject = 0;
     for(LObject obj = LObject_GetList(pCell, tmp) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
-        if(ObjectIsInArray(obj, obj_already_grouped_arr, numberObjectAlreadyGrouped) == 0)
-        {
-            obj_arr[numberObject] = obj;
-            numberObject = numberObject + 1;
-        }
+        obj_arr[numberObject] = obj;
+        numberObject = numberObject + 1;
     }
     //shrink to a new layer
     LCell_BooleanOperation(pCell, LBoolOp_SHRINK, shrinkValue, obj_arr, numberObject, NULL, 0, tmpShrink, LFALSE);
@@ -314,12 +318,7 @@ void AutomaticNumerotationEmptyNumberMacro()
     LSelection_DeselectAll();
     for(LObject obj = LObject_GetList(pCell, labelLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
-        if(ObjectIsInArray(obj, obj_already_grouped_arr, numberObjectAlreadyGrouped) == 0)
-        {
-            obj_already_grouped_arr[numberObjectAlreadyGrouped] = obj;
-            numberObjectAlreadyGrouped = numberObjectAlreadyGrouped + 1;
-            LSelection_AddObject( obj );
-        }
+        LSelection_AddObject( obj );
     }
     if(LSelection_GetList() != NULL)
     {
@@ -341,6 +340,8 @@ void AutomaticNumerotationEmptyNumberMacro()
         LInstance_SetName( pCell, inst, strName );
     }
 
+    for(LObject obj = LObject_GetList(pCell, tmpPreviousPolygons) ; obj != NULL; obj = LObject_GetNext(obj) )
+        LObject_ChangeLayer(pCell, obj, labelLayer );
 
     //delete the tmp layer
     for(LObject obj = LObject_GetList(pCell, tmp) ; obj != NULL; obj = LObject_GetNext(obj) )
@@ -355,6 +356,11 @@ void AutomaticNumerotationEmptyNumberMacro()
     }
     LLayer_Delete( pFile, tmpShrink );
 
+    for(LObject obj = LObject_GetList(pCell, tmpPreviousPolygons) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        LObject_Delete( pCell, obj );
+    }
+    LLayer_Delete( pFile, tmpPreviousPolygons );
 
 }
 
