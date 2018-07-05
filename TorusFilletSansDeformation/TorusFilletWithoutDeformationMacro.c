@@ -709,7 +709,7 @@ LUpi_LogMessage("Point need to be fillet\n");
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
 
                         tParams.ptCenter = center;
-                        tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight))+1;
+                        tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight))+3;
                         tParams.nOuterRadius = PointDistance(original_point_arr[i], center)*1.02;
                         angle1 = atan2(tanLeft.y - center.y, tanLeft.x - center.x )*180/M_PI;
                         angle2 = atan2(tanRight.y - center.y, tanRight.x - center.x )*180/M_PI;
