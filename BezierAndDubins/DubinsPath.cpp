@@ -96,6 +96,17 @@ LStatus DubinsPath::SetOffsetValue(double value){
     return this->UpdateCircleCenter();
 }
 
+LStatus DubinsPath::SetOxideSizeValue(double value){
+    value = LFile_MicronsToIntU( this->file, value );
+    this->oxideSizeValue = value;
+    return LStatusOK;
+}
+
+LStatus DubinsPath::SetOxideLayer(LLayer layer){
+    this->oxideLayer = layer;
+    return LStatusOK;
+}
+
 LStatus DubinsPath::SetParamBezier(double value){
     this->paramBezier = value;
     return LStatusOK;

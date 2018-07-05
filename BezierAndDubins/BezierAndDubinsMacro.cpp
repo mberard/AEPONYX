@@ -100,6 +100,8 @@ void BezierAndDubinsMacro()
     float width;
     double paramBezier;
 
+    LDialogItem DialogItems[2] = {{ "«Oxide size on each side (in microns)","10"}, { "Oxide layer","OXIDELAYER"}};
+
     const char *Pick_List [ ] = {
     "Dubins curves with circles",
     "Dubins curves with Bezier curves",
@@ -157,6 +159,31 @@ void BezierAndDubinsMacro()
             /*No is clicked*/
             path.SetOffsetCurveIsSelected(false);
             path.SetOffsetValue(0);
+        }
+
+        if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+        {
+            if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
+            {
+
+                path.SetOxideSizeValue( atof(DialogItems[0].value) );
+                if(LLayer_Find(pFile, DialogItems[1].value))
+                {
+                    path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
+                }
+                else
+                {
+                    LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
+                }
+            }
+            else
+            {
+                path.SetOxideSizeValue(0);
+            }
+        }
+        else
+        {
+            path.SetOxideSizeValue(0);
         }
 
         if( twoLabelsHasBeenSelected() )

@@ -39,6 +39,9 @@ private:
     bool offsetCurveIsSelected;
     double offsetValue;
 
+    double oxideSizeValue;
+    LLayer oxideLayer;
+
     LPoint point_arr[MAX_POLYGON_SIZE];
     int nbPoints;
 
@@ -62,6 +65,8 @@ public:
     LStatus SetLayer(LLayer layer);
     LStatus SetOffsetCurveIsSelected(bool choice);
     LStatus SetOffsetValue(double value);
+    LStatus SetOxideSizeValue(double value);
+    LStatus SetOxideLayer(LLayer layer);
     LStatus SetParamBezier(double paramBezier);
 
     LFile GetFile();
