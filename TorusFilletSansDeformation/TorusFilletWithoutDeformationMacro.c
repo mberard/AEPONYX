@@ -196,13 +196,10 @@ int cpt = 0;
     testPointRight.y = (LCoord)exactPosRightY;
 
     while(PointDistance(testPointLeft, origin) < fillet || PointDistance(testPointRight, origin) < fillet  || PointDistance(testPointLeft, center) < fillet || PointDistance(testPointRight, center) < fillet  || centerIsBetweenPoints(testPointLeft, origin, testPointRight, center) == 0)
-    //while(PointDistance(center, testPointLeft) < fillet)
     {
 
         center = FindCenter(testPointLeft, prevLeft, right, testPointRight);
         betterCenter = FindBetterCenter(testPointLeft, prevLeft, right, testPointRight);
-
-        LUpi_LogMessage("Test nouveau centre \n");
 
         if(PointDistance(origin, testPointLeft) < PointDistance(origin, testPointRight))
         {
@@ -214,8 +211,6 @@ int cpt = 0;
             
             if(PointDistance(testPointLeft, left) > PointDistance(prevLeft, left))
             {
-                LUpi_LogMessage("Depasse a gauche \n");
-
                 testPointLeft = prevLeft;
                 left = prevLeft;
 
@@ -226,7 +221,6 @@ int cpt = 0;
                     else
                         currentPrevLeftIndex = currentPrevLeftIndex-1;
                     prevLeft = point_arr[currentPrevLeftIndex];
-                    LUpi_LogMessage("Nouveau prevLeft \n");
                 }
 
                 angle1 = atan2(dyLeft, dxLeft);
@@ -251,7 +245,6 @@ int cpt = 0;
 
                 testPointLeft.x = (LCoord)exactPosLeftX;
                 testPointLeft.y = (LCoord)exactPosLeftY;
-                LUpi_LogMessage("Retour aux calculs \n");
             }
         }
         else
@@ -264,8 +257,6 @@ int cpt = 0;
             
             if(PointDistance(testPointRight, right) > PointDistance(nextRight, right))
             {
-                LUpi_LogMessage("Depasse a droite \n");
-
                 testPointRight = nextRight;
                 right = nextRight;
 
@@ -276,7 +267,6 @@ int cpt = 0;
                     else
                         currentNextRightIndex = currentNextRightIndex+1;
                     nextRight = point_arr[currentNextRightIndex];
-                    LUpi_LogMessage("Nouveau nextRight \n");
                 }
                 
 
@@ -300,10 +290,10 @@ int cpt = 0;
                 exactPosRightY = exactPosRightY + dyRight;
                 testPointRight.x = (LCoord)exactPosRightX;
                 testPointRight.y = (LCoord)exactPosRightY;
-                LUpi_LogMessage(LFormat("Retour aux calculs\n right : %ld %ld nextRight : %ld %ld\n",right.x,right.y,nextRight.x,nextRight.y ));
             }
         }
-
+//LCircle_New( pCell, LLayer_Find(pFile, "LEFTCIRCLE"), testPointLeft, 1 );
+//LCircle_New( pCell, LLayer_Find(pFile, "RIGHTCIRCLE"), testPointRight, 1 );
         lastTestPointLeft = testPointLeft;
         lastTestPointRight = testPointRight;
     }
@@ -695,9 +685,8 @@ LUpi_LogMessage(LFormat("test %d sur %d\n", i+1, originalNumberVertex));
                 //if( ! (angle > M_PI - ANGLE_LIMIT) ) //if not in the limit range and concave
                 if( angle < M_PI - ANGLE_LIMIT ) //if not in the limit range and concave
                 {
-LUpi_LogMessage(LFormat("angle: %lf\n", angle));
 LUpi_LogMessage("Point need to be fillet\n");
-LCircle_New( pCell, LLayer_Find(pFile, "TEST"), original_point_arr[i], 1000 );
+//LCircle_New( pCell, LLayer_Find(pFile, "TEST"), original_point_arr[i], 1000 );
                     //add points around the angle to fillet
                     /*
                     numberVertex = LVertex_GetArray( obj, point_arr, MAX_POLYGON_SIZE );
@@ -715,13 +704,13 @@ LCircle_New( pCell, LLayer_Find(pFile, "TEST"), original_point_arr[i], 1000 );
                     center = FindTangentPoints(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 10);
                     if( !(center.x == -1 && center.y == -1) )
                     {
-//LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanLeft, 100 );
-//LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanRight, 100 );
-LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
+//LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanLeft, 10 );
+//LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanRight, 10 );
+//LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
 
                         tParams.ptCenter = center;
-                        tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
-                        tParams.nOuterRadius = PointDistance(original_point_arr[i], center)*1.05;
+                        tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight))+1;
+                        tParams.nOuterRadius = PointDistance(original_point_arr[i], center)*1.02;
                         angle1 = atan2(tanLeft.y - center.y, tanLeft.x - center.x )*180/M_PI;
                         angle2 = atan2(tanRight.y - center.y, tanRight.x - center.x )*180/M_PI;
                         while(angle1<0)
