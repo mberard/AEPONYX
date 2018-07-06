@@ -265,6 +265,7 @@ void AATorusFillet(void)
     int i = 0;
     int cpt = 0;
     
+    
     LUpi_LogMessage("\n\n\n\n\nSTART MACRO\n");
 
     if(LSelection_GetList() == NULL) //if no selection made
