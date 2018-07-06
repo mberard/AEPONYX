@@ -37,6 +37,16 @@ LStatus BezierCurve::SetGuideWidth(double width){
     return LStatusOK;
 }
 
+LStatus BezierCurve::SetOxideSizeValueBezier(double value){
+    value = LFile_MicronsToIntU( this->file, value );
+    this->oxideSizeValue = value;
+    return LStatusOK;
+}
+
+LStatus BezierCurve::SetOxideLayerBezier(LLayer layer){
+    this->oxideLayer = layer;
+    return LStatusOK;
+}
 
 LStatus BezierCurve::SetParamBezier(double value){
     this->paramBezier = value;
@@ -168,8 +178,18 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
 
     LObject obj;
     obj = LPolygon_New( this->cell, this->layer, this->point_arr, this->nbPoints );
+
     double dist = LFile_IntUtoMicrons(this->file, ArrayDistance(this->curve_arr, this->nbPointsCurve));
     LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
+
+
+    if(this->oxideSizeValue != 0)
+    {
+        this->layer = this->oxideLayer;
+        this->guideWidth = this->guideWidth + 2*this->oxideSizeValue;
+        this->oxideSizeValue = 0;
+        this->ComputeBezierCurve();
+    }
 }
 
 
