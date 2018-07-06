@@ -267,9 +267,6 @@ void AATorusFillet(void)
     
     LUpi_LogMessage("\n\n\n\n\nSTART MACRO\n");
 
-    if ( LStatusOK != LFile_SaveAs( LFile_GetVisible(), "LastBackupBeforeTorrusFilletMacro", LTdbFile))
-        LDialog_AlertBox( "Failed to save new copy of current file" );
-
     if(LSelection_GetList() == NULL) //if no selection made
 	{
         LUpi_LogMessage("No selection were made\n");
