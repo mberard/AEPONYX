@@ -28,6 +28,9 @@ private:
 
     double guideWidth;
 
+    double oxideSizeValue;
+    LLayer oxideLayer;
+
     double paramBezier;
 
 public:
@@ -38,6 +41,8 @@ public:
     LStatus SetStartPoint(DubinsPoint point);
     LStatus SetEndPoint(DubinsPoint point);
     LStatus SetGuideWidth(double width);
+    LStatus SetOxideSizeValueBezier(double value);
+    LStatus SetOxideLayerBezier(LLayer layer);
     LStatus SetParamBezier(double paramBezier);
 
     void ComputeBezierCurve();
