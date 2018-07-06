@@ -608,6 +608,31 @@ void BezierAndDubinsMacro()
             path.SetParamBezier(paramBezier);
         }
 
+        if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+        {
+            if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
+            {
+
+                path.SetOxideSizeValue( atof(DialogItems[0].value) );
+                if(LLayer_Find(pFile, DialogItems[1].value))
+                {
+                    path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
+                }
+                else
+                {
+                    LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
+                }
+            }
+            else
+            {
+                path.SetOxideSizeValue(0);
+            }
+        }
+        else
+        {
+            path.SetOxideSizeValue(0);
+        }
+
         if( twoLabelsHasBeenSelected() )
         {
             LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));

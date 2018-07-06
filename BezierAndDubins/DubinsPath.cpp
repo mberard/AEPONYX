@@ -1733,10 +1733,21 @@ void DubinsPath::DubinsPathWithBezierCurves()
     
     LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
     
-    LObject_Delete( this->cell, this->torusStart );
-    LObject_Delete( this->cell, this->torusEnd );
-    LObject_Delete( this->cell, this->torusMiddle );
-    LObject_Delete( this->cell, this->line );
+    if(this->oxideSizeValue != 0)
+    {
+        this->layer = this->oxideLayer;
+        this->guideWidth = this->guideWidth + 2*this->oxideSizeValue;
+        this->oxideSizeValue = 0;
+        this->DubinsPathWithBezierCurves();
+    }
+    else
+    {
+        LObject_Delete( this->cell, this->torusStart );
+        LObject_Delete( this->cell, this->torusEnd );
+        LObject_Delete( this->cell, this->torusMiddle );
+        LObject_Delete( this->cell, this->line );
+    }
+    
 }
 
 
