@@ -470,7 +470,7 @@ LUpi_LogMessage(LFormat("test %d sur %d\n", i+1, originalNumberVertex));
 LUpi_LogMessage("Point need to be fillet\n");
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), original_point_arr[i], 1000 );
                     
-                    center = FindTangentPoints(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 10);
+                    center = FindTangentPoints(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 5);
                     if( !(center.x == -1 && center.y == -1) )
                     {
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanLeft, 10 );
