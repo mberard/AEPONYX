@@ -124,6 +124,10 @@ LLayer DubinsPath::GetLayer(){
     return this->layer;
 }
 
+double DubinsPath::GetOxideSizeValue(){
+    return LFile_IntUtoMicrons(this->file, this->oxideSizeValue);
+}
+
 
 float DubinsPath::ComputeRSRLength()
 {
@@ -505,8 +509,8 @@ void DubinsPath::StoreRSRPath()
 
     LTorusParams params;
     params.ptCenter = this->centerStartRightCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartRightCircle.y , this->startPoint.GetLPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
     
@@ -537,8 +541,8 @@ void DubinsPath::StoreRSRPath()
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 
     params.ptCenter = this->centerEndRightCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndRightCircle.y , this->endPoint.GetLPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
     
@@ -564,8 +568,8 @@ void DubinsPath::StoreLSLPath()
 
     LTorusParams params;
     params.ptCenter = this->centerStartLeftCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetLPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
     
@@ -595,8 +599,8 @@ void DubinsPath::StoreLSLPath()
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 
     params.ptCenter = this->centerEndLeftCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetLPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
     
@@ -622,8 +626,8 @@ void DubinsPath::StoreRSLPath()
 
     LTorusParams params;
     params.ptCenter = this->centerStartRightCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartRightCircle.y , this->startPoint.GetLPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
     
@@ -653,8 +657,8 @@ void DubinsPath::StoreRSLPath()
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 
     params.ptCenter = this->centerEndLeftCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetLPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
 
@@ -680,8 +684,8 @@ void DubinsPath::StoreLSRPath()
 
     LTorusParams params;
     params.ptCenter = this->centerStartLeftCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetLPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
 
@@ -711,8 +715,8 @@ void DubinsPath::StoreLSRPath()
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 
     params.ptCenter = this->centerEndRightCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndRightCircle.y , this->endPoint.GetLPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
 
@@ -743,8 +747,8 @@ void DubinsPath::StoreRLRPath()
     
     LTorusParams params;
     params.ptCenter = this->centerStartRightCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     params.dStartAngle = RoundAngle(angleTorusTangentStart);
     params.dStopAngle = RoundAngle(angleTorusPointStart);
     
@@ -762,8 +766,8 @@ void DubinsPath::StoreRLRPath()
 
 
     params.ptCenter = this->centerMiddleCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     params.dStartAngle = RoundAngle( fmod(angleTorusTangentStart + 180.0, 360.0) );
     params.dStopAngle =  RoundAngle( fmod(angleTorusTangentEnd + 180.0, 360.0) );
     
@@ -781,8 +785,8 @@ void DubinsPath::StoreRLRPath()
 
 
     params.ptCenter = this->centerEndRightCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     params.dStartAngle = RoundAngle(angleTorusPointEnd);
     params.dStopAngle = RoundAngle(angleTorusTangentEnd);
     
@@ -810,8 +814,8 @@ void DubinsPath::StoreLRLPath()
     
     LTorusParams params;
     params.ptCenter = this->centerStartLeftCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     params.dStartAngle = RoundAngle(angleTorusPointStart);
     params.dStopAngle = RoundAngle(angleTorusTangentStart);
     
@@ -829,8 +833,8 @@ void DubinsPath::StoreLRLPath()
 
 
     params.ptCenter = this->centerMiddleCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     params.dStopAngle = RoundAngle( fmod(angleTorusTangentStart + 180.0, 360.0) );
     params.dStartAngle =  RoundAngle( fmod(angleTorusTangentEnd + 180.0, 360.0) );
     
@@ -848,8 +852,8 @@ void DubinsPath::StoreLRLPath()
 
 
     params.ptCenter = this->centerEndLeftCircle;
-    params.nInnerRadius = this->radius - this->guideWidth / 2.0;
-    params.nOuterRadius = this->radius + this->guideWidth / 2.0;
+    params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
+    params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     params.dStartAngle = RoundAngle(angleTorusTangentEnd);
     params.dStopAngle = RoundAngle(angleTorusPointEnd);
     
@@ -1311,14 +1315,47 @@ void DubinsPath::RasterizePath()
         double dist = LFile_IntUtoMicrons(this->file, this->distance);
         LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
     }
-        
-
-    LObject_Delete( this->cell, this->torusStart );
-    LObject_Delete( this->cell, this->torusEnd );
-    LObject_Delete( this->cell, this->torusMiddle );
-    LObject_Delete( this->cell, this->line );
-
-
+    
+    if(this->oxideSizeValue != 0)
+    {
+        this->guideWidth = this->guideWidth + 2*this->oxideSizeValue;
+        this->layer = this->oxideLayer;
+        LObject_Delete( this->cell, this->torusStart );
+        LObject_Delete( this->cell, this->torusEnd );
+        LObject_Delete( this->cell, this->torusMiddle );
+        LObject_Delete( this->cell, this->line );
+        switch(this->type)
+        {
+            case RSR:
+                this->StoreRSRPath();
+                break;
+            case LSL:
+                this->StoreLSLPath();
+                break;
+            case RSL:
+                this->StoreRSLPath();
+                break;
+            case LSR:
+                this->StoreLSRPath();
+                break;
+            case RLR:
+                this->StoreRLRPath();
+                break;
+            case LRL:
+                this->StoreLRLPath();
+                break;
+            default:
+                LDialog_AlertBox(LFormat("Path error"));
+        }
+    }
+    else
+    {
+        LObject_Delete( this->cell, this->torusStart );
+        LObject_Delete( this->cell, this->torusEnd );
+        LObject_Delete( this->cell, this->torusMiddle );
+        LObject_Delete( this->cell, this->line );
+    }
+    
 }
 
 

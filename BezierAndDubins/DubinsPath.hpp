@@ -69,6 +69,8 @@ public:
     LStatus SetOxideLayer(LLayer layer);
     LStatus SetParamBezier(double paramBezier);
 
+    double GetOxideSizeValue();
+
     LFile GetFile();
     LCell GetCell();
     LLayer GetLayer();
