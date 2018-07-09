@@ -100,7 +100,7 @@ void BezierAndDubinsMacro()
     float width;
     double paramBezier;
 
-    LDialogItem DialogItems[2] = {{ "Oxide size on each side (in microns)","10"}, { "Oxide layer","OXIDELAYER"}};
+    LDialogItem DialogItems[2] = {{ "Oxide size on each side (in microns)","10"}, { "Oxide layer","OX"}};
 
     const char *Pick_List [ ] = {
     "Dubins curves with circles",
