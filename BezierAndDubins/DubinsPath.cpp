@@ -1368,7 +1368,8 @@ void DubinsPath::DrawArc(LPoint center, LCoord radius, double startAngle, double
     if(isCCW)
     {
         this->Add( center.x + radius * cos( startAngle ), center.y + radius * sin( startAngle ) );
-		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
+		//dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
+        dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 8);
 		for (double dTheta = startAngle; dTheta < stopAngle; dTheta += dThetaStep )
 			this->Add( center.x + radius * cos( dTheta ), center.y + radius * sin( dTheta ) );
 		this->Add( center.x + radius * cos( stopAngle ), center.y + radius * sin( stopAngle ) );
@@ -1376,7 +1377,8 @@ void DubinsPath::DrawArc(LPoint center, LCoord radius, double startAngle, double
     else
     {
         this->Add( center.x + radius * cos( stopAngle ), center.y + radius * sin( stopAngle ) );
-		dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
+		//dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
+        dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 8);
 		for (double dTheta = stopAngle; dTheta > startAngle; dTheta -= dThetaStep )
 			this->Add( center.x + radius * cos( dTheta ), center.y + radius * sin( dTheta ) );
 		this->Add( center.x + radius * cos( startAngle ), center.y + radius * sin( startAngle ) );
