@@ -93,10 +93,10 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
     if(distY<0)
         distY = -distY;
 
-    this->controlStart.x = (LCoord) ( xStart + distX * coef * cos(angleStart) );
-    this->controlStart.y = (LCoord) ( yStart + distY * coef * sin(angleStart) );
-    this->controlEnd.x = (LCoord) ( xEnd + distX * coef * cos(angleEnd + M_PI) );
-    this->controlEnd.y = (LCoord) ( yEnd + distY * coef * sin(angleEnd + M_PI) );
+    this->controlStart.x = (LCoord)round ( xStart + distX * coef * cos(angleStart) );
+    this->controlStart.y = (LCoord)round ( yStart + distY * coef * sin(angleStart) );
+    this->controlEnd.x = (LCoord)round ( xEnd + distX * coef * cos(angleEnd + M_PI) );
+    this->controlEnd.y = (LCoord)round ( yEnd + distY * coef * sin(angleEnd + M_PI) );
 
     //construct the curve
     this->curve_arr[this->nbPointsCurve] = LPoint_Set( xStart, yStart );
@@ -112,29 +112,29 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
     this->nbPointsCurve = this->nbPointsCurve + 1;
 
     //construct the guide from the curve
-    this->point_arr[this->nbPoints] = LPoint_Set((LCoord)(xStart + sin(angleStart) * this->guideWidth / 2.0) , (LCoord)(yStart - cos(angleStart) * this->guideWidth / 2.0));
+    this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xStart + sin(angleStart) * this->guideWidth / 2.0) , (LCoord)round(yStart - cos(angleStart) * this->guideWidth / 2.0));
     save1 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
     for(i=1; i<this->nbPointsCurve-1; i++)
     {
         angle = atan2( this->curve_arr[i+1].y-this->curve_arr[i].y , this->curve_arr[i+1].x-this->curve_arr[i].x );
-        this->point_arr[this->nbPoints] = LPoint_Set((LCoord)(this->curve_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(this->curve_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+        this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(this->curve_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(this->curve_arr[i].y - cos(angle) * this->guideWidth / 2.0));
         this->nbPoints = this->nbPoints + 1;
     }
-    this->point_arr[this->nbPoints] = LPoint_Set((LCoord)(xEnd + sin(angleEnd) * this->guideWidth / 2.0) , (LCoord)(yEnd - cos(angleEnd) * this->guideWidth / 2.0));
+    this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xEnd + sin(angleEnd) * this->guideWidth / 2.0) , (LCoord)round(yEnd - cos(angleEnd) * this->guideWidth / 2.0));
     save2 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
 
-    this->point_arr[this->nbPoints] = LPoint_Set((LCoord)(xEnd + sin(angleEnd + M_PI) * this->guideWidth / 2.0) , (LCoord)(yEnd - cos(angleEnd + M_PI) * this->guideWidth / 2.0));
+    this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xEnd + sin(angleEnd + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEnd - cos(angleEnd + M_PI) * this->guideWidth / 2.0));
     save3 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
     for(i=this->nbPointsCurve-2; i>=1; i--)
     {
         angle = atan2( this->curve_arr[i-1].y-this->curve_arr[i].y , this->curve_arr[i-1].x-this->curve_arr[i].x );
-        this->point_arr[this->nbPoints] = LPoint_Set((LCoord)(this->curve_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)(this->curve_arr[i].y - cos(angle) * this->guideWidth / 2.0));
+        this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(this->curve_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(this->curve_arr[i].y - cos(angle) * this->guideWidth / 2.0));
         this->nbPoints = this->nbPoints + 1;
     }
-    this->point_arr[this->nbPoints] = LPoint_Set((LCoord)(xStart + sin(angleStart + M_PI) * this->guideWidth / 2.0) , (LCoord)(yStart - cos(angleStart + M_PI) * this->guideWidth / 2.0));
+    this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xStart + sin(angleStart + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yStart - cos(angleStart + M_PI) * this->guideWidth / 2.0));
     save4 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
 
