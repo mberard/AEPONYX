@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>
 
-#define MAX_POLYGON_SIZE 20000
+#define MAX_POLYGON_SIZE 15000
 #define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
 
@@ -15,6 +15,14 @@ double PointDistance(LPoint start, LPoint end)
     dist += (double)(end.y - start.y)*(end.y - start.y);
     dist = sqrt(dist);
     return dist;
+}
+
+long RoundToLong(double value)
+{
+    if(value > 0)
+        return (long)(value+0.5);
+    else
+        return (long)(value-0.5);
 }
 
 int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint center)
@@ -131,14 +139,13 @@ LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right 
 
 LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int angleIndex, LPoint* point_arr, int nbPointsArr, double fillet, int step )
 {
-LCell	pCell	=	LCell_GetVisible();
-LFile	pFile	=	LCell_GetFile(pCell);
+//LCell pCell = LCell_GetVisible();
+//LFile pFile = LCell_GetFile(pCell);
     LPoint origin, left, prevLeft, right, nextRight;
     LPoint testPointLeft, testPointRight;
     LPoint lastTestPointLeft, lastTestPointRight;
     LPoint center, betterCenter;
     int currentPrevLeftIndex, currentNextRightIndex;
-int cpt = 0;
     double dxLeft, dyLeft, dxRight, dyRight;
     double exactPosLeftX, exactPosLeftY, exactPosRightX, exactPosRightY;
     double angle=0, angle1=0, angle2=0;
@@ -477,6 +484,7 @@ LUpi_LogMessage("Point need to be fillet\n");
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanRight, 10 );
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 100 );
 
+/*
                         tParams.ptCenter = center;
                         tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
                         tParams.nOuterRadius = PointDistance(original_point_arr[i], center)*1.02;
@@ -494,6 +502,115 @@ LUpi_LogMessage("Point need to be fillet\n");
                         tParams.dStopAngle = angle1;
 
                         LTorus_CreateNew( pCell, pLayer, &tParams );
+*/
+                        double x, y;
+                        double xStart, yStart, xEnd, yEnd;
+                        double angleStart, angleEnd;
+                        double coef;
+                        double distX, distY;
+                        double t;
+
+                        double minDist, dist;
+                        int boolean;
+
+                        LPoint curve_arr[MAX_POLYGON_SIZE];
+                        LPoint controlStart, controlEnd;
+                        int nbPointsCurve = 0;
+
+                        xStart = tanRight.x;
+                        yStart = tanRight.y;
+                        xEnd = tanLeft.x;
+                        yEnd = tanLeft.y;
+
+                        /*
+                        while(original_point_arr[cpt].x != tanRight.x && original_point_arr[cpt].y != tanRight.y)
+                        {
+                            cpt++;
+                            if(cpt>originalNumberVertex-1)
+                                cpt = 0;
+                        }
+                        */
+                        cpt = i;
+                        minDist = 999999999999999999.999;
+                        boolean = 1;
+                        while(boolean == 1)
+                        {
+                            //if(PointDistance(original_point_arr[cpt], tanRight) + PointDistance(original_point_arr[cpt+1], tanRight) >= minDist)
+                            if(cpt == originalNumberVertex-1)
+                                dist = PointDistance(original_point_arr[cpt], tanRight) + PointDistance(original_point_arr[0], tanRight);
+                            else
+                                dist = PointDistance(original_point_arr[cpt], tanRight) + PointDistance(original_point_arr[cpt+1], tanRight);
+
+                            if( dist >= minDist )
+                                boolean = 0;
+                            else
+                            {
+                                minDist = dist;
+                                cpt = cpt + 1;
+                                if(cpt > originalNumberVertex-1)
+                                {
+                                    cpt = 0;
+                                }
+                            }
+                        }
+                        angleStart = atan2(original_point_arr[cpt].y - tanRight.y, original_point_arr[cpt].x - tanRight.x ) + M_PI;
+LUpi_LogMessage(LFormat("angleStart %lf\n", angleStart));
+                        /*
+                        while(original_point_arr[cpt].x != tanLeft.x && original_point_arr[cpt].y != tanLeft.y)
+                        {
+                            cpt--;
+                            if(cpt<0)
+                                cpt = originalNumberVertex-1;
+                        }
+                        */
+                        cpt = i;
+                        minDist = 99999999999999999999999999.999;
+                        boolean = 1;
+                        while(boolean == 1)
+                        {
+                            if(cpt == 0)
+                                dist = PointDistance(original_point_arr[cpt], tanRight) + PointDistance(original_point_arr[originalNumberVertex-1], tanRight);
+                            else
+                                dist = PointDistance(original_point_arr[cpt], tanRight) + PointDistance(original_point_arr[cpt-1], tanRight);
+
+                            if( dist >= minDist )
+                                boolean = 0;
+                            else
+                            {
+                                minDist = dist;
+                                cpt = cpt - 1;
+                                if(cpt < 0)
+                                {
+                                    cpt = originalNumberVertex-1;
+                                }
+                            }
+                        }
+                        angleEnd = atan2(original_point_arr[cpt].y - tanLeft.y, original_point_arr[cpt].x - tanLeft.x ) + M_PI;
+LUpi_LogMessage(LFormat("angleEnd %lf\n", angleEnd));
+                        coef = 0.55;
+
+                        controlStart.x = (LCoord)round( xStart + fillet * coef * cos(angleStart) );
+                        controlStart.y = (LCoord)round( yStart + fillet * coef * sin(angleStart) );
+                        controlEnd.x = (LCoord)round( xEnd + fillet * coef * cos(angleEnd) );
+                        controlEnd.y = (LCoord)round( yEnd + fillet * coef * sin(angleEnd) );
+
+                        curve_arr[nbPointsCurve] = LPoint_Set( xStart, yStart );
+                        nbPointsCurve++;
+                        for(t=0.002; t<1; t=t+0.002)
+                        {
+                            x = xStart*pow((1-t),3) + 3*controlStart.x*pow((1-t),2)*t + 3*controlEnd.x*(1-t)*pow(t,2) + xEnd*pow(t,3);
+                            y = yStart*pow((1-t),3) + 3*controlStart.y*pow((1-t),2)*t + 3*controlEnd.y*(1-t)*pow(t,2) + yEnd*pow(t,3);
+                            curve_arr[nbPointsCurve] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
+                            nbPointsCurve = nbPointsCurve + 1;
+                        }
+LUpi_LogMessage(LFormat("Fin du for\n"));
+                        curve_arr[nbPointsCurve] = LPoint_Set( xEnd, yEnd );
+                        nbPointsCurve = nbPointsCurve + 1;
+
+                        curve_arr[nbPointsCurve] = original_point_arr[i]; //remplacer par tout les points de tanLeft a tanRight
+                        nbPointsCurve = nbPointsCurve + 1;
+
+                        LPolygon_New( pCell, pLayer, curve_arr, nbPointsCurve );
                     }
                     else
                     {
