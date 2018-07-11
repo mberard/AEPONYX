@@ -57,12 +57,16 @@ int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint cente
     return 0; //not between points
 }
 
-LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int angleIndex, LPoint* point_arr, int nbPointsArr, double fillet, int step)
+LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int angleIndex, LPoint* point_arr, int nbPointsArr, double fillet, float step)
 {
     LCell pCell = LCell_GetVisible();
     LFile pFile = LCell_GetFile(pCell);
+    if(LCell_Find(pFile, "AUTO_CELL_TO_COMPUTE_TORUS_CENTER"))
+        LCell_Delete("AUTO_CELL_TO_COMPUTE_TORUS_CENTER");
     pCell = LCell_New( pFile, "AUTO_CELL_TO_COMPUTE_TORUS_CENTER" );
     LLayer pLayer;
+    if(LLayer_Find( pFile, "AUTO_LAYER_TO_COMPUTE_TORUS_CENTER" ))
+        LLayer_Delete( pFile, LLayer_Find( pFile, "AUTO_LAYER_TO_COMPUTE_TORUS_CENTER" ) );
     LLayer_New( pFile, NULL, "AUTO_LAYER_TO_COMPUTE_TORUS_CENTER" );
     pLayer = LLayer_Find( pFile, "AUTO_LAYER_TO_COMPUTE_TORUS_CENTER" );
 
@@ -77,8 +81,8 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
     double exactPosLeftX, exactPosLeftY, exactPosRightX, exactPosRightY;
     double angle=0, angle1=0, angle2=0;
 
-    double threshold = 0.1;
-    double dist, minDist;
+    double threshold = 0.015;
+    double dist, maxDist;
 
     if(angleIndex == 0)
         currentPrevLeftIndex = nbPointsArr-1;
@@ -110,16 +114,16 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
     dyLeft = prevLeft.y - left.y;
     while(dxLeft*dxLeft+dyLeft*dyLeft > step*step)
     {
-        dxLeft = dxLeft/1.2;
-        dyLeft = dyLeft/1.2;
+        dxLeft = dxLeft/1.05;
+        dyLeft = dyLeft/1.05;
     }
 
     dxRight = nextRight.x - right.x;
     dyRight = nextRight.y - right.y;
     while(dxRight*dxRight+dyRight*dyRight > step*step)
     {
-        dxRight = dxRight/1.2;
-        dyRight = dyRight/1.2;
+        dxRight = dxRight/1.05;
+        dyRight = dyRight/1.05;
     }
 
     exactPosLeftX = exactPosLeftX + dxLeft;
@@ -132,15 +136,14 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
     testPointRight.x = (LCoord)exactPosRightX;
     testPointRight.y = (LCoord)exactPosRightY;
 
-LUpi_LogMessage("AVANT WHILE\n");
-    while( fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) < M_PI - threshold 
-            || fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) > M_PI + threshold
-            || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) < M_PI - threshold
-            || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) > M_PI + threshold )
+    while( fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) < M_PI/2.0 - threshold 
+            || fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) > M_PI/2.0 + threshold
+            || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) < M_PI/2.0 - threshold
+            || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) > M_PI/2.0 + threshold )
     {
         circleRight = LCircle_New(pCell, pLayer, testPointRight, fillet);
         circleLeft = LCircle_New(pCell, pLayer, testPointLeft, fillet);
-
+//return LPoint_Set(-1,-1);
         LCell_BooleanOperation( pCell,
                                 LBoolOp_AND,
                                 NULL,
@@ -149,28 +152,38 @@ LUpi_LogMessage("AVANT WHILE\n");
                                 &circleLeft,
                                 1,
                                 pLayer,
-                                LFALSE );
+                                LTRUE );
 
         if(LObject_GetList(pCell, pLayer) == NULL)
+        {
+            LUpi_LogMessage("Pas de polygone apres le AND");
             return LPoint_Set(-1,-1);
+        }
+            
 
         
         for(LObject obj = LObject_GetList(pCell, pLayer); obj != NULL; obj = LObject_GetNext(obj))
         {
-LUpi_LogMessage("un objet\n");
-            minDist = 99999999999999999999999999.999;
+//LUpi_LogMessage("un objet\n");
+            maxDist = 0;
             for (LVertex vertex = LObject_GetVertexList(obj); vertex !=NULL; vertex = LVertex_GetNext(vertex))
             {
-                if(PointDistance(LVertex_GetPoint(vertex), origin) < minDist)
+//LUpi_LogMessage("   un vertex\n");
+                if(PointDistance(LVertex_GetPoint(vertex), origin) > maxDist)
                 {
-LUpi_LogMessage("      un test dewamfcra\n");
-                    minDist = PointDistance(LVertex_GetPoint(vertex), origin);
+//LUpi_LogMessage("      un test\n");
+                    maxDist = PointDistance(LVertex_GetPoint(vertex), origin);
                     center = LVertex_GetPoint(vertex);
                 }
             }
         }
 
-        if(fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x))-M_PI < fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x))-M_PI)
+        for(LObject obj = LObject_GetList(pCell, pLayer) ; obj != NULL; obj = LObject_GetNext(obj))
+        {
+                LObject_Delete( pCell, obj );
+        }
+
+        if(fmod(fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)), M_PI) > fmod(fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)), M_PI))
         {
             exactPosLeftX = exactPosLeftX + dxLeft;
             exactPosLeftY = exactPosLeftY + dyLeft;
@@ -207,6 +220,7 @@ LUpi_LogMessage("      un test dewamfcra\n");
                 //if(angle >= M_PI-ANGLE_LIMIT || angle <= -M_PI+ANGLE_LIMIT)
                 if(angle >= M_PI/2.0 || angle <= -M_PI/2.0)
                 {
+                    LUpi_LogMessage("Angle cumul trop grand (plus de 90 degres)");
                     return LPoint_Set(-1,-1);
                 }
                 exactPosLeftX = exactPosLeftX + dxLeft;
@@ -253,6 +267,7 @@ LUpi_LogMessage("      un test dewamfcra\n");
                 angle = fabs(angle1 - angle2);
                 if(angle >= M_PI)
                 {
+                    LUpi_LogMessage("Pas de polygone après le AND");
                     return LPoint_Set(-1,-1);
                 }
                 exactPosRightX = exactPosRightX + dxRight;
@@ -266,10 +281,19 @@ LUpi_LogMessage("      un test dewamfcra\n");
         lastTestPointLeft = testPointLeft;
         lastTestPointRight = testPointRight;
 
-        LUpi_LogMessage(LFormat("x: %ld y: %ld\n", center.x, center.y));
-
+//LUpi_LogMessage(LFormat("\n\n\n\n"));
+//LUpi_LogMessage(LFormat(" centre x: %ld y: %ld\n", center.x, center.y));
+//LUpi_LogMessage(LFormat(" si  %lf  >  %lf  alors on bouge left\n", fmod(fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)), M_PI) , fmod(fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)), M_PI)));
+//LUpi_LogMessage(LFormat(" right angle %lf\n", fmod(fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)), M_PI)));
+//LUpi_LogMessage(LFormat(" left angle %lf\n", fmod(fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)), M_PI)));
+        
     }
-    //LCell_Delete( pCell );
+    for(LObject obj = LObject_GetList(pCell, pLayer) ; obj != NULL; obj = LObject_GetNext(obj))
+    {
+        LObject_Delete( pCell, obj );
+    }
+    LCell_Delete( pCell );
+    LLayer_Delete( pFile, LLayer_Find( pFile, "AUTO_LAYER_TO_COMPUTE_TORUS_CENTER" ) );
 
     tanLeft->x = testPointLeft.x;
     tanLeft->y = testPointLeft.y;
@@ -702,7 +726,7 @@ LUpi_LogMessage("Point need to be fillet\n");
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), original_point_arr[i], 1000 );
                     
                     //center = FindTangentPoints(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 5);
-                    center = FindTanAndCenterWithCircleMethod(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 5);
+                    center = FindTanAndCenterWithCircleMethod(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 1.5);
                     if( !(center.x == -1 && center.y == -1) )
                     {
 LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanLeft, 1 );
