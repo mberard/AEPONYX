@@ -84,7 +84,7 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
 
     double distStart = 0;
 
-    double threshold = 0.015;
+    double threshold = 0.001;
     double dist, maxDist;
 
     if(angleIndex == 0)
@@ -106,8 +106,8 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
     prevLeft = point_arr[currentPrevLeftIndex];
     nextRight = point_arr[currentNextRightIndex];
 
-    lastTestPointLeft = origin;
-    lastTestPointRight = origin;
+    lastTestPointLeft = left;
+    lastTestPointRight = right;
     center = origin;
     betterCenter = origin;
 
@@ -172,6 +172,21 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
             keepCompute = 0;
     }
 LUpi_LogMessage("Left/right has been found\n");
+
+    left = point_arr[currentLeftIndex];
+    right = point_arr[currentRightIndex];
+    prevLeft = point_arr[currentPrevLeftIndex];
+    nextRight = point_arr[currentNextRightIndex];
+    lastTestPointLeft = left;
+    lastTestPointRight = right;
+    center = origin;
+    betterCenter = origin;
+
+    exactPosRightX = right.x;
+    exactPosRightY = right.y;
+    exactPosLeftX = left.x;
+    exactPosLeftY = left.y;
+
     dxLeft = prevLeft.x - left.x;
     dyLeft = prevLeft.y - left.y;
     while(dxLeft*dxLeft+dyLeft*dyLeft > step*step)
@@ -188,19 +203,34 @@ LUpi_LogMessage("Left/right has been found\n");
         dyRight = dyRight/1.05;
     }
 
-    distStart = (1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 ))*fillet * 0.8;
-    if(point_arr[currentRightIndex].x == origin.x && point_arr[currentRightIndex].y == origin.y && PointDistance(point_arr[currentRightIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet)
+    distStart = (1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 ))*fillet * 0.97;
+    //if(point_arr[currentRightIndex].x == origin.x && point_arr[currentRightIndex].y == origin.y && PointDistance(point_arr[currentRightIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet)
+    if(point_arr[currentRightIndex].x == origin.x && point_arr[currentRightIndex].y == origin.y && PointDistance(point_arr[currentNextRightIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet && point_arr[currentLeftIndex].x == origin.x && point_arr[currentLeftIndex].y == origin.y && PointDistance(point_arr[currentPrevLeftIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet)
     {
         exactPosRightX = exactPosRightX + distStart * cos(atan2(dyRight,dxRight));
         exactPosRightY = exactPosRightY + distStart * sin(atan2(dyRight,dxRight));
-LUpi_LogMessage("Right a l'origine\n");
+        exactPosLeftX = exactPosLeftX + distStart * cos(atan2(dyLeft,dxLeft));
+        exactPosLeftY = exactPosLeftY + distStart * sin(atan2(dyLeft,dxLeft));
+LUpi_LogMessage("Right et left a l'origine et coté assez long, on avance plus vite\n");
     }
     else
     {
         exactPosRightX = exactPosRightX + dxRight;
         exactPosRightY = exactPosRightY + dyRight;
+        exactPosLeftX = exactPosLeftX + dxLeft;
+        exactPosLeftY = exactPosLeftY + dyLeft;
+LUpi_LogMessage("Commence au debut\n");
     }
-    if(point_arr[currentLeftIndex].x == origin.x && point_arr[currentLeftIndex].y == origin.y && PointDistance(point_arr[currentLeftIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet)
+
+    if( currentRightIndex != angleIndex || currentLeftIndex != angleIndex )
+    {
+        for(int testing = 0; testing < 1000; testing ++)
+        {
+            LUpi_LogMessage("on a bien avance\n\n");
+        }
+    }
+/*
+    if(point_arr[currentLeftIndex].x == origin.x && point_arr[currentLeftIndex].y == origin.y && PointDistance(point_arr[currentPrevLeftIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet)
     {
         exactPosLeftX = exactPosLeftX + distStart * cos(atan2(dyLeft,dxLeft));
         exactPosLeftY = exactPosLeftY + distStart * sin(atan2(dyLeft,dxLeft));
@@ -211,7 +241,7 @@ LUpi_LogMessage("Left a l'origine\n");
         exactPosLeftX = exactPosLeftX + dxLeft;
         exactPosLeftY = exactPosLeftY + dyLeft;
     }
-
+*/
     testPointLeft.x = (LCoord)exactPosLeftX;
     testPointLeft.y = (LCoord)exactPosLeftY;
     testPointRight.x = (LCoord)exactPosRightX;
@@ -309,13 +339,15 @@ LUpi_LogMessage("Left a l'origine\n");
         testPointRight.y = (LCoord)exactPosRightY;
     }
 */
+    
 //LUpi_LogMessage("Left/right has been found\n");
-    while( fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) < M_PI/2.0 - threshold 
+    while( fmod(fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)), M_PI) < M_PI/2.0 //- threshold 
             // || fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) > M_PI/2.0 + threshold
-            || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) < M_PI/2.0 - threshold
+            || fmod(fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)), M_PI) < M_PI/2.0 //- threshold
             // || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) > M_PI/2.0 + threshold 
          )
     {
+LUpi_LogMessage("NEW TEST \n");
         circleRight = LCircle_New(pCell, pLayer, testPointRight, fillet);
         circleLeft = LCircle_New(pCell, pLayer, testPointLeft, fillet);
         
@@ -337,7 +369,7 @@ LUpi_LogMessage("Left a l'origine\n");
             }
             LCell_Delete( pCell );
             LLayer_Delete( pFile, LLayer_Find( pFile, "AUTO_LAYER_TO_COMPUTE_TORUS_CENTER" ) );
-            LUpi_LogMessage("Pas de polygone apres le AND");
+            LUpi_LogMessage(LFormat("Pas de polygone apres le AND\n\tcercle right %ld %ld\n\tcercle left %ld %ld\n", testPointRight.x, testPointRight.y, testPointLeft.x, testPointLeft.y));
             return LPoint_Set(-1,-1);
         }
         
@@ -394,7 +426,7 @@ LUpi_LogMessage("Left a l'origine\n");
                 
                 angle = angle + angle1 - angle2;
                 //if(angle >= M_PI-ANGLE_LIMIT || angle <= -M_PI+ANGLE_LIMIT)
-            /*    if(angle >= M_PI/2.0 || angle <= -M_PI/2.0)
+                if(angle >= M_PI/2.0 || angle <= -M_PI/2.0)
                 {
                     for(LObject obj = LObject_GetList(pCell, pLayer) ; obj != NULL; obj = LObject_GetNext(obj))
                     {
@@ -405,7 +437,7 @@ LUpi_LogMessage("Left a l'origine\n");
                     LUpi_LogMessage("Angle cumul trop grand (plus de 90 degres)\n");
                     return LPoint_Set(-1,-1);
                 }
-            */
+            
                 exactPosLeftX = exactPosLeftX + dxLeft;
                 exactPosLeftY = exactPosLeftY + dyLeft;
 
@@ -1277,6 +1309,7 @@ LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 10 );
 
                         tParams.ptCenter = center;
                         tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
+                        //tParams.nInnerRadius = fillet;
                         tParams.nOuterRadius = PointDistance(original_point_arr[i], center)*1.02;
                         angle1 = atan2(tanLeft.y - center.y, tanLeft.x - center.x )*180/M_PI;
                         angle2 = atan2(tanRight.y - center.y, tanRight.x - center.x )*180/M_PI;
