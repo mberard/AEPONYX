@@ -7,6 +7,9 @@
 #define MAX_POLYGON_SIZE 15000
 #define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
+#define LIMIT_FAST_APPROACH_1 1.2
+#define LIMIT_FAST_APPROACH_2 1.45
+#define LIMIT_FAST_APPROACH_3 1.54
 
 double PointDistance(LPoint start, LPoint end)
 {
@@ -171,7 +174,6 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
         else
             keepCompute = 0;
     }
-LUpi_LogMessage("Left/right has been found\n");
 
     left = point_arr[currentLeftIndex];
     right = point_arr[currentRightIndex];
@@ -341,13 +343,27 @@ LUpi_LogMessage("Left a l'origine\n");
 */
     
 //LUpi_LogMessage("Left/right has been found\n");
+/*    
     while( fmod(fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)), M_PI) < M_PI/2.0 //- threshold 
             // || fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) > M_PI/2.0 + threshold
             || fmod(fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)), M_PI) < M_PI/2.0 //- threshold
             // || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) > M_PI/2.0 + threshold 
          )
     {
+*/
+    keepCompute = 1;
+    while( fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) < M_PI/2.0 //- threshold 
+            // || fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) > M_PI/2.0 + threshold
+            || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) < M_PI/2.0 //- threshold
+            // || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) > M_PI/2.0 + threshold 
+            || keepCompute == 1 //if it's the first one
+        )
+    {
 LUpi_LogMessage("NEW TEST \n");
+
+        if(keepCompute == 1)
+            keepCompute = 0;
+
         circleRight = LCircle_New(pCell, pLayer, testPointRight, fillet);
         circleLeft = LCircle_New(pCell, pLayer, testPointLeft, fillet);
         
@@ -391,10 +407,28 @@ LUpi_LogMessage("NEW TEST \n");
                 LObject_Delete( pCell, obj );
         }
 
-        if(fmod(fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)), M_PI) > fmod(fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)), M_PI))
+        if( fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) > fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) )
         {
-            exactPosLeftX = exactPosLeftX + dxLeft;
-            exactPosLeftY = exactPosLeftY + dyLeft;
+            if(fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) < LIMIT_FAST_APPROACH_1)
+            {
+                exactPosLeftX = exactPosLeftX + dxLeft*50;
+                exactPosLeftY = exactPosLeftY + dyLeft*50;
+            }
+            else if(fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) < LIMIT_FAST_APPROACH_2)
+            {
+                exactPosLeftX = exactPosLeftX + dxLeft*10;
+                exactPosLeftY = exactPosLeftY + dyLeft*10;
+            }
+            else if(fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) < LIMIT_FAST_APPROACH_3)
+            {
+                exactPosLeftX = exactPosLeftX + dxLeft*4;
+                exactPosLeftY = exactPosLeftY + dyLeft*4;
+            }
+            else
+            {
+                exactPosLeftX = exactPosLeftX + dxLeft;
+                exactPosLeftY = exactPosLeftY + dyLeft;
+            }
 
             testPointLeft.x = (LCoord)exactPosLeftX;
             testPointLeft.y = (LCoord)exactPosLeftY;
@@ -447,8 +481,26 @@ LUpi_LogMessage("NEW TEST \n");
         }
         else
         {
-            exactPosRightX = exactPosRightX + dxRight;
-            exactPosRightY = exactPosRightY + dyRight;
+            if(fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) < LIMIT_FAST_APPROACH_1)
+            {
+                exactPosRightX = exactPosRightX + dxRight*50;
+                exactPosRightY = exactPosRightY + dyRight*50;
+            }
+            else if(fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) < LIMIT_FAST_APPROACH_2)
+            {
+                exactPosRightX = exactPosRightX + dxRight*10;
+                exactPosRightY = exactPosRightY + dyRight*10;
+            }
+            else if(fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) < LIMIT_FAST_APPROACH_3)
+            {
+                exactPosRightX = exactPosRightX + dxRight*4;
+                exactPosRightY = exactPosRightY + dyRight*4;
+            }
+            else
+            {
+                exactPosRightX = exactPosRightX + dxRight;
+                exactPosRightY = exactPosRightY + dyRight;
+            }
 
             testPointRight.x = (LCoord)exactPosRightX;
             testPointRight.y = (LCoord)exactPosRightY;
@@ -508,6 +560,9 @@ LUpi_LogMessage("NEW TEST \n");
         LUpi_LogMessage(LFormat(" left angle %lf\n", fmod(fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)), M_PI)));
         
     }
+
+    LUpi_LogMessage(LFormat("\n FINAL ANGLES\n right angle %lf\n", fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x))));
+    LUpi_LogMessage(LFormat(" left angle %lf\n", fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x))));
     
     for(LObject obj = LObject_GetList(pCell, pLayer) ; obj != NULL; obj = LObject_GetNext(obj))
     {
