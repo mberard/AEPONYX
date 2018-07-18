@@ -7,8 +7,8 @@
 #define MAX_POLYGON_SIZE 15000
 #define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
-#define LIMIT_FAST_APPROACH_1 1.3
-#define LIMIT_FAST_APPROACH_2 1.50
+#define LIMIT_FAST_APPROACH_1 1.2
+#define LIMIT_FAST_APPROACH_2 1.47
 #define LIMIT_FAST_APPROACH_3 1.555
 
 double PointDistance(LPoint start, LPoint end)
@@ -206,9 +206,9 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
         dyRight = dyRight/1.05;
     }
 
-    distStart = (1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 ))*fillet * 0.90;
+    distStart = (1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 ))*fillet * 0.50;
     //if(point_arr[currentRightIndex].x == origin.x && point_arr[currentRightIndex].y == origin.y && PointDistance(point_arr[currentRightIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet)
-    if(point_arr[currentRightIndex].x == origin.x && point_arr[currentRightIndex].y == origin.y && PointDistance(point_arr[currentNextRightIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet && point_arr[currentLeftIndex].x == origin.x && point_arr[currentLeftIndex].y == origin.y && PointDistance(point_arr[currentPrevLeftIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet)
+    if(point_arr[currentRightIndex].x == origin.x && point_arr[currentRightIndex].y == origin.y && PointDistance(point_arr[currentNextRightIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet*1.5 && point_arr[currentLeftIndex].x == origin.x && point_arr[currentLeftIndex].y == origin.y && PointDistance(point_arr[currentPrevLeftIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet*1.5)
     {
         exactPosRightX = exactPosRightX + distStart * cos(atan2(dyRight,dxRight));
         exactPosRightY = exactPosRightY + distStart * sin(atan2(dyRight,dxRight));
@@ -237,6 +237,7 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
             || leftAngle < M_PI/2.0 //- threshold
             // || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) > M_PI/2.0 + threshold 
             || keepCompute == 1 //if it's the first one
+            || centerIsBetweenPoints(testPointLeft, origin, testPointRight, center) == 0
          )
     {
 
@@ -290,8 +291,8 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
         {
             if(leftAngle < LIMIT_FAST_APPROACH_1)
             {
-                exactPosLeftX = exactPosLeftX + dxLeft*75;
-                exactPosLeftY = exactPosLeftY + dyLeft*75;
+                exactPosLeftX = exactPosLeftX + dxLeft*50;
+                exactPosLeftY = exactPosLeftY + dyLeft*50;
             }
             else if(leftAngle < LIMIT_FAST_APPROACH_2)
             {
@@ -362,13 +363,13 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
         {
             if(rightAngle < LIMIT_FAST_APPROACH_1)
             {
-                exactPosRightX = exactPosRightX + dxRight*75;
-                exactPosRightY = exactPosRightY + dyRight*75;
+                exactPosRightX = exactPosRightX + dxRight*60;
+                exactPosRightY = exactPosRightY + dyRight*60;
             }
             else if(rightAngle < LIMIT_FAST_APPROACH_2)
             {
-                exactPosRightX = exactPosRightX + dxRight*15;
-                exactPosRightY = exactPosRightY + dyRight*15;
+                exactPosRightX = exactPosRightX + dxRight*20;
+                exactPosRightY = exactPosRightY + dyRight*20;
             }
             else if(rightAngle < LIMIT_FAST_APPROACH_3)
             {
