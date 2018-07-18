@@ -7,8 +7,8 @@
 #define MAX_POLYGON_SIZE 15000
 #define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
-#define LIMIT_FAST_APPROACH_1 1.2
-#define LIMIT_FAST_APPROACH_2 1.47
+#define LIMIT_FAST_APPROACH_1 1.4
+#define LIMIT_FAST_APPROACH_2 1.50
 #define LIMIT_FAST_APPROACH_3 1.555
 
 double PointDistance(LPoint start, LPoint end)
@@ -89,6 +89,7 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
     double distStart = 0;
 
     double threshold = 0.001;
+    double threshold_max = 0.2;
     double dist, maxDist;
 
     if(angleIndex == 0)
@@ -176,6 +177,9 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
             keepCompute = 0;
     }
 
+currentLeftIndex = angleIndex;
+currentRightIndex = angleIndex; 
+
     left = point_arr[currentLeftIndex];
     right = point_arr[currentRightIndex];
     prevLeft = point_arr[currentPrevLeftIndex];
@@ -206,7 +210,7 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
         dyRight = dyRight/1.05;
     }
 
-    distStart = (1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 ))*fillet * 0.50;
+    distStart = (1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 ))*fillet * 0.95;
     //if(point_arr[currentRightIndex].x == origin.x && point_arr[currentRightIndex].y == origin.y && PointDistance(point_arr[currentRightIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet)
     if(point_arr[currentRightIndex].x == origin.x && point_arr[currentRightIndex].y == origin.y && PointDistance(point_arr[currentNextRightIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet*1.5 && point_arr[currentLeftIndex].x == origin.x && point_arr[currentLeftIndex].y == origin.y && PointDistance(point_arr[currentPrevLeftIndex], origin) > 1/tan( (atan2(dyRight,dxRight)-atan2(dyLeft,dxLeft)) /2.0 )*fillet*1.5)
     {
@@ -229,14 +233,17 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
     testPointRight.y = (LCoord)exactPosRightY;
 
     keepCompute = 1;
-    rightAngle = 0;
-    leftAngle = 0;
+    rightAngle = M_PI;
+    leftAngle = M_PI;
+
+    LCircle_New( prevCell, LLayer_Find(pFile, "LEFTCIRCLE"), testPointLeft, 10 );
+    LCircle_New( prevCell, LLayer_Find(pFile, "RIGHTCIRCLE"), testPointRight, 10 );
 
     while( rightAngle < M_PI/2.0 //- threshold 
-            // || fabs(atan2(dyRight,dxRight)-atan2(center.y-testPointRight.y, center.x-testPointRight.x)) > M_PI/2.0 + threshold
+            //|| rightAngle > M_PI/2.0 + threshold_max
             || leftAngle < M_PI/2.0 //- threshold
-            // || fabs(atan2(dyLeft,dxLeft)-atan2(center.y-testPointLeft.y, center.x-testPointLeft.x)) > M_PI/2.0 + threshold 
-            || keepCompute == 1 //if it's the first one
+            //|| leftAngle > M_PI/2.0 + threshold_max 
+            || keepCompute == 1 
             || centerIsBetweenPoints(testPointLeft, origin, testPointRight, center) == 0
          )
     {
@@ -291,13 +298,13 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
         {
             if(leftAngle < LIMIT_FAST_APPROACH_1)
             {
-                exactPosLeftX = exactPosLeftX + dxLeft*50;
-                exactPosLeftY = exactPosLeftY + dyLeft*50;
+                exactPosLeftX = exactPosLeftX + dxLeft*60;
+                exactPosLeftY = exactPosLeftY + dyLeft*60;
             }
             else if(leftAngle < LIMIT_FAST_APPROACH_2)
             {
-                exactPosLeftX = exactPosLeftX + dxLeft*15;
-                exactPosLeftY = exactPosLeftY + dyLeft*15;
+                exactPosLeftX = exactPosLeftX + dxLeft*20;
+                exactPosLeftY = exactPosLeftY + dyLeft*20;
             }
             else if(leftAngle < LIMIT_FAST_APPROACH_3)
             {
@@ -430,9 +437,10 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
             }
         }
         
-        //LCircle_New( prevCell, LLayer_Find(pFile, "LEFTCIRCLE"), testPointLeft, 10 );
-        //LCircle_New( prevCell, LLayer_Find(pFile, "RIGHTCIRCLE"), testPointRight, 10 );
-        //LCircle_New( prevCell, LLayer_Find(pFile, "TEST"), center, 10 );
+        LCircle_New( prevCell, LLayer_Find(pFile, "LEFTCIRCLE"), testPointLeft, 10 );
+        LCircle_New( prevCell, LLayer_Find(pFile, "RIGHTCIRCLE"), testPointRight, 10 );
+        LCircle_New( prevCell, LLayer_Find(pFile, "TEST"), center, 10 );
+        LCircle_New( prevCell, LLayer_Find(pFile, "CIRCLE"), origin, 10 );
         lastTestPointLeft = testPointLeft;
         lastTestPointRight = testPointRight;
 
