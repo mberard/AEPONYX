@@ -437,10 +437,10 @@ currentRightIndex = angleIndex;
             }
         }
         
-        LCircle_New( prevCell, LLayer_Find(pFile, "LEFTCIRCLE"), testPointLeft, 10 );
-        LCircle_New( prevCell, LLayer_Find(pFile, "RIGHTCIRCLE"), testPointRight, 10 );
-        LCircle_New( prevCell, LLayer_Find(pFile, "TEST"), center, 10 );
-        LCircle_New( prevCell, LLayer_Find(pFile, "CIRCLE"), origin, 10 );
+        //LCircle_New( prevCell, LLayer_Find(pFile, "LEFTCIRCLE"), testPointLeft, 10 );
+        //LCircle_New( prevCell, LLayer_Find(pFile, "RIGHTCIRCLE"), testPointRight, 10 );
+        //LCircle_New( prevCell, LLayer_Find(pFile, "TEST"), center, 10 );
+        //LCircle_New( prevCell, LLayer_Find(pFile, "CIRCLE"), origin, 10 );
         lastTestPointLeft = testPointLeft;
         lastTestPointRight = testPointRight;
 
