@@ -7,7 +7,7 @@
 #define MAX_POLYGON_SIZE 15000
 #define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
-#define LIMIT_DISTANCE_POINT_LABEL 1500 //in internal units
+#define LIMIT_DISTANCE_POINT_LABEL 150 //in internal units
 #define LIMIT_FAST_APPROACH_1 1.45
 #define LIMIT_FAST_APPROACH_2 1.52
 #define LIMIT_FAST_APPROACH_3 1.555
