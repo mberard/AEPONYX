@@ -116,7 +116,7 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
     lastTestPointRight = right;
     center = origin;
     betterCenter = origin;
-
+/*
     while(  keepCompute == 1 )
     {
         circleRight = LCircle_New(pCell, pLayer, point_arr[currentNextRightIndex], fillet);
@@ -189,7 +189,7 @@ currentRightIndex = angleIndex;
     lastTestPointRight = right;
     center = origin;
     betterCenter = origin;
-
+*/
     exactPosRightX = right.x;
     exactPosRightY = right.y;
     exactPosLeftX = left.x;
