@@ -294,7 +294,7 @@ currentRightIndex = angleIndex;
                 LObject_Delete( pCell, obj );
         }
 
-        if( rightAngle > leftAngle )
+        if(rightAngle < LIMIT_FAST_APPROACH_3 && leftAngle < LIMIT_FAST_APPROACH_3)
         {
             if(leftAngle < LIMIT_FAST_APPROACH_1)
             {
@@ -311,12 +311,6 @@ currentRightIndex = angleIndex;
                 exactPosLeftX = exactPosLeftX + dxLeft*10;
                 exactPosLeftY = exactPosLeftY + dyLeft*10;
             }
-            else
-            {
-                exactPosLeftX = exactPosLeftX + dxLeft;
-                exactPosLeftY = exactPosLeftY + dyLeft;
-            }
-
             testPointLeft.x = (LCoord)exactPosLeftX;
             testPointLeft.y = (LCoord)exactPosLeftY;
             
@@ -365,28 +359,22 @@ currentRightIndex = angleIndex;
                 testPointLeft.x = (LCoord)exactPosLeftX;
                 testPointLeft.y = (LCoord)exactPosLeftY;
             }
-        }
-        else
-        {
+
+
             if(rightAngle < LIMIT_FAST_APPROACH_1)
             {
-                exactPosRightX = exactPosRightX + dxRight*60;
-                exactPosRightY = exactPosRightY + dyRight*60;
+                exactPosRightX = exactPosRightX + dxRight*75;
+                exactPosRightY = exactPosRightY + dyRight*75;
             }
             else if(rightAngle < LIMIT_FAST_APPROACH_2)
             {
-                exactPosRightX = exactPosRightX + dxRight*20;
-                exactPosRightY = exactPosRightY + dyRight*20;
+                exactPosRightX = exactPosRightX + dxRight*25;
+                exactPosRightY = exactPosRightY + dyRight*25;
             }
             else if(rightAngle < LIMIT_FAST_APPROACH_3)
             {
-                exactPosRightX = exactPosRightX + dxRight*4;
-                exactPosRightY = exactPosRightY + dyRight*4;
-            }
-            else
-            {
-                exactPosRightX = exactPosRightX + dxRight;
-                exactPosRightY = exactPosRightY + dyRight;
+                exactPosRightX = exactPosRightX + dxRight*10;
+                exactPosRightY = exactPosRightY + dyRight*10;
             }
 
             testPointRight.x = (LCoord)exactPosRightX;
@@ -434,6 +422,151 @@ currentRightIndex = angleIndex;
                 exactPosRightY = exactPosRightY + dyRight;
                 testPointRight.x = (LCoord)exactPosRightX;
                 testPointRight.y = (LCoord)exactPosRightY;
+            }
+        }
+        else
+        {
+            if( rightAngle > leftAngle )
+            {
+                if(leftAngle < LIMIT_FAST_APPROACH_1)
+                {
+                    exactPosLeftX = exactPosLeftX + dxLeft*75;
+                    exactPosLeftY = exactPosLeftY + dyLeft*75;
+                }
+                else if(leftAngle < LIMIT_FAST_APPROACH_2)
+                {
+                    exactPosLeftX = exactPosLeftX + dxLeft*25;
+                    exactPosLeftY = exactPosLeftY + dyLeft*25;
+                }
+                else if(leftAngle < LIMIT_FAST_APPROACH_3)
+                {
+                    exactPosLeftX = exactPosLeftX + dxLeft*10;
+                    exactPosLeftY = exactPosLeftY + dyLeft*10;
+                }
+                else
+                {
+                    exactPosLeftX = exactPosLeftX + dxLeft;
+                    exactPosLeftY = exactPosLeftY + dyLeft;
+                }
+
+                testPointLeft.x = (LCoord)exactPosLeftX;
+                testPointLeft.y = (LCoord)exactPosLeftY;
+                
+                if(PointDistance(testPointLeft, left) > PointDistance(prevLeft, left))
+                {
+                    testPointLeft = prevLeft;
+                    left = prevLeft;
+
+                    while(PointDistance(left, prevLeft) < step)
+                    {
+                        if(currentPrevLeftIndex == 0)
+                            currentPrevLeftIndex = nbPointsArr-1;
+                        else
+                            currentPrevLeftIndex = currentPrevLeftIndex-1;
+                        prevLeft = point_arr[currentPrevLeftIndex];
+                    }
+
+                    angle1 = atan2(dyLeft, dxLeft);
+
+                    dxLeft = prevLeft.x - left.x;
+                    dyLeft = prevLeft.y - left.y;
+                    while(dxLeft*dxLeft+dyLeft*dyLeft > step*step)
+                    {
+                        dxLeft = dxLeft/1.05;
+                        dyLeft = dyLeft/1.05;
+                    }
+                    angle2 = atan2(dyLeft, dxLeft);
+                    
+                    angle = angle + angle1 - angle2;
+                    
+                    if(angle >= M_PI/2.0 || angle <= -M_PI/2.0)
+                    {
+                        for(LObject obj = LObject_GetList(pCell, pLayer) ; obj != NULL; obj = LObject_GetNext(obj))
+                        {
+                            LObject_Delete( pCell, obj );
+                        }
+                        LCell_Delete( pCell );
+                        LLayer_Delete( pFile, LLayer_Find( pFile, "AUTO_LAYER_TO_COMPUTE_TORUS_CENTER" ) );
+                        LUpi_LogMessage("Angle cumul trop grand (plus de 90 degres)\n");
+                        return LPoint_Set(-1,-1);
+                    }
+                
+                    exactPosLeftX = exactPosLeftX + dxLeft;
+                    exactPosLeftY = exactPosLeftY + dyLeft;
+
+                    testPointLeft.x = (LCoord)exactPosLeftX;
+                    testPointLeft.y = (LCoord)exactPosLeftY;
+                }
+            }
+            else
+            {
+                if(rightAngle < LIMIT_FAST_APPROACH_1)
+                {
+                    exactPosRightX = exactPosRightX + dxRight*75;
+                    exactPosRightY = exactPosRightY + dyRight*75;
+                }
+                else if(rightAngle < LIMIT_FAST_APPROACH_2)
+                {
+                    exactPosRightX = exactPosRightX + dxRight*25;
+                    exactPosRightY = exactPosRightY + dyRight*25;
+                }
+                else if(rightAngle < LIMIT_FAST_APPROACH_3)
+                {
+                    exactPosRightX = exactPosRightX + dxRight*10;
+                    exactPosRightY = exactPosRightY + dyRight*10;
+                }
+                else
+                {
+                    exactPosRightX = exactPosRightX + dxRight;
+                    exactPosRightY = exactPosRightY + dyRight;
+                }
+
+                testPointRight.x = (LCoord)exactPosRightX;
+                testPointRight.y = (LCoord)exactPosRightY;
+                
+                if(PointDistance(testPointRight, right) > PointDistance(nextRight, right))
+                {
+                    testPointRight = nextRight;
+                    right = nextRight;
+
+                    while(PointDistance(right, nextRight) < step)
+                    {
+                        if(currentNextRightIndex == nbPointsArr-1)
+                            currentNextRightIndex = 0;
+                        else
+                            currentNextRightIndex = currentNextRightIndex+1;
+                        nextRight = point_arr[currentNextRightIndex];
+                    }
+                    
+
+                    angle1 = atan2(dyLeft, dxLeft);
+
+                    dxRight = nextRight.x - right.x;
+                    dyRight = nextRight.y - right.y;
+                    while(dxRight*dxRight+dyRight*dyRight > step*step)
+                    {
+                        dxRight = dxRight/1.05;
+                        dyRight = dyRight/1.05;
+                    }
+                    angle2 = atan2(dyLeft, dxLeft);
+                    
+                    angle = fabs(angle1 - angle2);
+                    if(angle >= M_PI)
+                    {
+                        for(LObject obj = LObject_GetList(pCell, pLayer) ; obj != NULL; obj = LObject_GetNext(obj))
+                        {
+                            LObject_Delete( pCell, obj );
+                        }
+                        LCell_Delete( pCell );
+                        LLayer_Delete( pFile, LLayer_Find( pFile, "AUTO_LAYER_TO_COMPUTE_TORUS_CENTER" ) );
+                        LUpi_LogMessage("Pas de polygone après le AND");
+                        return LPoint_Set(-1,-1);
+                    }
+                    exactPosRightX = exactPosRightX + dxRight;
+                    exactPosRightY = exactPosRightY + dyRight;
+                    testPointRight.x = (LCoord)exactPosRightX;
+                    testPointRight.y = (LCoord)exactPosRightY;
+                }
             }
         }
         
