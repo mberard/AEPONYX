@@ -7,6 +7,7 @@
 #define MAX_POLYGON_SIZE 15000
 #define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
+#define LIMIT_DISTANCE_POINT_LABEL 1500 //in internal units
 #define LIMIT_FAST_APPROACH_1 1.45
 #define LIMIT_FAST_APPROACH_2 1.52
 #define LIMIT_FAST_APPROACH_3 1.555
@@ -679,6 +680,9 @@ void AATorusFilletWithoutDeformation(void)
 
     double angle, angle1, angle2;
 
+    int onlyWithLabel = 0;
+    LCoord xLabel, yLabel;
+
     double fillet;
     char strFillet[20];
 
@@ -711,6 +715,11 @@ void AATorusFilletWithoutDeformation(void)
 		else
             pLayer = LLayer_Find(pFile, strLayer);
         
+        if( LDialog_YesNoBox("Fillet only the angle near a selected label? (No for all angle)") )
+            onlyWithLabel = 1;
+        else
+            onlyWithLabel = 0;
+
         LLayer_New( pFile, NULL, "tmp");
         tmpLayer = LLayer_Find(pFile, "tmp");
         
@@ -768,6 +777,23 @@ LUpi_LogMessage(LFormat("test %d sur %d\n", i+1, originalNumberVertex));
                 
                 if( angle < M_PI - ANGLE_LIMIT ) //if not in the limit range and concave
                 {
+                    if(onlyWithLabel == 1)
+                    {
+                        int hasLabelNear = 0;
+                        for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
+                        {
+                            LObject object = LSelection_GetObject(pSelection);
+                            if(LObject_GetShape(object) == LObjLabel)
+                            {
+                                LPoint labelLocation = LLabel_GetPosition((LLabel)object);
+                                if(PointDistance(original_point_arr[i], labelLocation) < LIMIT_DISTANCE_POINT_LABEL)
+                                    hasLabelNear = 1;
+                            }
+                        }
+                        if(hasLabelNear == 0)
+                            continue;
+                    }
+
 LUpi_LogMessage("Point need to be fillet\n");
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), original_point_arr[i], 100 );
                     
@@ -797,119 +823,6 @@ LUpi_LogMessage("Point need to be fillet\n");
                         tParams.dStopAngle = angle1;
 
                         LTorus_CreateNew( pCell, pLayer, &tParams );
-/*
-                        double x, y;
-                        double xStart, yStart, xEnd, yEnd;
-                        double angleStart, angleEnd;
-                        double coef;
-                        double distX, distY;
-                        double t;
-
-                        double minDist, dist;
-                        int boolean;
-
-                        LPoint curve_arr[MAX_POLYGON_SIZE];
-                        LPoint controlStart, controlEnd;
-                        int nbPointsCurve = 0;
-
-                        xStart = tanRight.x;
-                        yStart = tanRight.y;
-                        xEnd = tanLeft.x;
-                        yEnd = tanLeft.y;
-*/
-                        /*
-                        while(original_point_arr[cpt].x != tanRight.x && original_point_arr[cpt].y != tanRight.y)
-                        {
-                            cpt++;
-                            if(cpt>originalNumberVertex-1)
-                                cpt = 0;
-                        }
-                        */
-/*
-                        cpt = i;
-                        minDist = 999999999999999999.999;
-                        boolean = 1;
-                        while(boolean == 1)
-                        {
-                            //if(PointDistance(original_point_arr[cpt], tanRight) + PointDistance(original_point_arr[cpt+1], tanRight) >= minDist)
-                            if(cpt == originalNumberVertex-1)
-                                dist = PointDistance(original_point_arr[cpt], tanRight) + PointDistance(original_point_arr[0], tanRight);
-                            else
-                                dist = PointDistance(original_point_arr[cpt], tanRight) + PointDistance(original_point_arr[cpt+1], tanRight);
-
-                            if( dist >= minDist )
-                                boolean = 0;
-                            else
-                            {
-                                minDist = dist;
-                                cpt = cpt + 1;
-                                if(cpt > originalNumberVertex-1)
-                                {
-                                    cpt = 0;
-                                }
-                            }
-                        }
-                        angleStart = atan2(original_point_arr[cpt].y - tanRight.y, original_point_arr[cpt].x - tanRight.x ) + M_PI;
-LUpi_LogMessage(LFormat("angleStart %lf\n", angleStart));
-*/
-                        /*
-                        while(original_point_arr[cpt].x != tanLeft.x && original_point_arr[cpt].y != tanLeft.y)
-                        {
-                            cpt--;
-                            if(cpt<0)
-                                cpt = originalNumberVertex-1;
-                        }
-                        */
-/*
-                        cpt = i;
-                        minDist = 99999999999999999999999999.999;
-                        boolean = 1;
-                        while(boolean == 1)
-                        {
-                            if(cpt == 0)
-                                dist = PointDistance(original_point_arr[cpt], tanRight) + PointDistance(original_point_arr[originalNumberVertex-1], tanRight);
-                            else
-                                dist = PointDistance(original_point_arr[cpt], tanRight) + PointDistance(original_point_arr[cpt-1], tanRight);
-
-                            if( dist >= minDist )
-                                boolean = 0;
-                            else
-                            {
-                                minDist = dist;
-                                cpt = cpt - 1;
-                                if(cpt < 0)
-                                {
-                                    cpt = originalNumberVertex-1;
-                                }
-                            }
-                        }
-                        angleEnd = atan2(original_point_arr[cpt].y - tanLeft.y, original_point_arr[cpt].x - tanLeft.x ) + M_PI;
-LUpi_LogMessage(LFormat("angleEnd %lf\n", angleEnd));
-                        coef = 0.55;
-
-                        controlStart.x = (LCoord)round( xStart + fillet * coef * cos(angleStart) );
-                        controlStart.y = (LCoord)round( yStart + fillet * coef * sin(angleStart) );
-                        controlEnd.x = (LCoord)round( xEnd + fillet * coef * cos(angleEnd) );
-                        controlEnd.y = (LCoord)round( yEnd + fillet * coef * sin(angleEnd) );
-
-                        curve_arr[nbPointsCurve] = LPoint_Set( xStart, yStart );
-                        nbPointsCurve++;
-                        for(t=0.002; t<1; t=t+0.002)
-                        {
-                            x = xStart*pow((1-t),3) + 3*controlStart.x*pow((1-t),2)*t + 3*controlEnd.x*(1-t)*pow(t,2) + xEnd*pow(t,3);
-                            y = yStart*pow((1-t),3) + 3*controlStart.y*pow((1-t),2)*t + 3*controlEnd.y*(1-t)*pow(t,2) + yEnd*pow(t,3);
-                            curve_arr[nbPointsCurve] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
-                            nbPointsCurve = nbPointsCurve + 1;
-                        }
-LUpi_LogMessage(LFormat("Fin du for\n"));
-                        curve_arr[nbPointsCurve] = LPoint_Set( xEnd, yEnd );
-                        nbPointsCurve = nbPointsCurve + 1;
-
-                        curve_arr[nbPointsCurve] = original_point_arr[i]; //remplacer par tout les points de tanLeft a tanRight
-                        nbPointsCurve = nbPointsCurve + 1;
-
-                        LPolygon_New( pCell, pLayer, curve_arr, nbPointsCurve );
-*/
                     }
                     else
                     {
