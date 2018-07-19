@@ -298,18 +298,18 @@ currentRightIndex = angleIndex;
         {
             if(leftAngle < LIMIT_FAST_APPROACH_1)
             {
-                exactPosLeftX = exactPosLeftX + dxLeft*60;
-                exactPosLeftY = exactPosLeftY + dyLeft*60;
+                exactPosLeftX = exactPosLeftX + dxLeft*75;
+                exactPosLeftY = exactPosLeftY + dyLeft*75;
             }
             else if(leftAngle < LIMIT_FAST_APPROACH_2)
             {
-                exactPosLeftX = exactPosLeftX + dxLeft*20;
-                exactPosLeftY = exactPosLeftY + dyLeft*20;
+                exactPosLeftX = exactPosLeftX + dxLeft*25;
+                exactPosLeftY = exactPosLeftY + dyLeft*25;
             }
             else if(leftAngle < LIMIT_FAST_APPROACH_3)
             {
-                exactPosLeftX = exactPosLeftX + dxLeft*4;
-                exactPosLeftY = exactPosLeftY + dyLeft*4;
+                exactPosLeftX = exactPosLeftX + dxLeft*10;
+                exactPosLeftY = exactPosLeftY + dyLeft*10;
             }
             else
             {
