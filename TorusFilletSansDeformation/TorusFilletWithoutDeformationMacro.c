@@ -236,8 +236,8 @@ currentRightIndex = angleIndex;
     rightAngle = M_PI;
     leftAngle = M_PI;
 
-    LCircle_New( prevCell, LLayer_Find(pFile, "LEFTCIRCLE"), testPointLeft, 10 );
-    LCircle_New( prevCell, LLayer_Find(pFile, "RIGHTCIRCLE"), testPointRight, 10 );
+    //LCircle_New( prevCell, LLayer_Find(pFile, "LEFTCIRCLE"), testPointLeft, 10 );
+    //LCircle_New( prevCell, LLayer_Find(pFile, "RIGHTCIRCLE"), testPointRight, 10 );
 
     while( rightAngle < M_PI/2.0 //- threshold 
             //|| rightAngle > M_PI/2.0 + threshold_max
