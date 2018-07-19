@@ -458,10 +458,10 @@ currentRightIndex = angleIndex;
             leftAngle = leftAngle + 2*M_PI;
         leftAngle = fabs(leftAngle);
 
-        LUpi_LogMessage(LFormat("\n\n\n\n"));
+        LUpi_LogMessage(LFormat("\n\n"));
         LUpi_LogMessage(LFormat(" centre x: %ld y: %ld\n", center.x, center.y));
-        LUpi_LogMessage(LFormat("   right angle %lf\n", rightAngle ));
-        LUpi_LogMessage(LFormat("   left angle %lf\n", leftAngle ));
+        LUpi_LogMessage(LFormat("   right angle %lf out of %lf\n", rightAngle, M_PI/2.0 ));
+        LUpi_LogMessage(LFormat("   left angle %lf out of %lf\n", leftAngle, M_PI/2.0 ));
     }
     
     for(LObject obj = LObject_GetList(pCell, pLayer) ; obj != NULL; obj = LObject_GetNext(obj))
