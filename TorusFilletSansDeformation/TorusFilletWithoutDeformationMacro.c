@@ -826,7 +826,7 @@ LUpi_LogMessage("Point need to be fillet\n");
                     }
                     else
                     {
-                        LDialog_AlertBox(LFormat("An angle could not be fillet automatically"));
+                        LUpi_LogMessage(LFormat("\n\nERROR: An angle could not be fillet automatically\n"));
                     }
                 }
                 LUpi_LogMessage("Test the next point\n");
