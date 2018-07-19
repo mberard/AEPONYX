@@ -7,8 +7,8 @@
 #define MAX_POLYGON_SIZE 15000
 #define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
-#define LIMIT_FAST_APPROACH_1 1.4
-#define LIMIT_FAST_APPROACH_2 1.50
+#define LIMIT_FAST_APPROACH_1 1.45
+#define LIMIT_FAST_APPROACH_2 1.52
 #define LIMIT_FAST_APPROACH_3 1.555
 
 double PointDistance(LPoint start, LPoint end)
@@ -298,13 +298,13 @@ currentRightIndex = angleIndex;
         {
             if(leftAngle < LIMIT_FAST_APPROACH_1)
             {
-                exactPosLeftX = exactPosLeftX + dxLeft*75;
-                exactPosLeftY = exactPosLeftY + dyLeft*75;
+                exactPosLeftX = exactPosLeftX + dxLeft*100;
+                exactPosLeftY = exactPosLeftY + dyLeft*100;
             }
             else if(leftAngle < LIMIT_FAST_APPROACH_2)
             {
-                exactPosLeftX = exactPosLeftX + dxLeft*25;
-                exactPosLeftY = exactPosLeftY + dyLeft*25;
+                exactPosLeftX = exactPosLeftX + dxLeft*40;
+                exactPosLeftY = exactPosLeftY + dyLeft*40;
             }
             else if(leftAngle < LIMIT_FAST_APPROACH_3)
             {
@@ -363,13 +363,13 @@ currentRightIndex = angleIndex;
 
             if(rightAngle < LIMIT_FAST_APPROACH_1)
             {
-                exactPosRightX = exactPosRightX + dxRight*75;
-                exactPosRightY = exactPosRightY + dyRight*75;
+                exactPosRightX = exactPosRightX + dxRight*100;
+                exactPosRightY = exactPosRightY + dyRight*100;
             }
             else if(rightAngle < LIMIT_FAST_APPROACH_2)
             {
-                exactPosRightX = exactPosRightX + dxRight*25;
-                exactPosRightY = exactPosRightY + dyRight*25;
+                exactPosRightX = exactPosRightX + dxRight*40;
+                exactPosRightY = exactPosRightY + dyRight*40;
             }
             else if(rightAngle < LIMIT_FAST_APPROACH_3)
             {
