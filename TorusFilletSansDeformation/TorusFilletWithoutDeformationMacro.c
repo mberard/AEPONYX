@@ -10,7 +10,7 @@
 #define LIMIT_DISTANCE_POINT_LABEL 150 //in internal units
 #define LIMIT_FAST_APPROACH_1 1.45
 #define LIMIT_FAST_APPROACH_2 1.52
-#define LIMIT_FAST_APPROACH_3 1.565
+#define LIMIT_FAST_APPROACH_3 1.56
 
 double PointDistance(LPoint start, LPoint end)
 {
@@ -228,22 +228,22 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
             {
                 //exactPosLeftX = exactPosLeftX + dxLeft*100;
                 //exactPosLeftY = exactPosLeftY + dyLeft*100;
-                exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 30));
-                exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 30));
+                exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 50));
+                exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 50));
             }
             else if(leftAngle < LIMIT_FAST_APPROACH_2)
             {
                 //exactPosLeftX = exactPosLeftX + dxLeft*40;
                 //exactPosLeftY = exactPosLeftY + dyLeft*40;
-                exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 25));
-                exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 25));
+                exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 20));
+                exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 20));
             }
             else if(leftAngle < LIMIT_FAST_APPROACH_3)
             {
                 //exactPosLeftX = exactPosLeftX + dxLeft*10;
                 //exactPosLeftY = exactPosLeftY + dyLeft*10;
-                exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 20));
-                exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 20));
+                exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 10));
+                exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 10));
             }
             testPointLeft.x = (LCoord)exactPosLeftX;
             testPointLeft.y = (LCoord)exactPosLeftY;
@@ -299,24 +299,23 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
             {
                 //exactPosRightX = exactPosRightX + dxRight*100;
                 //exactPosRightY = exactPosRightY + dyRight*100;
-                exactPosRightX = exactPosRightX + dxRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 30));
-                exactPosRightY = exactPosRightY + dyRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 30));
+                exactPosRightX = exactPosRightX + dxRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 50));
+                exactPosRightY = exactPosRightY + dyRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 50));
             }
             else if(rightAngle < LIMIT_FAST_APPROACH_2)
             {
                 //exactPosRightX = exactPosRightX + dxRight*40;
                 //exactPosRightY = exactPosRightY + dyRight*40;
-                exactPosRightX = exactPosRightX + dxRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 25));
-                exactPosRightY = exactPosRightY + dyRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 25));
+                exactPosRightX = exactPosRightX + dxRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 20));
+                exactPosRightY = exactPosRightY + dyRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 20));
             }
             else if(rightAngle < LIMIT_FAST_APPROACH_3)
             {
                 //exactPosRightX = exactPosRightX + dxRight*10;
                 //exactPosRightY = exactPosRightY + dyRight*10;
-                exactPosRightX = exactPosRightX + dxRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 20));
-                exactPosRightY = exactPosRightY + dyRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 20));
+                exactPosRightX = exactPosRightX + dxRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 10));
+                exactPosRightY = exactPosRightY + dyRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 10));
             }
-
             testPointRight.x = (LCoord)exactPosRightX;
             testPointRight.y = (LCoord)exactPosRightY;
             
@@ -372,29 +371,29 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
                 {
                     //exactPosLeftX = exactPosLeftX + dxLeft*75;
                     //exactPosLeftY = exactPosLeftY + dyLeft*75;
-                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/10.0, pow(exp(M_PI/2.0-leftAngle), 30));
-                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/10.0, pow(exp(M_PI/2.0-leftAngle), 30));
+                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 50));
+                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 50));
                 }
                 else if(leftAngle < LIMIT_FAST_APPROACH_2)
                 {
                     //exactPosLeftX = exactPosLeftX + dxLeft*25;
                     //exactPosLeftY = exactPosLeftY + dyLeft*25;
-                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/10.0, pow(exp(M_PI/2.0-leftAngle), 25));
-                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/10.0, pow(exp(M_PI/2.0-leftAngle), 25));
+                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 25));
+                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 25));
                 }
                 else if(leftAngle < LIMIT_FAST_APPROACH_3)
                 {
                     //exactPosLeftX = exactPosLeftX + dxLeft*10;
                     //exactPosLeftY = exactPosLeftY + dyLeft*10;
-                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/10.0, pow(exp(M_PI/2.0-leftAngle), 20));
-                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/10.0, pow(exp(M_PI/2.0-leftAngle), 20));
+                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 20));
+                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 20));
                 }
                 else
                 {
                     //exactPosLeftX = exactPosLeftX + dxLeft;
                     //exactPosLeftY = exactPosLeftY + dyLeft;
-                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/10.0, pow(exp(M_PI/2.0-leftAngle), 15));
-                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/10.0, pow(exp(M_PI/2.0-leftAngle), 15));
+                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 15));
+                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 15));
                 }
 
                 testPointLeft.x = (LCoord)exactPosLeftX;
@@ -452,29 +451,29 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
                 {
                     //exactPosRightX = exactPosRightX + dxRight*75;
                     //exactPosRightY = exactPosRightY + dyRight*75;
-                    exactPosRightX = exactPosRightX + dxRight*min(fillet/10.0, pow(exp(M_PI/2.0-rightAngle), 30));
-                    exactPosRightY = exactPosRightY + dyRight*min(fillet/10.0, pow(exp(M_PI/2.0-rightAngle), 30));
+                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 50));
+                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 50));
                 }
                 else if(rightAngle < LIMIT_FAST_APPROACH_2)
                 {
                     //exactPosRightX = exactPosRightX + dxRight*25;
                     //exactPosRightY = exactPosRightY + dyRight*25;
-                    exactPosRightX = exactPosRightX + dxRight*min(fillet/10.0, pow(exp(M_PI/2.0-rightAngle), 25));
-                    exactPosRightY = exactPosRightY + dyRight*min(fillet/10.0, pow(exp(M_PI/2.0-rightAngle), 25));
+                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 25));
+                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 25));
                 }
                 else if(rightAngle < LIMIT_FAST_APPROACH_3)
                 {
                     //exactPosRightX = exactPosRightX + dxRight*10;
                     //exactPosRightY = exactPosRightY + dyRight*10;
-                    exactPosRightX = exactPosRightX + dxRight*min(fillet/10.0, pow(exp(M_PI/2.0-rightAngle), 20));
-                    exactPosRightY = exactPosRightY + dyRight*min(fillet/10.0, pow(exp(M_PI/2.0-rightAngle), 20));
+                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 20));
+                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 20));
                 }
                 else
                 {
                     //exactPosRightX = exactPosRightX + dxRight;
                     //exactPosRightY = exactPosRightY + dyRight;
-                    exactPosRightX = exactPosRightX + dxRight*min(fillet/10.0, pow(exp(M_PI/2.0-rightAngle), 15));
-                    exactPosRightY = exactPosRightY + dyRight*min(fillet/10.0, pow(exp(M_PI/2.0-rightAngle), 15));
+                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 15));
+                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 15));
                 }
 
                 testPointRight.x = (LCoord)exactPosRightX;
