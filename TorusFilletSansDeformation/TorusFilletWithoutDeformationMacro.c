@@ -8,9 +8,9 @@
 #define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
 #define LIMIT_DISTANCE_POINT_LABEL 150 //in internal units
-#define LIMIT_FAST_APPROACH_1 1.45
-#define LIMIT_FAST_APPROACH_2 1.52
-#define LIMIT_FAST_APPROACH_3 1.56
+#define LIMIT_FAST_APPROACH_1 1.30
+#define LIMIT_FAST_APPROACH_2 1.47
+#define LIMIT_FAST_APPROACH_3 1.55
 
 double PointDistance(LPoint start, LPoint end)
 {
@@ -61,7 +61,7 @@ int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint cente
     return 0; //not between points
 }
 
-LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int angleIndex, LPoint* point_arr, int nbPointsArr, double fillet, float step)
+LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int angleIndex, LPoint* point_arr, int nbPointsArr, double fillet, float step, double* returnedRightAngle, double* returnedLeftAngle)
 {
     LCell prevCell = LCell_GetVisible();
     LFile pFile = LCell_GetFile(prevCell);
@@ -228,8 +228,8 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
             {
                 //exactPosLeftX = exactPosLeftX + dxLeft*100;
                 //exactPosLeftY = exactPosLeftY + dyLeft*100;
-                exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 50));
-                exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 50));
+                exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 40));
+                exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/5.0, pow(exp(M_PI/2.0-leftAngle), 40));
             }
             else if(leftAngle < LIMIT_FAST_APPROACH_2)
             {
@@ -299,8 +299,8 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
             {
                 //exactPosRightX = exactPosRightX + dxRight*100;
                 //exactPosRightY = exactPosRightY + dyRight*100;
-                exactPosRightX = exactPosRightX + dxRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 50));
-                exactPosRightY = exactPosRightY + dyRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 50));
+                exactPosRightX = exactPosRightX + dxRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 40));
+                exactPosRightY = exactPosRightY + dyRight*min(fillet/5.0, pow(exp(M_PI/2.0-rightAngle), 40));
             }
             else if(rightAngle < LIMIT_FAST_APPROACH_2)
             {
@@ -371,29 +371,29 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
                 {
                     //exactPosLeftX = exactPosLeftX + dxLeft*75;
                     //exactPosLeftY = exactPosLeftY + dyLeft*75;
-                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 50));
-                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 50));
+                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 40));
+                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 40));
                 }
                 else if(leftAngle < LIMIT_FAST_APPROACH_2)
                 {
                     //exactPosLeftX = exactPosLeftX + dxLeft*25;
                     //exactPosLeftY = exactPosLeftY + dyLeft*25;
-                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 25));
-                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 25));
+                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 20));
+                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 20));
                 }
                 else if(leftAngle < LIMIT_FAST_APPROACH_3)
                 {
                     //exactPosLeftX = exactPosLeftX + dxLeft*10;
                     //exactPosLeftY = exactPosLeftY + dyLeft*10;
-                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 20));
-                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 20));
+                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 10));
+                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 10));
                 }
                 else
                 {
                     //exactPosLeftX = exactPosLeftX + dxLeft;
                     //exactPosLeftY = exactPosLeftY + dyLeft;
-                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 15));
-                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 15));
+                    exactPosLeftX = exactPosLeftX + dxLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 1));
+                    exactPosLeftY = exactPosLeftY + dyLeft*min(fillet/15.0, pow(exp(M_PI/2.0-leftAngle), 1));
                 }
 
                 testPointLeft.x = (LCoord)exactPosLeftX;
@@ -451,29 +451,29 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
                 {
                     //exactPosRightX = exactPosRightX + dxRight*75;
                     //exactPosRightY = exactPosRightY + dyRight*75;
-                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 50));
-                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 50));
+                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 40));
+                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 40));
                 }
                 else if(rightAngle < LIMIT_FAST_APPROACH_2)
                 {
                     //exactPosRightX = exactPosRightX + dxRight*25;
                     //exactPosRightY = exactPosRightY + dyRight*25;
-                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 25));
-                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 25));
+                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 20));
+                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 20));
                 }
                 else if(rightAngle < LIMIT_FAST_APPROACH_3)
                 {
                     //exactPosRightX = exactPosRightX + dxRight*10;
                     //exactPosRightY = exactPosRightY + dyRight*10;
-                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 20));
-                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 20));
+                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 10));
+                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 10));
                 }
                 else
                 {
                     //exactPosRightX = exactPosRightX + dxRight;
                     //exactPosRightY = exactPosRightY + dyRight;
-                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 15));
-                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 15));
+                    exactPosRightX = exactPosRightX + dxRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 1));
+                    exactPosRightY = exactPosRightY + dyRight*min(fillet/15.0, pow(exp(M_PI/2.0-rightAngle), 1));
                 }
 
                 testPointRight.x = (LCoord)exactPosRightX;
@@ -564,6 +564,20 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
     tanRight->x = testPointRight.x;
     tanRight->y = testPointRight.y;
 
+    *returnedLeftAngle = (atan2(dyLeft,dxLeft) - M_PI/2.0)*180/M_PI;
+    while(*returnedLeftAngle < 0)
+        *returnedLeftAngle = *returnedLeftAngle + 360;
+    while(*returnedLeftAngle > 360)
+        *returnedLeftAngle = *returnedLeftAngle - 360;
+
+    *returnedRightAngle = (atan2(dyRight,dxRight) + M_PI/2.0)*180/M_PI;
+    while(*returnedRightAngle < 0)
+        *returnedRightAngle = *returnedRightAngle + 360;
+    while(*returnedRightAngle > 360)
+        *returnedRightAngle = *returnedRightAngle - 360;
+
+LUpi_LogMessage(LFormat("RETURN TO THE MAIN\n", leftAngle, M_PI/2.0 ));
+
     return center;
 }
 
@@ -633,6 +647,7 @@ void AATorusFilletWithoutDeformation(void)
     long dyNext;
 
     double angle, angle1, angle2;
+    double leftAngle, rightAngle;
 
     int onlyWithLabel = 0;
     LCoord xLabel, yLabel;
@@ -751,7 +766,7 @@ LUpi_LogMessage(LFormat("test %d sur %d\n", i+1, originalNumberVertex));
 LUpi_LogMessage("Point need to be fillet\n");
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), original_point_arr[i], 100 );
                     
-                    center = FindTanAndCenterWithCircleMethod(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 1.5);
+                    center = FindTanAndCenterWithCircleMethod(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 1.5, &rightAngle, &leftAngle);
                     if( !(center.x == -1 && center.y == -1) )
                     {
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanLeft, 1 );
@@ -762,7 +777,7 @@ LUpi_LogMessage("Point need to be fillet\n");
                         tParams.ptCenter = center;
                         //tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
                         tParams.nInnerRadius = fillet;
-                        tParams.nOuterRadius = PointDistance(original_point_arr[i], center)*1.02;
+                        tParams.nOuterRadius = PointDistance(original_point_arr[i], center)*1.05;
                         angle1 = atan2(tanLeft.y - center.y, tanLeft.x - center.x )*180/M_PI;
                         angle2 = atan2(tanRight.y - center.y, tanRight.x - center.x )*180/M_PI;
                         while(angle1<0)
@@ -773,8 +788,11 @@ LUpi_LogMessage("Point need to be fillet\n");
                             angle2 = angle2 + 360;
                         while(angle2>360)
                             angle2 = angle2 - 360;
-                        tParams.dStartAngle = angle2;
-                        tParams.dStopAngle = angle1;
+                        //tParams.dStartAngle = angle2;
+                        //tParams.dStopAngle = angle1;
+
+                        tParams.dStartAngle = rightAngle;
+                        tParams.dStopAngle = leftAngle;
 
                         LTorus_CreateNew( pCell, pLayer, &tParams );
                     }
