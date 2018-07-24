@@ -12,6 +12,7 @@
 #define LIMIT_FAST_APPROACH_2 1.47
 #define LIMIT_FAST_APPROACH_3 1.55
 
+
 double PointDistance(LPoint start, LPoint end)
 {
     double dist=0.0;
@@ -28,6 +29,321 @@ long RoundToLong(double value)
     else
         return (long)(value-0.5);
 }
+
+
+LPoint FindCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right  )
+{
+    LPoint perpendiculaireLeft, perpendiculaireRight, center;
+    long dx = nextLeft.x - left.x;
+    long dy = nextLeft.y - left.y;
+    perpendiculaireLeft = LPoint_Set(left.x + dy, left.y - dx);
+    dx = right.x - prevRight.x;
+    dy = right.y - prevRight.y;
+    perpendiculaireRight = LPoint_Set(right.x + dy, right.y - dx);
+
+    //source link: https://www.developpez.net/forums/d369370/applications/developpement-2d-3d-jeux/algo-intersection-2-segments/
+    double Ax = left.x;
+	double Ay = left.y;
+	double Bx = perpendiculaireLeft.x;
+	double By = perpendiculaireLeft.y;
+	double Cx = right.x;
+	double Cy = right.y;
+	double Dx = perpendiculaireRight.x;
+	double Dy = perpendiculaireRight.y;
+    double Sx;
+	double Sy;
+
+	if(Ax==Bx)
+	{
+		if(Cx==Dx) return left;
+		else
+		{
+			double pCD = (Cy-Dy)/(Cx-Dx);
+			Sx = Ax;
+			Sy = pCD*(Ax-Cx)+Cy;
+		}
+	}
+	else
+	{
+		if(Cx==Dx)
+		{
+			double pAB = (Ay-By)/(Ax-Bx);
+			Sx = Cx;
+			Sy = pAB*(Cx-Ax)+Ay;
+		}
+		else
+		{
+			double pCD = (Cy-Dy)/(Cx-Dx);
+			double pAB = (Ay-By)/(Ax-Bx);
+			double oCD = Cy-pCD*Cx;
+			double oAB = Ay-pAB*Ax;
+			Sx = (oAB-oCD)/(pCD-pAB);
+			Sy = pCD*Sx+oCD;
+		}
+	}
+    center.x = (LCoord)Sx;
+    center.y = (LCoord)Sy;
+
+    return center;
+}
+
+/*
+LPoint FindBetterCenter(LPoint left, LPoint nextLeft , LPoint prevRight, LPoint right )
+{
+    LPoint perpendiculaireRight, center;
+    double exactX, exactY;
+    double dx = (right.x - prevRight.x)*0.005;
+    double dy = (right.y - prevRight.y)*0.005;
+    perpendiculaireRight = LPoint_Set(right.x + dy, right.y - dx);
+
+    exactX = perpendiculaireRight.x;
+    exactY = perpendiculaireRight.y;
+    center.x = (LCoord)exactX;
+    center.y = (LCoord)exactY;
+
+    if(dx == 0)
+    {
+        if(dy == 0)
+            return LPoint_Set(-1,-1);
+        else
+        {
+            while(fabs(dy) < 1000)
+            {
+                dy = dy * 2.0;
+            }
+        }
+    }
+    else if(dy == 0)
+    {
+        //dx can not be 0
+        while(fabs(dx) < 1000)
+        {
+            dx = dx * 2.0;
+        }
+    }
+    else //dx and dy are not 0
+    {
+        while(fabs(dy) < 1000 || fabs(dx) < 1000)
+        {
+            dy = dy * 2.0;
+            dx = dx * 2.0;
+        }
+    }
+    
+
+    while(PointDistance(right, center) < PointDistance(left, center))
+    {
+        exactX = exactX + dy;
+        exactY = exactY - dx;
+        center.x = (LCoord)exactX;
+        center.y = (LCoord)exactY;
+LUpi_LogMessage(LFormat("exact %lf %lf \n", exactX, exactY));
+LUpi_LogMessage(LFormat("centre %ld %ld \n", center.x, center.y));
+LUpi_LogMessage(LFormat("\t\t\t\t\t\tdifference %lf \n", PointDistance(left, center)-PointDistance(right, center) ));
+    }
+LUpi_LogMessage(LFormat("\n\n\n\n\n\n\n\n\n\n", center.x, center.y));
+    return center;
+}
+*/
+
+LPoint FindTangentPoints(LPoint* tanLeft, LPoint* tanRight, int angleIndex, LPoint* point_arr, int nbPointsArr, double fillet, int step, double* returnedRightAngle, double* returnedLeftAngle )
+{
+LCell	pCell	=	LCell_GetVisible();
+LFile	pFile	=	LCell_GetFile(pCell);
+    LPoint origin, left, prevLeft, right, nextRight;
+    LPoint testPointLeft, testPointRight;
+    LPoint lastTestPointLeft, lastTestPointRight;
+    LPoint center, betterCenter;
+    int currentPrevLeftIndex, currentNextRightIndex;
+int cpt = 0;
+    double dxLeft, dyLeft, dxRight, dyRight;
+    double exactPosLeftX, exactPosLeftY, exactPosRightX, exactPosRightY;
+    double angle=0, angle1=0, angle2=0;
+
+    if(angleIndex == 0)
+        currentPrevLeftIndex = nbPointsArr-1;
+    else
+        currentPrevLeftIndex = angleIndex-1;
+    
+    if(angleIndex == nbPointsArr-1)
+        currentNextRightIndex = 0;
+    else
+        currentNextRightIndex = angleIndex+1;
+
+    origin = point_arr[angleIndex];
+    left = point_arr[angleIndex];
+    right = point_arr[angleIndex];
+    prevLeft = point_arr[currentPrevLeftIndex];
+    nextRight = point_arr[currentNextRightIndex];
+
+    lastTestPointLeft = origin;
+    lastTestPointRight = origin;
+    center = origin;
+    betterCenter = origin;
+
+    exactPosLeftX = origin.x;
+    exactPosLeftY = origin.y;
+    exactPosRightX = origin.x;
+    exactPosRightY = origin.y;
+
+    dxLeft = prevLeft.x - left.x;
+    dyLeft = prevLeft.y - left.y;
+    while(dxLeft*dxLeft+dyLeft*dyLeft > step*step)
+    {
+        dxLeft = dxLeft/1.5;
+        dyLeft = dyLeft/1.5;
+    }
+
+    dxRight = nextRight.x - right.x;
+    dyRight = nextRight.y - right.y;
+    while(dxRight*dxRight+dyRight*dyRight > step*step)
+    {
+        dxRight = dxRight/1.5;
+        dyRight = dyRight/1.5;
+    }
+
+    exactPosLeftX = exactPosLeftX + dxLeft;
+    exactPosLeftY = exactPosLeftY + dyLeft;
+    exactPosRightX = exactPosRightX + dxRight;
+    exactPosRightY = exactPosRightY + dyRight;
+
+    testPointLeft.x = (LCoord)exactPosLeftX;
+    testPointLeft.y = (LCoord)exactPosLeftY;
+    testPointRight.x = (LCoord)exactPosRightX;
+    testPointRight.y = (LCoord)exactPosRightY;
+
+    while(PointDistance(testPointLeft, origin) < fillet || PointDistance(testPointRight, origin) < fillet  || PointDistance(testPointLeft, center) < fillet || PointDistance(testPointRight, center) < fillet  || centerIsBetweenPoints(testPointLeft, origin, testPointRight, center) == 0)
+    {
+
+        center = FindCenter(testPointLeft, prevLeft, right, testPointRight);
+        //betterCenter = FindBetterCenter(testPointLeft, prevLeft, right, testPointRight);
+LUpi_LogMessage(LFormat("Center x: %ld y: %ld\n", center.x, center.y));
+
+        if(PointDistance(origin, testPointLeft) < PointDistance(origin, testPointRight))
+        {
+            exactPosLeftX = exactPosLeftX + dxLeft;
+            exactPosLeftY = exactPosLeftY + dyLeft;
+
+            testPointLeft.x = (LCoord)exactPosLeftX;
+            testPointLeft.y = (LCoord)exactPosLeftY;
+            
+            if(PointDistance(testPointLeft, left) > PointDistance(prevLeft, left))
+            {
+                testPointLeft = prevLeft;
+                left = prevLeft;
+
+                while(PointDistance(left, prevLeft) < step)
+                {
+                    if(currentPrevLeftIndex == 0)
+                        currentPrevLeftIndex = nbPointsArr-1;
+                    else
+                        currentPrevLeftIndex = currentPrevLeftIndex-1;
+                    prevLeft = point_arr[currentPrevLeftIndex];
+                }
+
+                angle1 = atan2(dyLeft, dxLeft);
+
+                dxLeft = prevLeft.x - left.x;
+                dyLeft = prevLeft.y - left.y;
+                while(dxLeft*dxLeft+dyLeft*dyLeft > step*step)
+                {
+                    dxLeft = dxLeft/1.5;
+                    dyLeft = dyLeft/1.5;
+                }
+                angle2 = atan2(dyLeft, dxLeft);
+                
+                angle = angle + angle1 - angle2;
+                //if(angle >= M_PI-ANGLE_LIMIT || angle <= -M_PI+ANGLE_LIMIT)
+                if(angle >= M_PI/2.0 || angle <= -M_PI/2.0)
+                {
+                    return LPoint_Set(-1,-1);
+                }
+                exactPosLeftX = exactPosLeftX + dxLeft;
+                exactPosLeftY = exactPosLeftY + dyLeft;
+
+                testPointLeft.x = (LCoord)exactPosLeftX;
+                testPointLeft.y = (LCoord)exactPosLeftY;
+            }
+        }
+        else
+        {
+            exactPosRightX = exactPosRightX + dxRight;
+            exactPosRightY = exactPosRightY + dyRight;
+
+            testPointRight.x = (LCoord)exactPosRightX;
+            testPointRight.y = (LCoord)exactPosRightY;
+            
+            if(PointDistance(testPointRight, right) > PointDistance(nextRight, right))
+            {
+                testPointRight = nextRight;
+                right = nextRight;
+
+                while(PointDistance(right, nextRight) < step)
+                {
+                    if(currentNextRightIndex == nbPointsArr-1)
+                        currentNextRightIndex = 0;
+                    else
+                        currentNextRightIndex = currentNextRightIndex+1;
+                    nextRight = point_arr[currentNextRightIndex];
+                }
+                
+
+                angle1 = atan2(dyLeft, dxLeft);
+
+                dxRight = nextRight.x - right.x;
+                dyRight = nextRight.y - right.y;
+                while(dxRight*dxRight+dyRight*dyRight > step*step)
+                {
+                    dxRight = dxRight/1.5;
+                    dyRight = dyRight/1.5;
+                }
+                angle2 = atan2(dyLeft, dxLeft);
+                
+                angle = fabs(angle1 - angle2);
+                if(angle >= M_PI)
+                {
+                    return LPoint_Set(-1,-1);
+                }
+                exactPosRightX = exactPosRightX + dxRight;
+                exactPosRightY = exactPosRightY + dyRight;
+                testPointRight.x = (LCoord)exactPosRightX;
+                testPointRight.y = (LCoord)exactPosRightY;
+            }
+        }
+//LCircle_New( pCell, LLayer_Find(pFile, "LEFTCIRCLE"), testPointLeft, 1 );
+//LCircle_New( pCell, LLayer_Find(pFile, "RIGHTCIRCLE"), testPointRight, 1 );
+        lastTestPointLeft = testPointLeft;
+        lastTestPointRight = testPointRight;
+
+
+    }
+
+    tanLeft->x = testPointLeft.x;
+    tanLeft->y = testPointLeft.y;
+    tanRight->x = testPointRight.x;
+    tanRight->y = testPointRight.y;
+
+    if(abs(fillet-PointDistance(center,testPointLeft))+abs(fillet-PointDistance(center,testPointRight)) > abs(fillet-PointDistance(betterCenter,testPointLeft))+abs(fillet-PointDistance(betterCenter,testPointRight)))
+    {
+        center = betterCenter;
+    }
+
+    *returnedLeftAngle = (atan2(dyLeft,dxLeft) - M_PI/2.0)*180/M_PI;
+    while(*returnedLeftAngle < 0)
+        *returnedLeftAngle = *returnedLeftAngle + 360;
+    while(*returnedLeftAngle > 360)
+        *returnedLeftAngle = *returnedLeftAngle - 360;
+
+    *returnedRightAngle = (atan2(dyRight,dxRight) + M_PI/2.0)*180/M_PI;
+    while(*returnedRightAngle < 0)
+        *returnedRightAngle = *returnedRightAngle + 360;
+    while(*returnedRightAngle > 360)
+        *returnedRightAngle = *returnedRightAngle - 360;
+
+    return center;
+
+}
+
 
 int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint center)
 {
@@ -576,8 +892,6 @@ LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int a
     while(*returnedRightAngle > 360)
         *returnedRightAngle = *returnedRightAngle - 360;
 
-LUpi_LogMessage(LFormat("RETURN TO THE MAIN\n", leftAngle, M_PI/2.0 ));
-
     return center;
 }
 
@@ -766,18 +1080,26 @@ LUpi_LogMessage(LFormat("test %d sur %d\n", i+1, originalNumberVertex));
 LUpi_LogMessage("Point need to be fillet\n");
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), original_point_arr[i], 100 );
                     
-                    center = FindTanAndCenterWithCircleMethod(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 1.5, &rightAngle, &leftAngle);
+                    center = FindTangentPoints(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 5, &rightAngle, &leftAngle);
+                    
+
+                    //center = FindTanAndCenterWithCircleMethod(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 1.5, &rightAngle, &leftAngle);
                     if( !(center.x == -1 && center.y == -1) )
                     {
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanLeft, 1 );
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanRight, 1 );
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 10 );
 
+LUpi_LogMessage(LFormat("\n\ncenter %ld %ld\n",center.x,center.y));
+LUpi_LogMessage(LFormat("fillet %lf\n",fillet));
+LUpi_LogMessage(LFormat("nOuterRadius %lf\n",PointDistance(original_point_arr[i], center)));
+LUpi_LogMessage(LFormat("rightAngle %lf\n",rightAngle));
+LUpi_LogMessage(LFormat("leftAngle %lf\n\n\n",leftAngle));
 
                         tParams.ptCenter = center;
                         //tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
                         tParams.nInnerRadius = fillet;
-                        tParams.nOuterRadius = PointDistance(original_point_arr[i], center)*1.05;
+                        tParams.nOuterRadius = max(PointDistance(original_point_arr[i], center)*1.05 , fillet+1000);
                         angle1 = atan2(tanLeft.y - center.y, tanLeft.x - center.x )*180/M_PI;
                         angle2 = atan2(tanRight.y - center.y, tanRight.x - center.x )*180/M_PI;
                         while(angle1<0)
@@ -800,6 +1122,8 @@ LUpi_LogMessage("Point need to be fillet\n");
                     {
                         LUpi_LogMessage(LFormat("\n\nERROR: An angle could not be fillet automatically\n"));
                     }
+
+                    LDisplay_Refresh();
                 }
                 LUpi_LogMessage("Test the next point\n");
             }
