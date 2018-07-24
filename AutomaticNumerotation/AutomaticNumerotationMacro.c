@@ -15,6 +15,8 @@ void AutomaticNumerotationMacro()
     LCell	pCell	=	LCell_GetVisible();
 	LFile	pFile	=	LCell_GetFile(pCell);
     LLayer pLayer;
+
+    LLayer oxideLayer;
   
     char strNameWanted[MAX_TDBFILE_NAME];
     char strName[MAX_TDBFILE_NAME];
@@ -32,6 +34,14 @@ void AutomaticNumerotationMacro()
     LCoord delta_x, delta_y;
     int nbLine, nbCol;
     LCoord textSize = 0;
+
+    int oxideChoice = 0;
+    LRect rectMBB;
+    LPoint point_arr[10];
+    int nbPoints = 0;
+    LObject oxidePolygon;
+    LVertex vertex;
+
     int cpt;
 
     LCell bigCell;
@@ -156,6 +166,18 @@ void AutomaticNumerotationMacro()
     else
         return;
 
+    if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+    {
+        oxideChoice = 1;
+        strcpy(strName, "OX"); //preloaded text in the dialog box
+        if ( LDialog_InputBox("Oxide layer", "Enter the name of the oxide layer", strName) == 0)
+            return;
+        else
+            oxideLayer = LLayer_Find(pFile, strName);
+    }
+    else
+        oxideChoice = 0;
+
     if( ! (LCell_Find(pFile, "AutomaticNumerotation"))) //if not exist
         bigCell = LCell_New(pFile, "AutomaticNumerotation"); //create
     else
@@ -209,6 +231,35 @@ void AutomaticNumerotationMacro()
                                 "",
                                 "",
                                 NULL );
+
+            if(oxideChoice == 1)
+            {
+                long rectShift = LFile_MicronsToIntU(pFile, 5);
+                rectMBB = LCell_GetMbb( smallCell );
+                point_arr[0] = LPoint_Set( rectMBB.x0-rectShift/2.0 , rectMBB.y0-rectShift );
+                point_arr[1] = LPoint_Set( rectMBB.x1+rectShift/2.0 , rectMBB.y0-rectShift );
+                point_arr[2] = LPoint_Set( rectMBB.x1+rectShift , rectMBB.y0-rectShift/2.0 );
+                point_arr[3] = LPoint_Set( rectMBB.x1+rectShift , rectMBB.y1+rectShift/2.0 );
+                point_arr[4] = LPoint_Set( rectMBB.x1+rectShift/2.0 , rectMBB.y1+rectShift );
+                point_arr[5] = LPoint_Set( rectMBB.x0-rectShift/2.0 , rectMBB.y1+rectShift );
+                point_arr[6] = LPoint_Set( rectMBB.x0-rectShift , rectMBB.y1+rectShift/2.0 );
+                point_arr[7] = LPoint_Set( rectMBB.x0-rectShift , rectMBB.y0-rectShift/2.0 );
+                nbPoints = 8;
+                oxidePolygon = LPolygon_New(smallCell, oxideLayer, point_arr, nbPoints);
+                vertex = LObject_GetVertexList(oxidePolygon);
+				for(cpt=0; cpt<nbPoints; cpt++) //for each vertex
+				{
+					if(cpt == 1)
+                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x1+rectShift/2.0 , rectMBB.y0-rectShift/2.0 ), CCW );
+                    else if(cpt == 3)
+                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x1+rectShift/2.0 , rectMBB.y1+rectShift/2.0 ), CCW );
+                    else if(cpt == 5)
+                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x0-rectShift/2.0 , rectMBB.y1+rectShift/2.0 ), CCW );
+                    else if(cpt == 7)
+                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x0-rectShift/2.0 , rectMBB.y0-rectShift/2.0 ), CCW );
+					vertex = LVertex_GetNext(vertex);
+				}
+            }
 
             if(!(LInstance_Find(bigCell, strText))) //add the instance that not already exist
             {
