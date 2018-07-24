@@ -107,6 +107,5 @@ public:
 };
 
 double RoundAngle(double value);
-LCoord Round(double d);
 
 #endif
