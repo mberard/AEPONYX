@@ -1318,6 +1318,12 @@ void DubinsPath::RasterizePath()
     
     if(this->oxideSizeValue != 0)
     {
+        LLayer savedLayer;
+        double savedWidth;
+        double savedOxideSize;
+        savedLayer = this->layer;
+        savedWidth = this->guideWidth;
+        savedOxideSize = this->oxideSizeValue;
         this->guideWidth = this->guideWidth + 2*this->oxideSizeValue;
         this->layer = this->oxideLayer;
         LObject_Delete( this->cell, this->torusStart );
@@ -1347,6 +1353,12 @@ void DubinsPath::RasterizePath()
             default:
                 LDialog_AlertBox(LFormat("Path error"));
         }
+        this->oxideSizeValue = 0;
+        this->RasterizePath();
+
+        this->guideWidth = savedWidth;
+        this->layer = savedLayer;
+        this->oxideSizeValue = savedOxideSize;
     }
     else
     {
