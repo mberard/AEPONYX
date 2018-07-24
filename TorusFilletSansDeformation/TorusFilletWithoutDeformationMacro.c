@@ -1096,10 +1096,20 @@ LUpi_LogMessage(LFormat("nOuterRadius %lf\n",PointDistance(original_point_arr[i]
 LUpi_LogMessage(LFormat("rightAngle %lf\n",rightAngle));
 LUpi_LogMessage(LFormat("leftAngle %lf\n\n\n",leftAngle));
 
-                        tParams.ptCenter = center;
+                        if(PointDistance(original_point_arr[i], center) > 100*fillet)
+                        {
+                            tParams.ptCenter = original_point_arr[i];
+                            tParams.nInnerRadius = fillet;
+                            tParams.nOuterRadius = fillet+1000;
+                        }
+                        else
+                        {
+                            tParams.ptCenter = center;
+                            tParams.nInnerRadius = fillet;
+                            tParams.nOuterRadius = max(PointDistance(original_point_arr[i], center)*1.05, fillet*2);
+                        }
                         //tParams.nInnerRadius = max( PointDistance(center, tanLeft), PointDistance(center, tanRight));
-                        tParams.nInnerRadius = fillet;
-                        tParams.nOuterRadius = max(PointDistance(original_point_arr[i], center)*1.05 , fillet+1000);
+                        /*
                         angle1 = atan2(tanLeft.y - center.y, tanLeft.x - center.x )*180/M_PI;
                         angle2 = atan2(tanRight.y - center.y, tanRight.x - center.x )*180/M_PI;
                         while(angle1<0)
@@ -1110,9 +1120,9 @@ LUpi_LogMessage(LFormat("leftAngle %lf\n\n\n",leftAngle));
                             angle2 = angle2 + 360;
                         while(angle2>360)
                             angle2 = angle2 - 360;
-                        //tParams.dStartAngle = angle2;
-                        //tParams.dStopAngle = angle1;
-
+                        tParams.dStartAngle = angle2;
+                        tParams.dStopAngle = angle1;
+                        */
                         tParams.dStartAngle = rightAngle;
                         tParams.dStopAngle = leftAngle;
 
