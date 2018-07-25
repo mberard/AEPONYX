@@ -985,7 +985,7 @@ void AATorusFilletWithoutDeformation(void)
 	}
     else
     {
-        strcpy(strFillet, "0.5"); //preloaded text in the dialog box
+        strcpy(strFillet, "2.5"); //preloaded text in the dialog box
 		if ( LDialog_InputBox("Fillet", "Enter the fillet value (in microns)", strFillet) == 0)
 			return;
 		else
