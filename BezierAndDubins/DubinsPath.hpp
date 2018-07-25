@@ -107,5 +107,6 @@ public:
 };
 
 double RoundAngle(double value);
+double Round0or5(double val);
 
 #endif

@@ -1379,21 +1379,25 @@ void DubinsPath::DrawArc(LPoint center, LCoord radius, double startAngle, double
     
     if(isCCW)
     {
+LUpi_LogMessage(LFormat("Start %lf %ld\n", center.y + radius * sin( startAngle ), Round0or5(center.y + radius * sin( startAngle )) ));
         this->Add( center.x + radius * cos( startAngle ), center.y + radius * sin( startAngle ) );
 		//dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
         dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 8);
 		for (double dTheta = startAngle; dTheta < stopAngle; dTheta += dThetaStep )
 			this->Add( center.x + radius * cos( dTheta ), center.y + radius * sin( dTheta ) );
 		this->Add( center.x + radius * cos( stopAngle ), center.y + radius * sin( stopAngle ) );
+LUpi_LogMessage(LFormat("End   %lf %ld\n", center.x + radius * cos( stopAngle ), Round0or5(center.y + radius * sin( stopAngle )) ));
     }
     else
     {
+LUpi_LogMessage(LFormat("End   %lf %ld\n", center.x + radius * cos( stopAngle ), Round0or5(center.y + radius * sin( stopAngle )) ));
         this->Add( center.x + radius * cos( stopAngle ), center.y + radius * sin( stopAngle ) );
 		//dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
         dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 8);
 		for (double dTheta = stopAngle; dTheta > startAngle; dTheta -= dThetaStep )
 			this->Add( center.x + radius * cos( dTheta ), center.y + radius * sin( dTheta ) );
 		this->Add( center.x + radius * cos( startAngle ), center.y + radius * sin( startAngle ) );
+LUpi_LogMessage(LFormat("Start %lf %ld\n", center.y + radius * sin( startAngle ), Round0or5(center.y + radius * sin( startAngle )) ));
     }
 }
 
@@ -1767,8 +1771,11 @@ void DubinsPath::DubinsPathWithBezierCurves()
 
 void DubinsPath::Add( double x, double y )
 {
-	LCoord nx = round( x );
-	LCoord ny = round( y );
+	//LCoord nx = round( x );
+	//LCoord ny = round( y );
+
+    LCoord nx = (LCoord)Round0or5( x );
+	LCoord ny = (LCoord)Round0or5( y );
 
 	if ( this->nbPoints != 0 && nx == nLastx && ny == nLasty )
 		return; // do not duplicate vertex
@@ -1797,4 +1804,18 @@ double RoundAngle(double value)
     Ltmp = (long)Dtmp;
     returnVal = Ltmp / 1000.0;
     return returnVal;
+}
+
+double Round0or5(double val)
+{
+	double tmpFloat = val;
+	long tmpInt = 0;
+	double returnedVal = 0;
+	if(val >= 0)
+		tmpFloat = (double)(tmpFloat + 2.5)/5.0;
+	else
+		tmpFloat = (double)(tmpFloat - 2.5)/5.0;
+	tmpInt = (long)tmpFloat; //delete the digits after the '.'
+	returnedVal = tmpInt*5.0;
+	return returnedVal;
 }
