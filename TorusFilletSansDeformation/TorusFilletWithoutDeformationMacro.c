@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>
 
-#define MAX_POLYGON_SIZE 15000
+#define MAX_POLYGON_SIZE 30000
 #define MAX_NUMBER_POLYGON 1000
 #define ANGLE_LIMIT 0.25 //in radian, 0.523599 rad == 30 degrés, 0.785398 rad == 45 degrés, 1.5708 rad == 90 degrés
 #define LIMIT_DISTANCE_POINT_LABEL 150 //in internal units
@@ -375,6 +375,111 @@ int centerIsBetweenPoints(LPoint left, LPoint middle, LPoint right, LPoint cente
         return 0;
 
     return 0; //not between points
+}
+
+LPoint FindTangentFromCenter(int angleIndex, LPoint* point_arr, int nbPointsArr, double fillet, LPoint center, double* returnedRightAngle, double* returnedLeftAngle)
+{
+LCell	pCell	=	LCell_GetVisible();
+LFile	pFile	=	LCell_GetFile(pCell);
+    LPoint origin, left, prevLeft, right, nextRight;
+    LPoint testPointLeft, testPointRight;
+    LPoint lastTestPointLeft, lastTestPointRight;
+    
+    int currentPrevLeftIndex, currentLeftIndex, currentRightIndex, currentNextRightIndex;
+    double dxLeft, dyLeft, dxRight, dyRight;
+    double exactPosLeftX, exactPosLeftY, exactPosRightX, exactPosRightY;
+    double distStart;
+    double rightAngle, leftAngle;
+    
+    if(angleIndex == 0)
+        currentPrevLeftIndex = nbPointsArr-1;
+    else
+        currentPrevLeftIndex = angleIndex-1;
+    
+    if(angleIndex == nbPointsArr-1)
+        currentNextRightIndex = 0;
+    else
+        currentNextRightIndex = angleIndex+1;
+
+    currentLeftIndex = angleIndex;
+    currentRightIndex = angleIndex;
+
+    origin = point_arr[angleIndex];
+    left = point_arr[currentLeftIndex];
+    right = point_arr[currentRightIndex];
+    prevLeft = point_arr[currentPrevLeftIndex];
+    nextRight = point_arr[currentNextRightIndex];
+
+    rightAngle = atan2(nextRight.y-right.y,nextRight.x-right.x)-atan2(center.y-nextRight.y, center.x-nextRight.x);
+    while(rightAngle > M_PI)
+        rightAngle = rightAngle - 2*M_PI;
+    while(rightAngle < -M_PI)
+        rightAngle = rightAngle + 2*M_PI;
+    rightAngle = fabs(rightAngle);
+
+    leftAngle = atan2(prevLeft.y-left.y,prevLeft.x-left.x)-atan2(center.y-prevLeft.y, center.x-prevLeft.x);
+    while(leftAngle > M_PI)
+        leftAngle = leftAngle - 2*M_PI;
+    while(leftAngle < -M_PI)
+        leftAngle = leftAngle + 2*M_PI;
+    leftAngle = fabs(leftAngle);
+
+    while( rightAngle < M_PI/2.0)
+    {
+        currentRightIndex = currentNextRightIndex;
+        if(currentNextRightIndex == nbPointsArr-1)
+            currentNextRightIndex = 0;
+        else
+            currentNextRightIndex = currentNextRightIndex+1;
+        right = point_arr[currentRightIndex];
+        nextRight = point_arr[currentNextRightIndex];
+
+        rightAngle = atan2(nextRight.y-right.y,nextRight.x-right.x)-atan2(center.y-nextRight.y, center.x-nextRight.x);
+        while(rightAngle > M_PI)
+            rightAngle = rightAngle - 2*M_PI;
+        while(rightAngle < -M_PI)
+            rightAngle = rightAngle + 2*M_PI;
+        rightAngle = fabs(rightAngle);
+    }
+
+    while( leftAngle < M_PI/2.0)
+    {
+        currentLeftIndex = currentPrevLeftIndex;
+        if(currentPrevLeftIndex == 0)
+            currentPrevLeftIndex = nbPointsArr-1;
+        else
+            currentPrevLeftIndex = currentPrevLeftIndex-1;
+        left = point_arr[currentLeftIndex];
+        prevLeft = point_arr[currentPrevLeftIndex];
+
+        leftAngle = atan2(prevLeft.y-left.y,prevLeft.x-left.x)-atan2(center.y-prevLeft.y, center.x-prevLeft.x);
+        while(leftAngle > M_PI)
+            leftAngle = leftAngle - 2*M_PI;
+        while(leftAngle < -M_PI)
+            leftAngle = leftAngle + 2*M_PI;
+        leftAngle = fabs(leftAngle);
+    }
+
+    dxLeft = prevLeft.x-left.x;
+    dyLeft = prevLeft.y-left.y;
+    dxRight = nextRight.x-right.x;
+    dyRight = nextRight.y-right.y;
+
+    // return angles
+    *returnedLeftAngle = (atan2(dyLeft,dxLeft) - M_PI/2.0)*180/M_PI;
+    while(*returnedLeftAngle < 0)
+        *returnedLeftAngle = *returnedLeftAngle + 360;
+    while(*returnedLeftAngle > 360)
+        *returnedLeftAngle = *returnedLeftAngle - 360;
+
+    *returnedRightAngle = (atan2(dyRight,dxRight) + M_PI/2.0)*180/M_PI;
+    while(*returnedRightAngle < 0)
+        *returnedRightAngle = *returnedRightAngle + 360;
+    while(*returnedRightAngle > 360)
+        *returnedRightAngle = *returnedRightAngle - 360;
+
+    //return center; (-1,-1) if not able to find correct tangent points
+    return center;
 }
 
 LPoint FindTanAndCenterWithCircleMethod(LPoint* tanLeft, LPoint* tanRight, int angleIndex, LPoint* point_arr, int nbPointsArr, double fillet, float step, double* returnedRightAngle, double* returnedLeftAngle)
@@ -1167,8 +1272,25 @@ LUpi_LogMessage(LFormat("test %d sur %d\n", i+1, originalNumberVertex));
 LUpi_LogMessage("Point need to be fillet\n");
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), original_point_arr[i], 100 );
                     
-                    center = FindTangentPoints(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 5, &rightAngle, &leftAngle);
+                    //center = FindTangentPoints(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 5, &rightAngle, &leftAngle);
                     //center = FindTanAndCenterWithCircleMethod(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 1.5, &rightAngle, &leftAngle);
+                    
+                    savedPoint = LPoint_Set(-1,-1);
+                    minDist = 9999999999.999999999;
+                    for(j = 0; j < numberPointsFromeGrow; j++)
+                    {
+                        if(centerIsBetweenPoints(LPoint_Set(prevX,prevY), original_point_arr[i], LPoint_Set(nextX,nextY), points_from_grow[j]) == 1)
+                        {
+                            if(PointDistance(original_point_arr[i], points_from_grow[j]) < minDist)
+                            {
+                                savedPoint = points_from_grow[j];
+                                minDist = PointDistance(original_point_arr[i],points_from_grow[j]);
+                            }
+                        }
+                    }
+                    center = savedPoint;
+                    
+                    center = FindTangentFromCenter(i, original_point_arr, originalNumberVertex, fillet, center, &rightAngle, &leftAngle);
 
                     if( !(center.x == -1 && center.y == -1) )
                     {
@@ -1227,7 +1349,7 @@ LUpi_LogMessage(LFormat("leftAngle %lf\n\n\n",leftAngle));
                     }
                     else
                     {
-                        LUpi_LogMessage(LFormat("\n\nERROR: An angle could not be fillet automatically\n"));
+                        LUpi_LogMessage(LFormat("\n\nERROR: An angle could not be fillet automatically\n\n"));
                     }
 
                     LDisplay_Refresh();
@@ -1242,13 +1364,12 @@ LUpi_LogMessage(LFormat("leftAngle %lf\n\n\n",leftAngle));
         LObject_Delete( pCell, obj );
     }
     LLayer_Delete( pFile, tmpLayer );
-    /*
     for(LObject obj = LObject_GetList(pCell, tmpLayerGrow) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
         LObject_Delete( pCell, obj );
     }
     LLayer_Delete( pFile, tmpLayerGrow );
-*/
+
     LUpi_LogMessage(LFormat("\nEND MACRO\n"));
 }
 
