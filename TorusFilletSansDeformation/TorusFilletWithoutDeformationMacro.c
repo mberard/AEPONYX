@@ -1098,7 +1098,7 @@ void AATorusFilletWithoutDeformation(void)
 	}
     else
     {
-        strcpy(strFillet, "0.5"); //preloaded text in the dialog box
+        strcpy(strFillet, "2.5"); //preloaded text in the dialog box
 		if ( LDialog_InputBox("Fillet", "Enter the fillet value (in microns)", strFillet) == 0)
 			return;
 		else
@@ -1111,10 +1111,10 @@ void AATorusFilletWithoutDeformation(void)
 		else
             pLayer = LLayer_Find(pFile, strLayer);
         
-        if( LDialog_YesNoBox("Fillet only the angle near a selected label? (No for all angle)") )
-            onlyWithLabel = 1;
-        else
+        if( LDialog_YesNoBox("Fillet all the angles? (No = only angles near a label)") )
             onlyWithLabel = 0;
+        else
+            onlyWithLabel = 1;
 
         LLayer_New( pFile, NULL, "tmp");
         tmpLayer = LLayer_Find(pFile, "tmp");
