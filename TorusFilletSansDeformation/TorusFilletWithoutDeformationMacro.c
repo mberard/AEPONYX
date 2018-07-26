@@ -936,6 +936,7 @@ void AATorusFilletWithoutDeformation(void)
     int nbPolygonSelected = 0;
 
     LLayer tmpLayer;
+    LLayer tmpLayerGrow;
 
     char strLayer[MAX_LAYER_NAME];
 
@@ -943,6 +944,9 @@ void AATorusFilletWithoutDeformation(void)
     long originalNumberVertex = 0;
     LPoint point_arr[MAX_POLYGON_SIZE];
     long numberVertex = 0;
+
+    LPoint points_from_grow[MAX_POLYGON_SIZE];
+    long numberPointsFromeGrow = 0;
 
     LCoord prevX = 0;
     LCoord prevY = 0;
@@ -972,8 +976,12 @@ void AATorusFilletWithoutDeformation(void)
     LTorusParams tParams;
 
     int i = 0;
+    int j = 0;
     int newAngleIndex = 0;
     int cpt = 0;
+
+    long minDist;
+    LPoint savedPoint;
 
 
     LUpi_LogMessage("\n\n\n\n\nSTART MACRO\n");
@@ -1005,6 +1013,9 @@ void AATorusFilletWithoutDeformation(void)
 
         LLayer_New( pFile, NULL, "tmp");
         tmpLayer = LLayer_Find(pFile, "tmp");
+
+        LLayer_New( pFile, NULL, "tmpGrow");
+        tmpLayerGrow = LLayer_Find(pFile, "tmpGrow");
         
         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
         {
@@ -1014,7 +1025,83 @@ void AATorusFilletWithoutDeformation(void)
         }
         LUpi_LogMessage(LFormat("nbPolygonSelected %d\n", nbPolygonSelected));    
 
-        LCell_BooleanOperation(pCell, LBoolOp_OR , NULL, obj_arr, nbPolygonSelected, NULL, 0, tmpLayer, LFALSE );
+        LCell_BooleanOperation(pCell,
+                               LBoolOp_OR, 
+                               NULL, 
+                               obj_arr, 
+                               nbPolygonSelected, 
+                               NULL, 
+                               0, 
+                               tmpLayer, 
+                               LFALSE );
+
+        LCell_BooleanOperation(pCell,
+                               LBoolOp_OR, 
+                               NULL, 
+                               obj_arr, 
+                               nbPolygonSelected, 
+                               NULL, 
+                               0, 
+                               tmpLayerGrow, 
+                               LFALSE );
+        nbPolygonSelected = 0;
+        for(LObject obj = LObject_GetList(pCell, tmpLayerGrow) ; obj != NULL; obj = LObject_GetNext(obj) )
+        {
+            obj_arr[nbPolygonSelected] = obj;
+            nbPolygonSelected++;
+        }
+        LCell_BooleanOperation(pCell,
+                               LBoolOp_GROW, 
+                               fillet, 
+                               obj_arr, 
+                               nbPolygonSelected, 
+                               NULL, 
+                               0, 
+                               tmpLayerGrow, 
+                               LTRUE );
+
+        for(LObject obj = LObject_GetList(pCell, tmpLayerGrow) ; obj != NULL; obj = LObject_GetNext(obj) )
+        {
+            originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
+
+            for(i=0; i<originalNumberVertex; i++) //store the current, previous and next point
+            {
+                x = original_point_arr[i].x;
+                y = original_point_arr[i].y;
+                if(i == 0){
+                    prevX = original_point_arr[originalNumberVertex-1].x;
+                    prevY = original_point_arr[originalNumberVertex-1].y;
+                }
+                else{
+                    prevX = original_point_arr[i-1].x;
+                    prevY = original_point_arr[i-1].y;
+                }
+                if(i == originalNumberVertex-1){
+                    nextX = original_point_arr[0].x;
+                    nextY = original_point_arr[0].y;
+                }
+                else{
+                    nextX = original_point_arr[i+1].x;
+                    nextY = original_point_arr[i+1].y;
+                }
+                dxPrev = x-prevX;
+                dyPrev = y-prevY;
+                dxNext = nextX-x;
+                dyNext = nextY-y;
+                angle1 = atan2(dyPrev,dxPrev) - M_PI;
+                angle2 = atan2(dyNext,dxNext);
+                angle = angle2 - angle1;
+                angle = fmod(angle, 2*M_PI);
+                while(angle < 0)
+                    angle = angle + 2*M_PI;
+                
+                if( angle < M_PI - ANGLE_LIMIT ) //if not in the limit range and concave
+                {
+                    points_from_grow[numberPointsFromeGrow] = original_point_arr[i];
+                    numberPointsFromeGrow++;
+                }
+            }
+        }
 
         for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
@@ -1081,11 +1168,21 @@ LUpi_LogMessage("Point need to be fillet\n");
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), original_point_arr[i], 100 );
                     
                     center = FindTangentPoints(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 5, &rightAngle, &leftAngle);
-                    
-
                     //center = FindTanAndCenterWithCircleMethod(&tanLeft, &tanRight, i, original_point_arr, originalNumberVertex, fillet, 1.5, &rightAngle, &leftAngle);
+
                     if( !(center.x == -1 && center.y == -1) )
                     {
+
+                        minDist = 9999999999.999999999;
+                        for(j = 0; j < numberPointsFromeGrow; j++)
+                        {
+                            if(PointDistance(center,points_from_grow[j])<minDist)
+                            {
+                                savedPoint = points_from_grow[j];
+                                minDist = PointDistance(center,points_from_grow[j]);
+                            }
+                        }
+                        center = savedPoint;
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanLeft, 1 );
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), tanRight, 1 );
 //LCircle_New( pCell, LLayer_Find(pFile, "TEST"), center, 10 );
@@ -1145,7 +1242,13 @@ LUpi_LogMessage(LFormat("leftAngle %lf\n\n\n",leftAngle));
         LObject_Delete( pCell, obj );
     }
     LLayer_Delete( pFile, tmpLayer );
-
+    /*
+    for(LObject obj = LObject_GetList(pCell, tmpLayerGrow) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        LObject_Delete( pCell, obj );
+    }
+    LLayer_Delete( pFile, tmpLayerGrow );
+*/
     LUpi_LogMessage(LFormat("\nEND MACRO\n"));
 }
 
