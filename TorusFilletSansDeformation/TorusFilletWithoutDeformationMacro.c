@@ -67,6 +67,7 @@ LFile	pFile	=	LCell_GetFile(pCell);
     double exactPosLeftX, exactPosLeftY, exactPosRightX, exactPosRightY;
     double distStart;
     double rightAngle, leftAngle;
+    double prevRightAngle, prevLeftAngle, cumulAngle;
     
     if(angleIndex == 0)
         currentPrevLeftIndex = nbPointsArr-1;
@@ -92,6 +93,7 @@ LFile	pFile	=	LCell_GetFile(pCell);
         rightAngle = rightAngle - 2*M_PI;
     while(rightAngle < -M_PI)
         rightAngle = rightAngle + 2*M_PI;
+    prevRightAngle = rightAngle;
     rightAngle = fabs(rightAngle);
 
     leftAngle = atan2(prevLeft.y-left.y,prevLeft.x-left.x)-atan2(center.y-prevLeft.y, center.x-prevLeft.x);
@@ -99,8 +101,10 @@ LFile	pFile	=	LCell_GetFile(pCell);
         leftAngle = leftAngle - 2*M_PI;
     while(leftAngle < -M_PI)
         leftAngle = leftAngle + 2*M_PI;
+    prevLeftAngle = leftAngle;
     leftAngle = fabs(leftAngle);
 
+    cumulAngle = 0;
     while( rightAngle < M_PI/2.0)
     {
         currentRightIndex = currentNextRightIndex;
@@ -116,9 +120,16 @@ LFile	pFile	=	LCell_GetFile(pCell);
             rightAngle = rightAngle - 2*M_PI;
         while(rightAngle < -M_PI)
             rightAngle = rightAngle + 2*M_PI;
+        cumulAngle = cumulAngle + rightAngle - prevRightAngle;
+        prevRightAngle = rightAngle;
+
+        if(cumulAngle > M_PI/2.0)
+            return LPoint_Set(-1,-1);
+
         rightAngle = fabs(rightAngle);
     }
 
+    cumulAngle = 0;
     while( leftAngle < M_PI/2.0)
     {
         currentLeftIndex = currentPrevLeftIndex;
@@ -134,6 +145,12 @@ LFile	pFile	=	LCell_GetFile(pCell);
             leftAngle = leftAngle - 2*M_PI;
         while(leftAngle < -M_PI)
             leftAngle = leftAngle + 2*M_PI;
+        cumulAngle = cumulAngle + leftAngle - prevLeftAngle;
+        prevLeftAngle = leftAngle;
+
+        if(cumulAngle > M_PI/2.0)
+            return LPoint_Set(-1,-1);
+
         leftAngle = fabs(leftAngle);
     }
 
@@ -446,7 +463,7 @@ void AATorusFilletWithoutDeformation(void)
                         {
                             tParams.ptCenter = center;
                             tParams.nInnerRadius = fillet;
-                            tParams.nOuterRadius = max(PointDistance(original_point_arr[i], center)*1.05, fillet*2);
+                            tParams.nOuterRadius = max(PointDistance(original_point_arr[i], center)*1.05, fillet*1.5);
                         }
                         tParams.dStartAngle = rightAngle;
                         tParams.dStopAngle = leftAngle;
