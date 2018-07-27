@@ -30,7 +30,7 @@ void AutomaticNumerotationMacro()
 
     LDialogItem DialogItems1[2] = {{ "X (in microns)","100"}, { "Y (in microns)","100"}};
     LDialogItem DialogItems2[2] = {{ "Number of column","1"}, { "Number of line","1"}};
-    LDialogItem DialogItems3[2] = {{ "Oxide fillet in microns (0 for no oxide)","0"}, { "Facet fillet in microns (0 for no facet)","0"}};
+    LDialogItem DialogItems3[2] = {{ "Oxide fillet in microns (0 for no oxide)","2.5"}, { "Facet fillet in microns (0 for no facet)","2.5"}};
 
     double tmp1, tmp2;
     LCoord delta_x, delta_y;
