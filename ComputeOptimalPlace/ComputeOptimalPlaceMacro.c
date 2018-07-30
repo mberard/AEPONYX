@@ -262,7 +262,6 @@ void ComputeOptimalPlaceMacro()
                     endCenter.x = endCenter.x+1;
                     difference = difference+1;
                 }
-LUpi_LogMessage("1\n");
             }
             while(PointDistance(startCenter, endCenter) < 2*radius)
             {
@@ -276,7 +275,6 @@ LUpi_LogMessage("1\n");
                     endCenter.x = endCenter.x-1;
                     difference = difference-1;
                 }
-LUpi_LogMessage("2\n");
             }
             LUpi_LogMessage(LFormat("\nWITH FIXED Y:\n\tOptimal X distance (from start to end): %lf\n\tOptimal X start point (with fixed end): %lf\n\tOptimal X end point (with fixed start): %lf\n", LFile_IntUtoMicrons(pFile, endPoint.x-startPoint.x+difference), LFile_IntUtoMicrons(pFile, startPoint.x-difference), LFile_IntUtoMicrons(pFile, endPoint.x+difference) ));
         }
