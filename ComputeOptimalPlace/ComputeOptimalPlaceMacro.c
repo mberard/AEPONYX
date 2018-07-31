@@ -66,6 +66,7 @@ void ComputeOptimalPlaceMacro()
     double dAngle;
     int nmbLabel;
     double radius;
+    double angle;
 
     long difference;
 
@@ -235,17 +236,21 @@ void ComputeOptimalPlaceMacro()
         radius = LFile_MicronsToIntU( pFile, atof(strLayer) );
 
     //computing
-    if(endAngle > startAngle-90 && endAngle < startAngle+90) //less than 90 degres difference; target: RSL or LSR
+    angle = fmod(endAngle - startAngle, 360);
+    while(angle < 0)
+        angle = angle + 360;
+
+    if(angle > 270 || angle < 90) //less than 90 degres difference; target: RSL or LSR
     {
         if(startPoint.y < endPoint.y) //target: LSR
         {
-            startCenter = LPoint_Set(startPoint.x+radius*cos(startAngle+M_PI/2.0), startPoint.y+radius*sin(startAngle+M_PI/2.0));
-            endCenter = LPoint_Set(endPoint.x+radius*cos(endAngle-M_PI/2.0), endPoint.y+radius*sin(endAngle-M_PI/2.0));
+            startCenter = LPoint_Set(startPoint.x+radius*cos((startAngle+90)*M_PI/180.0), startPoint.y+radius*sin((startAngle+90)*M_PI/180.0));
+            endCenter = LPoint_Set(endPoint.x+radius*cos((endAngle-90)*M_PI/180.0), endPoint.y+radius*sin((endAngle-90)*M_PI/180.0));
         }
         else //target: RSL
         {
-            startCenter = LPoint_Set(startPoint.x+radius*cos(startAngle-M_PI/2.0), startPoint.y+radius*sin(startAngle-M_PI/2.0));
-            endCenter = LPoint_Set(endPoint.x+radius*cos(endAngle+M_PI/2.0), endPoint.y+radius*sin(endAngle+M_PI/2.0));
+            startCenter = LPoint_Set(startPoint.x+radius*cos((startAngle-90)*M_PI/180.0), startPoint.y+radius*sin((startAngle-90)*M_PI/180.0));
+            endCenter = LPoint_Set(endPoint.x+radius*cos((endAngle+90)*M_PI/180.0), endPoint.y+radius*sin((endAngle+90)*M_PI/180.0));
         }
 
         xMinStart = startCenter.x - radius ;
@@ -256,7 +261,9 @@ void ComputeOptimalPlaceMacro()
         xMaxEnd = endCenter.x + radius ;
         yMinEnd = endCenter.y - radius ;
         yMaxEnd = endCenter.y + radius ;
-LUpi_LogMessage(LFormat("xMinStart %ld\nxMaxStart %ld\nyMinStart %ld\nyMaxStart %ld\nxMinEnd %ld\nxMaxEnd %ld\nyMinEnd %ld\nyMaxEnd %ld\n\n", xMinStart,xMaxStart,yMinStart,yMaxStart,xMinEnd,xMaxEnd,yMinEnd,yMaxEnd));
+//LUpi_LogMessage(LFormat("angles %lf %lf %lf\n\n",angle-90,angle,angle+90 ));
+//LUpi_LogMessage(LFormat("endCenter %ld %ld\n\n",endCenter.x, endCenter.y ));
+//LUpi_LogMessage(LFormat("xMinStart %ld\nxMaxStart %ld\nyMinStart %ld\nyMaxStart %ld\nxMinEnd %ld\nxMaxEnd %ld\nyMinEnd %ld\nyMaxEnd %ld\n\n", xMinStart,xMaxStart,yMinStart,yMaxStart,xMinEnd,xMaxEnd,yMinEnd,yMaxEnd));
 
         //for fixed Y
         if( (yMinStart > yMinEnd && yMinStart < yMaxEnd) || (yMaxStart > yMinEnd && yMaxStart < yMaxEnd) )
@@ -335,17 +342,7 @@ LUpi_LogMessage(LFormat("xMinStart %ld\nxMaxStart %ld\nyMinStart %ld\nyMaxStart 
     }
     else //more than 90 degres difference; target: RSR or LSL
     {
-        //for fixed Y
-        if(startPoint.y < endPoint.y) //target: LSL
-        {
-            startCenter = LPoint_Set(startPoint.x+radius*cos(startAngle+M_PI/2.0), startPoint.y+radius*sin(startAngle+M_PI/2.0));
-            endCenter = LPoint_Set(endPoint.x+radius*cos(endAngle+M_PI/2.0), endPoint.y+radius*sin(endAngle+M_PI/2.0));
-        }
-        else //target: RSR
-        {
-            startCenter = LPoint_Set(startPoint.x+radius*cos(startAngle-M_PI/2.0), startPoint.y+radius*sin(startAngle-M_PI/2.0));
-            endCenter = LPoint_Set(startPoint.x+radius*cos(startAngle-M_PI/2.0), startPoint.y+radius*sin(startAngle-M_PI/2.0));
-        }
+        
     }
 */
 
