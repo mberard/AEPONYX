@@ -188,6 +188,7 @@ void AATorusFilletWithoutDeformation(void)
     LLayer tmpLayer;
     LLayer tmpLayerGrow;
 
+    char strName[MAX_LAYER_NAME];
     char strLayer[MAX_LAYER_NAME];
 
     LPoint original_point_arr[MAX_POLYGON_SIZE];
@@ -250,7 +251,11 @@ void AATorusFilletWithoutDeformation(void)
             fillet = LFile_MicronsToIntU(pFile,atof(strFillet));
         LUpi_LogMessage(LFormat("fillet: %lf\n", fillet));
 
-        strcpy(strLayer, "OX"); //preloaded text in the dialog box
+        LLayer_GetName( LObject_GetLayer( pCell, LSelection_GetObject( LSelection_GetList() ) ), strName, MAX_LAYER_NAME );
+        if(strName)
+            strcpy(strLayer, strName); //preloaded text in the dialog box
+        else
+            strcpy(strLayer, "OX"); //preloaded text in the dialog box
 		if ( LDialog_InputBox("Layer", "Enter name of the layer in which the polygon will be loaded", strLayer) == 0)
 			return;
 		else
