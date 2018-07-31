@@ -241,13 +241,13 @@ void BezierAndDubinsMacro()
                 start.SetAngleDegre( 0 );
                 LUpi_LogMessage("Angle property not found, 0 by default\n");
             }
-            strcpy(strLayer, "10");
+            strcpy(strLayer, "100");
             if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
                 return;
             else
                 radius = atof(strLayer);
 
-            strcpy(strLayer, "1");
+            strcpy(strLayer, "0.435");
             if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
                 return;
             else
@@ -562,13 +562,13 @@ void BezierAndDubinsMacro()
                 return;
             }
 
-            strcpy(strLayer, "10");
+            strcpy(strLayer, "100");
             if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
                 return;
             else
                 radius = atof(strLayer);
 
-            strcpy(strLayer, "1");
+            strcpy(strLayer, "0.435");
             if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
                 return;
             else
@@ -688,13 +688,13 @@ void BezierAndDubinsMacro()
                 start.SetAngleDegre( 0 );
                 LUpi_LogMessage("Angle property not found, 0 by default\n");
             }
-            strcpy(strLayer, "10");
+            strcpy(strLayer, "100");
             if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
                 return;
             else
                 radius = atof(strLayer);
 
-            strcpy(strLayer, "1");
+            strcpy(strLayer, "0.435");
             if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
                 return;
             else
@@ -1013,13 +1013,13 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 return;
             }
 
-            strcpy(strLayer, "10");
+            strcpy(strLayer, "100");
             if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
                 return;
             else
                 radius = atof(strLayer);
 
-            strcpy(strLayer, "1");
+            strcpy(strLayer, "0.435");
             if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
                 return;
             else
@@ -1128,7 +1128,7 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 LUpi_LogMessage("Angle property not found, 0 by default\n");
             }
 
-            strcpy(strLayer, "1");
+            strcpy(strLayer, "0.435");
             if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
                 return;
             else
@@ -1443,7 +1443,7 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 return;
             }
 
-            strcpy(strLayer, "1");
+            strcpy(strLayer, "0.435");
             if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
                 return;
             else
