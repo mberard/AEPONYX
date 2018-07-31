@@ -69,6 +69,9 @@ void ComputeOptimalPlaceMacro()
 
     long difference;
 
+    long xMaxStart, xMinStart, yMaxStart, yMinStart;
+    long xMaxEnd, xMinEnd, yMaxEnd, yMinEnd;
+
     LPoint startCenter, endCenter;
 
     if(twoLabelsHasBeenSelected() == 1)
@@ -245,9 +248,18 @@ void ComputeOptimalPlaceMacro()
             endCenter = LPoint_Set(endPoint.x+radius*cos(endAngle+M_PI/2.0), endPoint.y+radius*sin(endAngle+M_PI/2.0));
         }
 
- LUpi_LogMessage(LFormat("startCenter %ld %ld\nendCenter %ld %ld\n", startCenter.x, startCenter.y, endCenter.x, endCenter.y));
+        xMinStart = startCenter.x - radius ;
+        xMaxStart = startCenter.x + radius ;
+        yMinStart = startCenter.y - radius ;
+        yMaxStart = startCenter.y + radius ;
+        xMinEnd = endCenter.x - radius ;
+        xMaxEnd = endCenter.x + radius ;
+        yMinEnd = endCenter.y - radius ;
+        yMaxEnd = endCenter.y + radius ;
+LUpi_LogMessage(LFormat("xMinStart %ld\nxMaxStart %ld\nyMinStart %ld\nyMaxStart %ld\nxMinEnd %ld\nxMaxEnd %ld\nyMinEnd %ld\nyMaxEnd %ld\n\n", xMinStart,xMaxStart,yMinStart,yMaxStart,xMinEnd,xMaxEnd,yMinEnd,yMaxEnd));
+
         //for fixed Y
-        if(fabs(startPoint.y-endPoint.y)<4*radius)
+        if( (yMinStart > yMinEnd && yMinStart < yMaxEnd) || (yMaxStart > yMinEnd && yMaxStart < yMaxEnd) )
         {
             difference = 0;
             while(PointDistance(startCenter, endCenter) > 2*radius)
@@ -279,7 +291,42 @@ void ComputeOptimalPlaceMacro()
             LUpi_LogMessage(LFormat("\nWITH FIXED Y:\n\tOptimal X distance (from start to end): %lf\n\tOptimal X start point (with fixed end): %lf\n\tOptimal X end point (with fixed start): %lf\n", LFile_IntUtoMicrons(pFile, endPoint.x-startPoint.x+difference), LFile_IntUtoMicrons(pFile, startPoint.x-difference), LFile_IntUtoMicrons(pFile, endPoint.x+difference) ));
         }
         else
-            LUpi_LogMessage("ERROR: Impossible to find an optimal position because the distance between the start and end points in greater than 4*radius\n");
+            LUpi_LogMessage("\nERROR: Impossible to find an optimal position with Y fixed\n");
+    
+        //for fixed x
+        if( (xMinStart > xMinEnd && xMinStart < xMaxEnd) || (xMaxStart > xMinEnd && xMaxStart < xMaxEnd) )
+        {
+            difference = 0;
+            while(PointDistance(startCenter, endCenter) > 2*radius)
+            {
+                if(startCenter.y < endCenter.y)
+                {
+                    endCenter.y = endCenter.y-1;
+                    difference = difference-1;
+                }
+                else
+                {
+                    endCenter.y = endCenter.y+1;
+                    difference = difference+1;
+                }
+            }
+            while(PointDistance(startCenter, endCenter) < 2*radius)
+            {
+                if(startCenter.y < endCenter.y)
+                {
+                    endCenter.y = endCenter.y+1;
+                    difference = difference+1;
+                }
+                else
+                {
+                    endCenter.y = endCenter.y-1;
+                    difference = difference-1;
+                }
+            }
+            LUpi_LogMessage(LFormat("WITH FIXED X:\n\tOptimal Y distance (from start to end): %lf\n\tOptimal Y start point (with fixed end): %lf\n\tOptimal Y end point (with fixed start): %lf\n", LFile_IntUtoMicrons(pFile, endPoint.y-startPoint.y+difference), LFile_IntUtoMicrons(pFile, startPoint.y-difference), LFile_IntUtoMicrons(pFile, endPoint.y+difference) ));
+        }
+        else
+            LUpi_LogMessage("\nERROR: Impossible to find an optimal position with X fixed\n");
     }
 /*
     else if(endAngle == startAngle-90 || endAngle == startAngle+90) //90 degres angle; target: only a quarter of circle
