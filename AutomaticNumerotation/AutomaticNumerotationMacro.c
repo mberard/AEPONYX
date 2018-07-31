@@ -17,6 +17,7 @@ void AutomaticNumerotationMacro()
     LLayer pLayer;
 
     LLayer oxideLayer;
+    LLayer facetLayer;
   
     char strNameWanted[MAX_TDBFILE_NAME];
     char strName[MAX_TDBFILE_NAME];
@@ -29,17 +30,20 @@ void AutomaticNumerotationMacro()
 
     LDialogItem DialogItems1[2] = {{ "X (in microns)","100"}, { "Y (in microns)","100"}};
     LDialogItem DialogItems2[2] = {{ "Number of column","1"}, { "Number of line","1"}};
+    LDialogItem DialogItems3[2] = {{ "Oxide fillet in microns (0 for no oxide)","2.5"}, { "Facet fillet in microns (0 for no facet)","2.5"}};
 
     double tmp1, tmp2;
     LCoord delta_x, delta_y;
     int nbLine, nbCol;
     LCoord textSize = 0;
 
-    int oxideChoice = 0;
+    LCoord oxideFilletValue = 0;
+    LCoord facetFilletValue = 0;
     LRect rectMBB;
     LPoint point_arr[10];
     int nbPoints = 0;
     LObject oxidePolygon;
+    LObject facetPolygon;
     LVertex vertex;
 
     int cpt;
@@ -166,6 +170,7 @@ void AutomaticNumerotationMacro()
     else
         return;
 
+/*
     if ( LDialog_YesNoBox("Do you want to add oxide ?") )
     {
         oxideChoice = 1;
@@ -177,6 +182,34 @@ void AutomaticNumerotationMacro()
     }
     else
         oxideChoice = 0;
+*/
+    if(LDialog_MultiLineInputBox("Oxide and facet",DialogItems3,2))
+    {
+
+        tmp1 = atoi(DialogItems3[0].value);
+        tmp2 = atoi(DialogItems3[1].value);
+        oxideFilletValue = LFile_MicronsToIntU(pFile, tmp1);
+        facetFilletValue = LFile_MicronsToIntU(pFile, tmp2);
+    }
+    else
+        return;
+
+    if(oxideFilletValue != 0)
+    {
+        strcpy(strName, "OX"); //preloaded text in the dialog box
+        if ( LDialog_InputBox("Oxide layer", "Enter the name of the oxide layer", strName) == 0)
+            return;
+        else
+            oxideLayer = LLayer_Find(pFile, strName);
+    }
+    if(facetFilletValue != 0)
+    {
+        strcpy(strName, "FACET"); //preloaded text in the dialog box
+        if ( LDialog_InputBox("Oxide layer", "Enter the name of the oxide layer", strName) == 0)
+            return;
+        else
+            facetLayer = LLayer_Find(pFile, strName);
+    }
 
     if( ! (LCell_Find(pFile, "AutomaticNumerotation"))) //if not exist
         bigCell = LCell_New(pFile, "AutomaticNumerotation"); //create
@@ -232,31 +265,60 @@ void AutomaticNumerotationMacro()
                                 "",
                                 NULL );
 
-            if(oxideChoice == 1)
+            if(oxideFilletValue != 0)
             {
                 long rectShift = LFile_MicronsToIntU(pFile, 5);
                 rectMBB = LCell_GetMbb( smallCell );
-                point_arr[0] = LPoint_Set( rectMBB.x0-rectShift/2.0 , rectMBB.y0-rectShift );
-                point_arr[1] = LPoint_Set( rectMBB.x1+rectShift/2.0 , rectMBB.y0-rectShift );
-                point_arr[2] = LPoint_Set( rectMBB.x1+rectShift , rectMBB.y0-rectShift/2.0 );
-                point_arr[3] = LPoint_Set( rectMBB.x1+rectShift , rectMBB.y1+rectShift/2.0 );
-                point_arr[4] = LPoint_Set( rectMBB.x1+rectShift/2.0 , rectMBB.y1+rectShift );
-                point_arr[5] = LPoint_Set( rectMBB.x0-rectShift/2.0 , rectMBB.y1+rectShift );
-                point_arr[6] = LPoint_Set( rectMBB.x0-rectShift , rectMBB.y1+rectShift/2.0 );
-                point_arr[7] = LPoint_Set( rectMBB.x0-rectShift , rectMBB.y0-rectShift/2.0 );
+                point_arr[0] = LPoint_Set( rectMBB.x0-rectShift+oxideFilletValue , rectMBB.y0-rectShift );
+                point_arr[1] = LPoint_Set( rectMBB.x1+rectShift-oxideFilletValue , rectMBB.y0-rectShift );
+                point_arr[2] = LPoint_Set( rectMBB.x1+rectShift , rectMBB.y0-rectShift+oxideFilletValue );
+                point_arr[3] = LPoint_Set( rectMBB.x1+rectShift , rectMBB.y1+rectShift-oxideFilletValue );
+                point_arr[4] = LPoint_Set( rectMBB.x1+rectShift-oxideFilletValue , rectMBB.y1+rectShift );
+                point_arr[5] = LPoint_Set( rectMBB.x0-rectShift+oxideFilletValue , rectMBB.y1+rectShift );
+                point_arr[6] = LPoint_Set( rectMBB.x0-rectShift , rectMBB.y1+rectShift-oxideFilletValue );
+                point_arr[7] = LPoint_Set( rectMBB.x0-rectShift , rectMBB.y0-rectShift+oxideFilletValue );
                 nbPoints = 8;
                 oxidePolygon = LPolygon_New(smallCell, oxideLayer, point_arr, nbPoints);
                 vertex = LObject_GetVertexList(oxidePolygon);
 				for(cpt=0; cpt<nbPoints; cpt++) //for each vertex
 				{
 					if(cpt == 1)
-                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x1+rectShift/2.0 , rectMBB.y0-rectShift/2.0 ), CCW );
+                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x1+rectShift-oxideFilletValue , rectMBB.y0-rectShift+oxideFilletValue ), CCW );
                     else if(cpt == 3)
-                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x1+rectShift/2.0 , rectMBB.y1+rectShift/2.0 ), CCW );
+                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x1+rectShift-oxideFilletValue , rectMBB.y1+rectShift-oxideFilletValue ), CCW );
                     else if(cpt == 5)
-                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x0-rectShift/2.0 , rectMBB.y1+rectShift/2.0 ), CCW );
+                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x0-rectShift+oxideFilletValue , rectMBB.y1+rectShift-oxideFilletValue ), CCW );
                     else if(cpt == 7)
-                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x0-rectShift/2.0 , rectMBB.y0-rectShift/2.0 ), CCW );
+                        LVertex_AddCurve( oxidePolygon, vertex, LPoint_Set( rectMBB.x0-rectShift+oxideFilletValue , rectMBB.y0-rectShift+oxideFilletValue ), CCW );
+					vertex = LVertex_GetNext(vertex);
+				}
+            }
+
+            if(facetFilletValue != 0)
+            {
+                long rectShift = LFile_MicronsToIntU(pFile, 15);
+                rectMBB = LCell_GetMbb( smallCell );
+                point_arr[0] = LPoint_Set( rectMBB.x0-rectShift+facetFilletValue , rectMBB.y0-rectShift );
+                point_arr[1] = LPoint_Set( rectMBB.x1+rectShift-facetFilletValue , rectMBB.y0-rectShift );
+                point_arr[2] = LPoint_Set( rectMBB.x1+rectShift , rectMBB.y0-rectShift+facetFilletValue );
+                point_arr[3] = LPoint_Set( rectMBB.x1+rectShift , rectMBB.y1+rectShift-facetFilletValue );
+                point_arr[4] = LPoint_Set( rectMBB.x1+rectShift-facetFilletValue , rectMBB.y1+rectShift );
+                point_arr[5] = LPoint_Set( rectMBB.x0-rectShift+facetFilletValue , rectMBB.y1+rectShift );
+                point_arr[6] = LPoint_Set( rectMBB.x0-rectShift , rectMBB.y1+rectShift-facetFilletValue );
+                point_arr[7] = LPoint_Set( rectMBB.x0-rectShift , rectMBB.y0-rectShift+facetFilletValue );
+                nbPoints = 8;
+                facetPolygon = LPolygon_New(smallCell, facetLayer, point_arr, nbPoints);
+                vertex = LObject_GetVertexList(facetPolygon);
+				for(cpt=0; cpt<nbPoints; cpt++) //for each vertex
+				{
+					if(cpt == 1)
+                        LVertex_AddCurve( facetPolygon, vertex, LPoint_Set( rectMBB.x1+rectShift-facetFilletValue , rectMBB.y0-rectShift+facetFilletValue ), CCW );
+                    else if(cpt == 3)
+                        LVertex_AddCurve( facetPolygon, vertex, LPoint_Set( rectMBB.x1+rectShift-facetFilletValue , rectMBB.y1+rectShift-facetFilletValue ), CCW );
+                    else if(cpt == 5)
+                        LVertex_AddCurve( facetPolygon, vertex, LPoint_Set( rectMBB.x0-rectShift+facetFilletValue , rectMBB.y1+rectShift-facetFilletValue ), CCW );
+                    else if(cpt == 7)
+                        LVertex_AddCurve( facetPolygon, vertex, LPoint_Set( rectMBB.x0-rectShift+facetFilletValue , rectMBB.y0-rectShift+facetFilletValue ), CCW );
 					vertex = LVertex_GetNext(vertex);
 				}
             }

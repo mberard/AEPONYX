@@ -33,6 +33,7 @@ void AutomaticNumerotationEmptyNumberMacro()
     char strNameWanted[MAX_TDBFILE_NAME];
     char strName[MAX_TDBFILE_NAME];
     char strText[MAX_TDBFILE_NAME];
+    char str[MAX_TDBFILE_NAME];
     char buffer[10];
 
     int hasLabel = 0;
@@ -57,6 +58,10 @@ void AutomaticNumerotationEmptyNumberMacro()
     int numberObject = 0;
     LObject obj_arr_shrink[MAX_NUMBER_OBJECT];
     int numberObjectShrink = 0;
+
+    LCell newCell;
+    LTransform_Ex99 transformation;
+    LInstance instanceCreated;
 
     char *Pick_List [ ] = {
         "Create an automatic numerotation with empty digits",
@@ -224,7 +229,21 @@ void AutomaticNumerotationEmptyNumberMacro()
     {
         itoa(value, strText, 10);
 
-        LCell_MakeLogo( pCell,
+        //create a new cell
+        strcpy(strName, "AUTO_");
+        strcat(strName, strText);
+        strcat(strName, "_");
+        strcat(strName, LLayer_GetName( labelLayer, str, MAX_TDBFILE_NAME ));
+        newCell = LCell_Find(pFile, strName);
+        if(newCell == NULL)
+            newCell = LCell_New(pFile, strName);
+        else
+        {
+            LCell_Delete( newCell );
+            newCell = LCell_New(pFile, strName);
+        }
+
+        LCell_MakeLogo( newCell,
                         strText,
                         textSize,
                         tmp,
@@ -242,93 +261,97 @@ void AutomaticNumerotationEmptyNumberMacro()
                         NULL);
 
         numberObject = 0;
-        for(LObject obj = LObject_GetList(pCell, tmp) ; obj != NULL; obj = LObject_GetNext(obj) )
+        for(LObject obj = LObject_GetList(newCell, tmp) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
             obj_arr[numberObject] = obj;
             numberObject = numberObject + 1;
         }
         //shrink to a new layer
-        LCell_BooleanOperation(pCell, LBoolOp_SHRINK, shrinkValue, obj_arr, numberObject, NULL, 0, tmpShrink, LFALSE);
+        LCell_BooleanOperation(newCell, LBoolOp_SHRINK, shrinkValue, obj_arr, numberObject, NULL, 0, tmpShrink, LFALSE);
         //find all the shrink object
         numberObjectShrink = 0;
-        for(LObject obj = LObject_GetList(pCell, tmpShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
+        for(LObject obj = LObject_GetList(newCell, tmpShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
             obj_arr_shrink[numberObjectShrink] = obj;
             numberObjectShrink = numberObjectShrink + 1;
         }
-        //made the XOR to the good layer
-        LCell_BooleanOperation(pCell, LBoolOp_XOR, 0, obj_arr, numberObject, obj_arr_shrink, numberObjectShrink, labelLayer, LTRUE);
-        //group all the new objects
-        LSelection_DeselectAll();
-        for(LObject obj = LObject_GetList(pCell, labelLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
+        //made the XOR to the good layer in the new cell
+        LCell_BooleanOperation(newCell, LBoolOp_XOR, 0, obj_arr, numberObject, obj_arr_shrink, numberObjectShrink, labelLayer, LTRUE);
+        //create an instance in the previous cell
+        transformation.translation.x = 0; //already on the good place in the newCell
+        transformation.translation.y = 0;
+        transformation.orientation = 0.0;
+        transformation.magnification.num = 1;
+        transformation.magnification.denom = 1;
+        instanceCreated = LInstance_GenerateV(pCell, newCell, NULL);
+        if(LInstance_Set_Ex99(newCell, instanceCreated, transformation, LPoint_Set(1, 1), LPoint_Set(1, 1)) == LStatusOK)
         {
-            LSelection_AddObject( obj );
+            LInstance_SetName( newCell, instanceCreated, strName );
         }
-        if(LSelection_GetList() != NULL)
-        {
-            strcpy(strName, "AUTO_");
-            strcat(strName, strText);
-            strcpy(strText, strName);
-            strcat(strText, "_");
-            strcat(strText, LLayer_GetName( labelLayer, strName, MAX_TDBFILE_NAME ));
-            result = LSelection_Group(strText);
-            LUpi_LogMessage(LFormat("Group %s result: %d\n", strText, result ));
-        }
-
         value = value + increment;
         cpt= cpt + 1;
     }
     //generate the last value = stopNumber
-    itoa(value, strText, 10);
-    LCell_MakeLogo( pCell,
-                    strText,
-                    textSize,
-                    tmp,
-                    LFALSE,
-                    LFALSE,
-                    LFALSE,
-                    ref_x,
-                    (LCoord)(textSize/2 - textSize*0.1538 + ref_y + cpt * delta),
-                    LFALSE,
-                    LTRUE,
-                    LFALSE,
-                    "",
-                    "",
-                    "",
-                    NULL );
 
-    numberObject = 0;
-    for(LObject obj = LObject_GetList(pCell, tmp) ; obj != NULL; obj = LObject_GetNext(obj) )
+    itoa(value, strText, 10);
+    //create a new cell
+    strcpy(strName, "AUTO_");
+    strcat(strName, strText);
+    strcat(strName, "_");
+    strcat(strName, LLayer_GetName( labelLayer, str, MAX_TDBFILE_NAME ));
+    newCell = LCell_Find(pFile, strName);
+    if(newCell == NULL)
+        newCell = LCell_New(pFile, strName);
+    else
     {
-        obj_arr[numberObject] = obj;
-        numberObject = numberObject + 1;
+        LCell_Delete( newCell );
+        newCell = LCell_New(pFile, strName);
     }
-    //shrink to a new layer
-    LCell_BooleanOperation(pCell, LBoolOp_SHRINK, shrinkValue, obj_arr, numberObject, NULL, 0, tmpShrink, LFALSE);
-    //find all the shrink object
-    numberObjectShrink = 0;
-    for(LObject obj = LObject_GetList(pCell, tmpShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
+
+    LCell_MakeLogo( newCell,
+                        strText,
+                        textSize,
+                        tmp,
+                        LFALSE,
+                        LFALSE,
+                        LFALSE,
+                        ref_x,
+                        (LCoord)(textSize/2 - textSize*0.1538 + ref_y + cpt * delta),
+                        LFALSE,
+                        LTRUE,
+                        LFALSE,
+                        "",
+                        "",
+                        "",
+                        NULL);
+
+        numberObject = 0;
+        for(LObject obj = LObject_GetList(newCell, tmp) ; obj != NULL; obj = LObject_GetNext(obj) )
+        {
+            obj_arr[numberObject] = obj;
+            numberObject = numberObject + 1;
+        }
+        //shrink to a new layer
+        LCell_BooleanOperation(newCell, LBoolOp_SHRINK, shrinkValue, obj_arr, numberObject, NULL, 0, tmpShrink, LFALSE);
+        //find all the shrink object
+        numberObjectShrink = 0;
+        for(LObject obj = LObject_GetList(newCell, tmpShrink) ; obj != NULL; obj = LObject_GetNext(obj) )
+        {
+            obj_arr_shrink[numberObjectShrink] = obj;
+            numberObjectShrink = numberObjectShrink + 1;
+        }
+        //made the XOR to the good layer in the new cell
+        LCell_BooleanOperation(newCell, LBoolOp_XOR, 0, obj_arr, numberObject, obj_arr_shrink, numberObjectShrink, labelLayer, LTRUE);
+    //create an instance in the previous cell
+    transformation.translation.x = 0;
+    transformation.translation.y = 0;
+    transformation.orientation = 0.0;
+    transformation.magnification.num = 1;
+    transformation.magnification.denom = 1;
+    instanceCreated = LInstance_GenerateV(pCell, newCell, NULL);
+    if(LInstance_Set_Ex99(newCell, instanceCreated, transformation, LPoint_Set(1, 1), LPoint_Set(1, 1)) == LStatusOK)
     {
-        obj_arr_shrink[numberObjectShrink] = obj;
-        numberObjectShrink = numberObjectShrink + 1;
-    }
-    //made the XOR to the good layer
-    LCell_BooleanOperation(pCell, LBoolOp_XOR, 0, obj_arr, numberObject, obj_arr_shrink, numberObjectShrink, labelLayer, LTRUE);
-    //group all the new objects
-    LSelection_DeselectAll();
-    for(LObject obj = LObject_GetList(pCell, labelLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
-    {
-        LSelection_AddObject( obj );
-    }
-    if(LSelection_GetList() != NULL)
-    {
-        strcpy(strName, "AUTO_");
-        strcat(strName, strText);
-        strcpy(strText, strName);
-        strcat(strText, "_");
-        strcat(strText, LLayer_GetName( labelLayer, strName, 256 ));
-        result = LSelection_Group(strText);
-        LUpi_LogMessage(LFormat("Group %s result: %d\n", strText, result ));
+        LInstance_SetName( newCell, instanceCreated, strName );
     }
 
 
