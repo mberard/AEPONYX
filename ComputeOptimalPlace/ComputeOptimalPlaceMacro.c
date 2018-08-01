@@ -358,8 +358,6 @@ void ComputeOptimalPlaceMacro()
         }
         LUpi_LogMessage(LFormat("\nOptimal end point (with fixed start point): x: %lf\ty: %lf\nOptimal start point (with fixed end point): x: %lf\ty: %lf\n",LFile_IntUtoMicrons(pFile, endPoint.x-(endCenter.x-startCenter.x)),LFile_IntUtoMicrons(pFile, endPoint.y-(endCenter.y-startCenter.y)),LFile_IntUtoMicrons(pFile, startPoint.x+(endCenter.x-startCenter.x)),LFile_IntUtoMicrons(pFile, startPoint.y+(endCenter.y-startCenter.y)) ));
     }
-
-
 }
 
 int UPI_Entry_Point(void)
