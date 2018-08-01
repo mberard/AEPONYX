@@ -188,7 +188,6 @@ void AATorusFilletWithoutDeformation(void)
     LLayer tmpLayer;
     LLayer tmpLayerGrow;
 
-    char strName[MAX_LAYER_NAME];
     char strLayer[MAX_LAYER_NAME];
 
     LPoint original_point_arr[MAX_POLYGON_SIZE];
@@ -197,7 +196,10 @@ void AATorusFilletWithoutDeformation(void)
     long numberVertex = 0;
 
     LPoint points_from_grow[MAX_POLYGON_SIZE];
-    long numberPointsFromeGrow = 0;
+    int numberPointsFromeGrow = 0;
+    LPoint points_already_used[MAX_POLYGON_SIZE];
+    int numberPointsAlreadyUsed = 0;
+    int isAlreadyUsed = 0;
 
     LCoord prevX = 0;
     LCoord prevY = 0;
@@ -251,11 +253,7 @@ void AATorusFilletWithoutDeformation(void)
             fillet = LFile_MicronsToIntU(pFile,atof(strFillet));
         LUpi_LogMessage(LFormat("fillet: %lf\n", fillet));
 
-        LLayer_GetName( LObject_GetLayer( pCell, LSelection_GetObject( LSelection_GetList() ) ), strName, MAX_LAYER_NAME );
-        if(strName)
-            strcpy(strLayer, strName); //preloaded text in the dialog box
-        else
-            strcpy(strLayer, "OX"); //preloaded text in the dialog box
+        strcpy(strLayer, "OX"); //preloaded text in the dialog box
 		if ( LDialog_InputBox("Layer", "Enter name of the layer in which the polygon will be loaded", strLayer) == 0)
 			return;
 		else
@@ -434,6 +432,8 @@ void AATorusFilletWithoutDeformation(void)
                             }
                         }
                     }
+                    points_already_used[numberPointsAlreadyUsed] = savedPoint;
+                    numberPointsAlreadyUsed = numberPointsAlreadyUsed + 1;
                     center = savedPoint;
                     
                     center = FindTangentFromCenter(i, original_point_arr, originalNumberVertex, fillet, center, &rightAngle, &leftAngle);
@@ -482,7 +482,67 @@ void AATorusFilletWithoutDeformation(void)
 
                     LDisplay_Refresh();
                 }
-                LUpi_LogMessage("Test the next point\n");
+                if(i!=originalNumberVertex-1)
+                    LUpi_LogMessage("Test the next point\n");
+            }
+        }
+    }
+
+    if(onlyWithLabel != 1)
+    {
+        LUpi_LogMessage("\n\nTest the last points\n");
+        for(i=0; i<numberPointsFromeGrow; i++)
+        {
+            isAlreadyUsed = 0;
+            for(j=0; j<numberPointsAlreadyUsed; j++)
+            {
+                if(points_from_grow[i].x == points_already_used[j].x && points_from_grow[i].y == points_already_used[j].y)
+                    isAlreadyUsed = 1;
+            }
+            if(isAlreadyUsed == 0)
+            {
+                LUpi_LogMessage("traitement \n");
+                LPoint prev, next, current;
+                for(LObject obj = LObject_GetList(pCell, tmpLayerGrow) ; obj != NULL; obj = LObject_GetNext(obj) )
+                {
+                    originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
+
+                    for(j=0; j<originalNumberVertex; j++) //store the current, previous and next point
+                    {
+                        current = original_point_arr[j];
+                        if(current.x == points_from_grow[i].x && current.y == points_from_grow[i].y)
+                        {
+                            if(j == 0)
+                                prev = original_point_arr[originalNumberVertex-1];
+                            else
+                                prev = original_point_arr[j-1];
+                            if(j == originalNumberVertex-1)
+                                next = original_point_arr[0];
+                            else
+                                next = original_point_arr[j+1];
+
+                            leftAngle = (atan2(prev.y-current.y,prev.x-current.x) - M_PI/2.0)*180/M_PI;
+                            while(leftAngle < 0)
+                                leftAngle = leftAngle + 360;
+                            while(leftAngle > 360)
+                                leftAngle = leftAngle - 360;
+
+                            rightAngle = (atan2(next.y-current.y,next.x-current.x) + M_PI/2.0)*180/M_PI;
+                            while(rightAngle < 0)
+                                rightAngle = rightAngle + 360;
+                            while(rightAngle > 360)
+                                rightAngle = rightAngle - 360;
+
+                            tParams.ptCenter = points_from_grow[i];
+                            tParams.nInnerRadius = fillet;
+                            tParams.nOuterRadius = fillet*2;
+                            tParams.dStartAngle = rightAngle;
+                            tParams.dStopAngle = leftAngle;
+
+                            LTorus_CreateNew( pCell, pLayer, &tParams );
+                        }
+                    }
+                }
             }
         }
     }
