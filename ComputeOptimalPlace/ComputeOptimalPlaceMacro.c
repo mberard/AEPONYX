@@ -330,7 +330,7 @@ void ComputeOptimalPlaceMacro()
                     difference = difference-1;
                 }
             }
-            LUpi_LogMessage(LFormat("WITH FIXED X:\n\tOptimal Y distance (from start to end): %lf\n\tOptimal Y start point (with fixed end): %lf\n\tOptimal Y end point (with fixed start): %lf\n", LFile_IntUtoMicrons(pFile, endPoint.y-startPoint.y+difference), LFile_IntUtoMicrons(pFile, startPoint.y-difference), LFile_IntUtoMicrons(pFile, endPoint.y+difference) ));
+            LUpi_LogMessage(LFormat("\nWITH FIXED X:\n\tOptimal Y distance (from start to end): %lf\n\tOptimal Y start point (with fixed end): %lf\n\tOptimal Y end point (with fixed start): %lf\n", LFile_IntUtoMicrons(pFile, endPoint.y-startPoint.y+difference), LFile_IntUtoMicrons(pFile, startPoint.y-difference), LFile_IntUtoMicrons(pFile, endPoint.y+difference) ));
         }
         else
             LUpi_LogMessage("\nERROR: Impossible to find an optimal position with X fixed\n");
@@ -338,11 +338,11 @@ void ComputeOptimalPlaceMacro()
 
     else if(endAngle == startAngle-90) //90 degres angle; target: only a quarter of circle
     {
-        LUpi_LogMessage(LFormat("Optimal end point (with fixed start point): x: %lf\ty: %lf\nOptimal start point (with fixed end point): x: %lf\ty: %lf\n",LFile_IntUtoMicrons(pFile, startPoint.x+sqrt(2)*radius*cos((startAngle-45)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, startPoint.y+sqrt(2)*radius*sin((startAngle-45)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, endPoint.x+sqrt(2)*radius*cos((endAngle-135)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, endPoint.y+sqrt(2)*radius*sin((endAngle-135)*M_PI/180.0)) ));
+        LUpi_LogMessage(LFormat("\nOptimal end point (with fixed start point): x: %lf\ty: %lf\nOptimal start point (with fixed end point): x: %lf\ty: %lf\n",LFile_IntUtoMicrons(pFile, startPoint.x+sqrt(2)*radius*cos((startAngle-45)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, startPoint.y+sqrt(2)*radius*sin((startAngle-45)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, endPoint.x+sqrt(2)*radius*cos((endAngle-135)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, endPoint.y+sqrt(2)*radius*sin((endAngle-135)*M_PI/180.0)) ));
     }
     else if(endAngle == startAngle+90) //90 degres angle; target: only a quarter of circle
     {
-        LUpi_LogMessage(LFormat("Optimal end point (with fixed start point): x: %lf\ty: %lf\nOptimal start point (with fixed end point): x: %lf\ty: %lf\n",LFile_IntUtoMicrons(pFile, startPoint.x+sqrt(2)*radius*cos((startAngle+45)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, startPoint.y+sqrt(2)*radius*sin((startAngle+45)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, endPoint.x+sqrt(2)*radius*cos((endAngle+135)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, endPoint.y+sqrt(2)*radius*sin((endAngle+135)*M_PI/180.0)) ));
+        LUpi_LogMessage(LFormat("\nOptimal end point (with fixed start point): x: %lf\ty: %lf\nOptimal start point (with fixed end point): x: %lf\ty: %lf\n",LFile_IntUtoMicrons(pFile, startPoint.x+sqrt(2)*radius*cos((startAngle+45)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, startPoint.y+sqrt(2)*radius*sin((startAngle+45)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, endPoint.x+sqrt(2)*radius*cos((endAngle+135)*M_PI/180.0)),LFile_IntUtoMicrons(pFile, endPoint.y+sqrt(2)*radius*sin((endAngle+135)*M_PI/180.0)) ));
     }
 /*
     else //more than 90 degres difference; target: RSR or LSL
