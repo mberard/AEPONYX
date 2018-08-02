@@ -908,7 +908,8 @@ void DubinsPath::RasterizePath()
             ptCenter = startTorusParams.ptCenter;
             nRadius = startTorusParams.nInnerRadius;
             this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+            this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
         }
         else
         {
@@ -920,7 +921,8 @@ void DubinsPath::RasterizePath()
         {
             ptCenter = startTorusParams.ptCenter;
             nRadius = startTorusParams.nOuterRadius;
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+            this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
             this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
         }
         else
@@ -934,6 +936,7 @@ void DubinsPath::RasterizePath()
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nInnerRadius;
             this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
             this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
         }
         else
@@ -947,7 +950,8 @@ void DubinsPath::RasterizePath()
         {
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nOuterRadius;
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+            this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
             this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
         }
         else
@@ -988,7 +992,8 @@ void DubinsPath::RasterizePath()
         {
             ptCenter = startTorusParams.ptCenter;
             nRadius = startTorusParams.nInnerRadius;
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+            this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
             this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
         }
         else
@@ -1003,7 +1008,8 @@ void DubinsPath::RasterizePath()
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nOuterRadius;
             this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+            this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
         }
         else
         {
@@ -1016,7 +1022,8 @@ void DubinsPath::RasterizePath()
         {
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nInnerRadius;
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+            this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
             this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
         }
         else
@@ -1031,7 +1038,8 @@ void DubinsPath::RasterizePath()
             ptCenter = startTorusParams.ptCenter;
             nRadius = startTorusParams.nOuterRadius;
             this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+            this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
         }
         else
         {
@@ -1070,7 +1078,8 @@ void DubinsPath::RasterizePath()
         {
             ptCenter = startTorusParams.ptCenter;
             nRadius = startTorusParams.nInnerRadius;
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+            this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
             this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
         }
         else
@@ -1085,7 +1094,8 @@ void DubinsPath::RasterizePath()
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nInnerRadius;
             this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+            this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
         }
         else
         {
@@ -1098,7 +1108,8 @@ void DubinsPath::RasterizePath()
         {
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nOuterRadius;
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+            this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
             this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
         }
         else
@@ -1113,7 +1124,8 @@ void DubinsPath::RasterizePath()
             ptCenter = startTorusParams.ptCenter;
             nRadius = startTorusParams.nOuterRadius;
             this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+            this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
         }
         else
         {
@@ -1153,7 +1165,8 @@ void DubinsPath::RasterizePath()
             ptCenter = startTorusParams.ptCenter;
             nRadius = startTorusParams.nInnerRadius;
             this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+            this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
         }
         else
         {
@@ -1166,7 +1179,8 @@ void DubinsPath::RasterizePath()
         {
             ptCenter = startTorusParams.ptCenter;
             nRadius = startTorusParams.nOuterRadius;
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+            this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
             this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
         }
         else
@@ -1181,7 +1195,8 @@ void DubinsPath::RasterizePath()
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nOuterRadius;
             this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+            this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
         }
         else
         {
@@ -1194,7 +1209,8 @@ void DubinsPath::RasterizePath()
         {
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nInnerRadius;
-            this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+            //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+            this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
             this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
         }
         else
@@ -1227,32 +1243,38 @@ void DubinsPath::RasterizePath()
         //small radius, start torus
         ptCenter = startTorusParams.ptCenter;
 		nRadius = startTorusParams.nInnerRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
 
         //long radius, middle torus
         ptCenter = middleTorusParams.ptCenter;
 		nRadius = middleTorusParams.nOuterRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
+        this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
 
         //small radius, end torus
         ptCenter = endTorusParams.ptCenter;
 		nRadius = endTorusParams.nInnerRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
 
         //long radius, end torus
         ptCenter = endTorusParams.ptCenter;
 		nRadius = endTorusParams.nOuterRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
 
         //small radius, middle torus
         ptCenter = middleTorusParams.ptCenter;
 		nRadius = middleTorusParams.nInnerRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
+        this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
 
         //long radius, start torus
         ptCenter = startTorusParams.ptCenter;
 		nRadius = startTorusParams.nOuterRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
 
         LUpi_LogMessage( "LRL path\n" );
     }
@@ -1278,32 +1300,38 @@ void DubinsPath::RasterizePath()
         //small radius, start torus
         ptCenter = startTorusParams.ptCenter;
 		nRadius = startTorusParams.nInnerRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
 
         //long radius, middle torus
         ptCenter = middleTorusParams.ptCenter;
 		nRadius = middleTorusParams.nOuterRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
+        this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
 
         //small radius, end torus
         ptCenter = endTorusParams.ptCenter;
 		nRadius = endTorusParams.nInnerRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
 
         //long radius, end torus
         ptCenter = endTorusParams.ptCenter;
 		nRadius = endTorusParams.nOuterRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
+        this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
 
         //small radius, middle torus
         ptCenter = middleTorusParams.ptCenter;
 		nRadius = middleTorusParams.nInnerRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
+        this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
 
         //long radius, start torus
         ptCenter = startTorusParams.ptCenter;
 		nRadius = startTorusParams.nOuterRadius;
-        this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+        //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
+        this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
 
         LUpi_LogMessage( "RLR path\n" );
     }
