@@ -40,8 +40,12 @@ void EulerCurvesMacro()
     double startAngle = 0;
     double endAngle = 90;
 
+    double radius = PointDistance(startPoint, center);
     double diffAngle = (endAngle - startAngle)*M_PI/180.0;
-    double delta;
+    double currentAngle;
+    double dx = endPoint.x - startPoint.x;
+    double dy = endPoint.y - startPoint.y;
+    double delta = 0;
 
     LPoint curve_arr[MAX_POLYGON_SIZE];
     int numberPointsCurveArr = 0;
@@ -50,20 +54,32 @@ void EulerCurvesMacro()
     LGrid_v16_30 grid;
 	LFile_GetGrid_v16_30( pFile, &grid );
 
-    dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / PointDistance(startPoint, center) / 20);
+    dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 20);
     
     startAngle = startAngle*M_PI/180.0 - M_PI/2.0;
     endAngle = endAngle*M_PI/180.0 - M_PI/2.0;
 
     curve_arr[numberPointsCurveArr] = startPoint;
     numberPointsCurveArr = numberPointsCurveArr + 1;
+
     for (double dTheta = startAngle; dTheta < endAngle; dTheta += dThetaStep )
     {
-LUpi_LogMessage(LFormat("Dans le for %lf\n", dTheta));
-        delta = (fabs(-diffAngle/2.0 - dTheta) - diffAngle/2.0)*(-2.0)/diffAngle;
-        curve_arr[numberPointsCurveArr] = LPoint_Set( center.x + PointDistance(startPoint, center)*cos(dTheta) + delta*cos(dTheta)*50000*sin(dTheta/2.0) , center.y + PointDistance(startPoint, center)*sin(dTheta) + delta*sin(dTheta)*50000*cos(dTheta/2.0) );
+        delta = fabs(fabs(dTheta-startAngle - diffAngle/2.0) - diffAngle/2.0)*radius/3.0;
+        curve_arr[numberPointsCurveArr] = LPoint_Set( center.x + (radius+delta)*cos(dTheta) , center.y + (radius+delta)*sin(dTheta) );
         numberPointsCurveArr = numberPointsCurveArr + 1;
     }
+/*
+    for(delta = 0; delta < 1; delta = delta + 0.0005)
+    {
+        center.x = startPoint.x + delta * dx;
+        center.y = startPoint.y + delta * dy;
+        currentAngle = startAngle + delta * diffAngle;
+
+        curve_arr[numberPointsCurveArr] = LPoint_Set( center.x + (1-delta)*cos(currentAngle)*PointDistance(center, startPoint) + delta*cos(currentAngle)*PointDistance(center, endPoint) , center.y + (1-delta)*sin(currentAngle)*PointDistance(center, startPoint) + delta*sin(currentAngle)*PointDistance(center, endPoint) );
+        numberPointsCurveArr = numberPointsCurveArr + 1;
+    }
+*/
+
     curve_arr[numberPointsCurveArr] = endPoint;
     numberPointsCurveArr = numberPointsCurveArr + 1;
 LUpi_LogMessage(LFormat("Affichage polygone\n"));
