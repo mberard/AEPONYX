@@ -34,6 +34,8 @@ void EulerCurvesMacro()
 	LFile	pFile	=	LCell_GetFile(pCell);
     LLayer pLayer = LLayer_Find(pFile, "WGUIDE");
 
+LUpi_LogMessage(LFormat("\n\n\n\n\n"));
+
     LPoint startPoint = LPoint_Set(0,0);
     LPoint endPoint = LPoint_Set(200000,200000);
     LPoint center = LPoint_Set(0,200000);
@@ -45,10 +47,16 @@ void EulerCurvesMacro()
     double currentAngle;
     double dx = endPoint.x - startPoint.x;
     double dy = endPoint.y - startPoint.y;
-    double delta = 0;
+    double delta = 10000;
+
+    LPoint movedCenter = center;
+    double halfDiffAngle;
+    halfDiffAngle = diffAngle/2.0 - M_PI/2.0;
 
     LPoint curve_arr[MAX_POLYGON_SIZE];
     int numberPointsCurveArr = 0;
+
+    double coef;
 
     double dThetaStep = 0;
     LGrid_v16_30 grid;
@@ -64,8 +72,16 @@ void EulerCurvesMacro()
 
     for (double dTheta = startAngle; dTheta < endAngle; dTheta += dThetaStep )
     {
-        delta = fabs(fabs(dTheta-startAngle - diffAngle/2.0) - diffAngle/2.0)*radius/3.0;
-        curve_arr[numberPointsCurveArr] = LPoint_Set( center.x + (radius+delta)*cos(dTheta) , center.y + (radius+delta)*sin(dTheta) );
+        movedCenter.x = center.x + radius*cos(dTheta);
+        movedCenter.y = center.y + radius*sin(dTheta);
+//LCircle_New(pCell, LLayer_Find(pFile, "CIRCLE"), movedCenter, 100);
+        coef = 2*M_PI*(dTheta-startAngle)/(endAngle-startAngle);
+        coef = fabs(cos(coef)-1);
+
+LUpi_LogMessage(LFormat("%lf\n", exp(coef)-1 ));
+        //delta = fabs(fabs(dTheta-startAngle - diffAngle/2.0) - diffAngle/2.0)*radius/3.0;
+        //curve_arr[numberPointsCurveArr] = LPoint_Set( center.x + (radius+delta)*cos(dTheta) , center.y + (radius+delta)*sin(dTheta) );
+        curve_arr[numberPointsCurveArr] = LPoint_Set( movedCenter.x + delta*coef*cos(dTheta) , movedCenter.y + delta*coef*sin(dTheta) );
         numberPointsCurveArr = numberPointsCurveArr + 1;
     }
 /*
