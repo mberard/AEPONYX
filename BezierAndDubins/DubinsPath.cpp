@@ -1352,7 +1352,7 @@ void DubinsPath::RasterizePath()
         savedLayer = this->layer;
         savedWidth = this->guideWidth;
         savedOxideSize = this->oxideSizeValue;
-        this->guideWidth = this->guideWidth + 2*this->oxideSizeValue;
+        this->guideWidth = this->oxideSizeValue;
         this->layer = this->oxideLayer;
         LObject_Delete( this->cell, this->torusStart );
         LObject_Delete( this->cell, this->torusEnd );
@@ -1382,7 +1382,7 @@ void DubinsPath::RasterizePath()
                 LDialog_AlertBox(LFormat("Path error"));
         }
         this->oxideSizeValue = 0;
-        this->RasterizePath();
+        //this->RasterizePath();
 
         this->guideWidth = savedWidth;
         this->layer = savedLayer;
@@ -1785,7 +1785,7 @@ void DubinsPath::DubinsPathWithBezierCurves()
         double savedGuideWidth = this->guideWidth;
         double savedOxideSize = this->oxideSizeValue;
         this->layer = this->oxideLayer;
-        this->guideWidth = this->guideWidth + 2*this->oxideSizeValue;
+        this->guideWidth = this->oxideSizeValue;
         this->oxideSizeValue = 0;
         this->DubinsPathWithBezierCurves();
 
