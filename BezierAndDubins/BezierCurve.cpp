@@ -190,7 +190,7 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
         double savedOxideSize = this->oxideSizeValue;
 
         this->layer = this->oxideLayer;
-        this->guideWidth = this->guideWidth + 2*this->oxideSizeValue;
+        this->guideWidth = this->oxideSizeValue;
         this->oxideSizeValue = 0;
 
         this->ComputeBezierCurve();
