@@ -15,6 +15,7 @@
 
 extern "C" {
     double PointDistance(LPoint, LPoint);
+    LPoint FindCenter(LPoint, LPoint, LPoint, LPoint);
     void EulerCurvesMacro(void);
 	int UPI_Entry_Point(void);
 }
@@ -28,6 +29,62 @@ double PointDistance(LPoint start, LPoint end)
     return dist;
 }
 
+LPoint FindCenter(LPoint left, double leftAngle , LPoint right, double rightAngle)
+{
+    LPoint perpendiculaireLeft, perpendiculaireRight, center;
+    perpendiculaireLeft = LPoint_Set(left.x + 1000*cos(leftAngle + M_PI/2.0), left.y + 1000*sin(leftAngle + M_PI/2.0));
+    perpendiculaireRight = LPoint_Set(right.x + 1000*cos(rightAngle + M_PI/2.0), right.y + 1000*sin(rightAngle + M_PI/2.0));
+
+LUpi_LogMessage(LFormat("perpLeft %ld %ld\nperpRight %ld %ld\n",perpendiculaireLeft.x,perpendiculaireLeft.y,perpendiculaireRight.x,perpendiculaireRight.y));
+
+    //source link: https://www.developpez.net/forums/d369370/applications/developpement-2d-3d-jeux/algo-intersection-2-segments/
+    double Ax = left.x;
+	double Ay = left.y;
+	double Bx = perpendiculaireLeft.x;
+	double By = perpendiculaireLeft.y;
+	double Cx = right.x;
+	double Cy = right.y;
+	double Dx = perpendiculaireRight.x;
+	double Dy = perpendiculaireRight.y;
+    double Sx;
+	double Sy;
+	if(Ax==Bx)
+	{
+		if(Cx==Dx)
+        {
+            return LPoint_Set( (Ax+Cx)/2.0 , (Ay+Cy)/2.0 );
+        }
+		else
+		{
+			double pCD = (Cy-Dy)/(Cx-Dx);
+			Sx = Ax;
+			Sy = pCD*(Ax-Cx)+Cy;
+		}
+	}
+	else
+	{
+		if(Cx==Dx)
+		{
+			double pAB = (Ay-By)/(Ax-Bx);
+			Sx = Cx;
+			Sy = pAB*(Cx-Ax)+Ay;
+		}
+		else
+		{
+			double pCD = (Cy-Dy)/(Cx-Dx);
+			double pAB = (Ay-By)/(Ax-Bx);
+			double oCD = Cy-pCD*Cx;
+			double oAB = Ay-pAB*Ax;
+			Sx = (oAB-oCD)/(pCD-pAB);
+			Sy = pCD*Sx+oCD;
+		}
+	}
+    center.x = (LCoord)Sx;
+    center.y = (LCoord)Sy;
+
+    return center;
+}
+
 void EulerCurvesMacro()
 {
     LCell	pCell	=	LCell_GetVisible();
@@ -37,24 +94,24 @@ void EulerCurvesMacro()
 LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
     LPoint startPoint = LPoint_Set(0,0);
-    LPoint endPoint = LPoint_Set(200000,200000);
-    LPoint center = LPoint_Set(0,200000);
-    //LPoint endPoint = LPoint_Set(0,200000);
-    //LPoint center = LPoint_Set(0,100000);
+    LPoint endPoint = LPoint_Set(0,200000);
+    //LPoint endPoint = LPoint_Set(200000,200000);
+    LPoint center;
     double startAngle = 0;
-    double endAngle = 90;
-    //double endAngle = 180;
+    double endAngle = 180;
 
+    startAngle = startAngle*M_PI/180.0;
+    endAngle = endAngle*M_PI/180.0;
+
+    center = FindCenter(startPoint , startAngle , endPoint , endAngle );
+LUpi_LogMessage(LFormat("center %ld  %ld\n", center.x, center.y));
     double radius = PointDistance(startPoint, center);
-    double diffAngle = (endAngle - startAngle)*M_PI/180.0;
-    double currentAngle;
-    double dx = endPoint.x - startPoint.x;
-    double dy = endPoint.y - startPoint.y;
+    //double diffAngle = (endAngle - startAngle)*M_PI/180.0;
     double delta = 12000;
 
     LPoint movedCenter = center;
-    double halfDiffAngle;
-    halfDiffAngle = diffAngle/2.0 - M_PI/2.0;
+    //double halfDiffAngle;
+    //halfDiffAngle = diffAngle/2.0 - M_PI/2.0;
 
     LPoint curve_arr[MAX_POLYGON_SIZE];
     int numberPointsCurveArr = 0;
@@ -67,8 +124,8 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
     dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 20);
     
-    startAngle = startAngle*M_PI/180.0 - M_PI/2.0;
-    endAngle = endAngle*M_PI/180.0 - M_PI/2.0;
+    startAngle = startAngle - M_PI/2.0;
+    endAngle = endAngle - M_PI/2.0;
 
     curve_arr[numberPointsCurveArr] = startPoint;
     numberPointsCurveArr = numberPointsCurveArr + 1;
@@ -77,27 +134,13 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
     {
         movedCenter.x = center.x + radius*cos(dTheta);
         movedCenter.y = center.y + radius*sin(dTheta);
-//LCircle_New(pCell, LLayer_Find(pFile, "CIRCLE"), movedCenter, 100);
+
         coef = 2*M_PI*(dTheta-startAngle)/(endAngle-startAngle);
         coef = fabs(cos(coef)-1);
 
-
-        //delta = fabs(fabs(dTheta-startAngle - diffAngle/2.0) - diffAngle/2.0)*radius/3.0;
-        //curve_arr[numberPointsCurveArr] = LPoint_Set( center.x + (radius+delta)*cos(dTheta) , center.y + (radius+delta)*sin(dTheta) );
         curve_arr[numberPointsCurveArr] = LPoint_Set( movedCenter.x + delta*coef*cos(dTheta) , movedCenter.y + delta*coef*sin(dTheta) );
         numberPointsCurveArr = numberPointsCurveArr + 1;
     }
-/*
-    for(delta = 0; delta < 1; delta = delta + 0.0005)
-    {
-        center.x = startPoint.x + delta * dx;
-        center.y = startPoint.y + delta * dy;
-        currentAngle = startAngle + delta * diffAngle;
-
-        curve_arr[numberPointsCurveArr] = LPoint_Set( center.x + (1-delta)*cos(currentAngle)*PointDistance(center, startPoint) + delta*cos(currentAngle)*PointDistance(center, endPoint) , center.y + (1-delta)*sin(currentAngle)*PointDistance(center, startPoint) + delta*sin(currentAngle)*PointDistance(center, endPoint) );
-        numberPointsCurveArr = numberPointsCurveArr + 1;
-    }
-*/
 
     curve_arr[numberPointsCurveArr] = endPoint;
     numberPointsCurveArr = numberPointsCurveArr + 1;
