@@ -92,24 +92,27 @@ void EulerCurvesMacro()
 LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
     LPoint startPoint = LPoint_Set(0,0);
-    LPoint endPoint = LPoint_Set(0,200000);
     //LPoint endPoint = LPoint_Set(200000,200000);
+    LPoint endPoint = LPoint_Set(0,200000);
     LPoint center;
-    double startAngle = 0;
-    double endAngle = 180;
+    double startAngle = 180;
+    //double endAngle = 90;
+    double endAngle = 0;
+    LArcDirection dir;
 
     startAngle = startAngle*M_PI/180.0;
     endAngle = endAngle*M_PI/180.0;
-
     center = FindCenter(startPoint , startAngle , endPoint , endAngle );
 
+    //find if the arc direction is CC or CCW
+    if()
+
     double radius = PointDistance(startPoint, center);
-    //double diffAngle = (endAngle - startAngle)*M_PI/180.0;
-    double delta = 12000;
+    double diffAngle = (endAngle - startAngle)*M_PI/180.0;
+    
+    double delta = 24000;
 
     LPoint movedCenter = center;
-    //double halfDiffAngle;
-    //halfDiffAngle = diffAngle/2.0 - M_PI/2.0;
 
     LPoint curve_arr[MAX_POLYGON_SIZE];
     int numberPointsCurveArr = 0;
@@ -128,16 +131,33 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
     curve_arr[numberPointsCurveArr] = startPoint;
     numberPointsCurveArr = numberPointsCurveArr + 1;
 
-    for (double dTheta = startAngle; dTheta < endAngle; dTheta += dThetaStep )
+    if(dir == CCW)
     {
-        movedCenter.x = center.x + radius*cos(dTheta);
-        movedCenter.y = center.y + radius*sin(dTheta);
+        for (double dTheta = startAngle; dTheta < endAngle; dTheta += dThetaStep )
+        {
+            movedCenter.x = center.x + radius*cos(dTheta);
+            movedCenter.y = center.y + radius*sin(dTheta);
 
-        coef = 2*M_PI*(dTheta-startAngle)/(endAngle-startAngle);
-        coef = fabs(cos(coef)-1);
+            coef = 2*M_PI*(dTheta-startAngle)/(endAngle-startAngle);
+            coef = fabs(cos(coef)-1);
 
-        curve_arr[numberPointsCurveArr] = LPoint_Set( movedCenter.x + delta*coef*cos(dTheta) , movedCenter.y + delta*coef*sin(dTheta) );
-        numberPointsCurveArr = numberPointsCurveArr + 1;
+            curve_arr[numberPointsCurveArr] = LPoint_Set( movedCenter.x + delta*coef*cos(dTheta) , movedCenter.y + delta*coef*sin(dTheta) );
+            numberPointsCurveArr = numberPointsCurveArr + 1;
+        }
+    }
+    else if(dir == CW)
+    {
+        for (double dTheta = startAngle; dTheta > endAngle; dTheta -= dThetaStep )
+        {
+            movedCenter.x = center.x + radius*cos(dTheta);
+            movedCenter.y = center.y + radius*sin(dTheta);
+
+            coef = 2*M_PI*(dTheta-startAngle)/(endAngle-startAngle);
+            coef = fabs(cos(coef)-1);
+
+            curve_arr[numberPointsCurveArr] = LPoint_Set( movedCenter.x + delta*coef*cos(dTheta) , movedCenter.y + delta*coef*sin(dTheta) );
+            numberPointsCurveArr = numberPointsCurveArr + 1;
+        }
     }
 
     curve_arr[numberPointsCurveArr] = endPoint;
