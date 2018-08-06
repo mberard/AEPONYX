@@ -92,12 +92,12 @@ void EulerCurvesMacro()
 LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
     LPoint startPoint = LPoint_Set(0,0);
-    //LPoint endPoint = LPoint_Set(200000,200000);
+    //LPoint endPoint = LPoint_Set(-200000,200000);
     LPoint endPoint = LPoint_Set(0,200000);
     LPoint center;
     double startAngle = 180;
-    //double endAngle = 90;
     double endAngle = 0;
+    //double endAngle = 0;
     LArcDirection dir;
 
     startAngle = startAngle*M_PI/180.0;
@@ -105,12 +105,39 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
     center = FindCenter(startPoint , startAngle , endPoint , endAngle );
 
     //find if the arc direction is CC or CCW
-    if()
+    if(startAngle > 0 && startAngle < M_PI)
+    {
+        if(center.x<startPoint.x)
+            dir = CCW;
+        else
+            dir = CW;
+    }
+    else if(startAngle > M_PI && startAngle < 2*M_PI)
+    {
+        if(center.x>startPoint.x)
+            dir = CCW;
+        else
+            dir = CW;
+    }
+    else if(startAngle == M_PI)
+    {
+        if(center.y>startPoint.y)
+            dir = CW;
+        else
+            dir = CCW;
+    }
+    else if(startAngle == 0 || startAngle == 2*M_PI)
+    {
+        if(center.y>startPoint.y)
+            dir = CCW;
+        else
+            dir = CW;
+    }
 
     double radius = PointDistance(startPoint, center);
     double diffAngle = (endAngle - startAngle)*M_PI/180.0;
     
-    double delta = 24000;
+    double delta = 12000;
 
     LPoint movedCenter = center;
 
@@ -125,8 +152,17 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
     dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 20);
     
-    startAngle = startAngle - M_PI/2.0;
-    endAngle = endAngle - M_PI/2.0;
+    if(dir == CCW)
+    {
+        startAngle = startAngle - M_PI/2.0;
+        endAngle = endAngle - M_PI/2.0;
+    }
+    else
+    {
+        startAngle = startAngle + M_PI/2.0;
+        endAngle = endAngle + M_PI/2.0;
+    }
+
 
     curve_arr[numberPointsCurveArr] = startPoint;
     numberPointsCurveArr = numberPointsCurveArr + 1;
