@@ -100,6 +100,8 @@ void BezierAndDubinsMacro()
     float width;
     double paramBezier;
 
+    bool rasterizeWaveguide = true;
+
     LDialogItem DialogItems[2] = {{ "Oxide size on each size (in microns)","10"}, { "Oxide layer","OX"}};
 
     const char *Pick_List [ ] = {
@@ -186,6 +188,17 @@ void BezierAndDubinsMacro()
             path.SetOxideSizeValue(0);
         }
 
+        if ( LDialog_YesNoBox("Do you want to rasterize the waveguide?") )
+        {
+            /*Yes is clicked*/
+            rasterizeWaveguide = true;
+        }
+        else 
+        {
+            /*No is clicked*/
+            rasterizeWaveguide = false;
+        }
+
         if( twoLabelsHasBeenSelected() )
         {
             LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));
@@ -268,7 +281,7 @@ void BezierAndDubinsMacro()
             else
             {
                 path.ComputeDubinsPaths();
-                path.RasterizePath();
+                path.RasterizePath(rasterizeWaveguide);
             }
             return; //fin de programme
         }
@@ -440,7 +453,7 @@ void BezierAndDubinsMacro()
                 else
                 {
                     path.ComputeDubinsPaths();
-                    path.RasterizePath();
+                    path.RasterizePath(rasterizeWaveguide);
                 }
 
                 fscanf(myFile,"\n"); //got to the next line
@@ -589,7 +602,7 @@ void BezierAndDubinsMacro()
             else
             {
                 path.ComputeDubinsPaths();
-                path.RasterizePath();
+                path.RasterizePath(rasterizeWaveguide);
             }
         }
     }
