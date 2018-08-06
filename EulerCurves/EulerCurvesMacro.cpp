@@ -35,8 +35,6 @@ LPoint FindCenter(LPoint left, double leftAngle , LPoint right, double rightAngl
     perpendiculaireLeft = LPoint_Set(left.x + 1000*cos(leftAngle + M_PI/2.0), left.y + 1000*sin(leftAngle + M_PI/2.0));
     perpendiculaireRight = LPoint_Set(right.x + 1000*cos(rightAngle + M_PI/2.0), right.y + 1000*sin(rightAngle + M_PI/2.0));
 
-LUpi_LogMessage(LFormat("perpLeft %ld %ld\nperpRight %ld %ld\n",perpendiculaireLeft.x,perpendiculaireLeft.y,perpendiculaireRight.x,perpendiculaireRight.y));
-
     //source link: https://www.developpez.net/forums/d369370/applications/developpement-2d-3d-jeux/algo-intersection-2-segments/
     double Ax = left.x;
 	double Ay = left.y;
@@ -104,7 +102,7 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
     endAngle = endAngle*M_PI/180.0;
 
     center = FindCenter(startPoint , startAngle , endPoint , endAngle );
-LUpi_LogMessage(LFormat("center %ld  %ld\n", center.x, center.y));
+
     double radius = PointDistance(startPoint, center);
     //double diffAngle = (endAngle - startAngle)*M_PI/180.0;
     double delta = 12000;
