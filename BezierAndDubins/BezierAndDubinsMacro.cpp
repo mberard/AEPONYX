@@ -100,7 +100,7 @@ void BezierAndDubinsMacro()
     float width;
     double paramBezier;
 
-    LDialogItem DialogItems[2] = {{ "Oxide width (in microns)","10"}, { "Oxide layer","OX"}};
+    LDialogItem DialogItems[2] = {{ "Oxide size on each size (in microns)","10"}, { "Oxide layer","OX"}};
 
     const char *Pick_List [ ] = {
     "Dubins curves with circles",
@@ -166,7 +166,7 @@ void BezierAndDubinsMacro()
             if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
             {
 
-                path.SetOxideSizeValue( atof(DialogItems[0].value) );
+                path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
                 if(LLayer_Find(pFile, DialogItems[1].value))
                 {
                     path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
@@ -613,7 +613,7 @@ void BezierAndDubinsMacro()
             if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
             {
 
-                path.SetOxideSizeValue( atof(DialogItems[0].value) );
+                path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
                 if(LLayer_Find(pFile, DialogItems[1].value))
                 {
                     path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
@@ -1056,7 +1056,7 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
             if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
             {
 
-                bezierCurve.SetOxideSizeValueBezier( atof(DialogItems[0].value) );
+                bezierCurve.SetOxideSizeValueBezier( 2*atof(DialogItems[0].value) );
                 if(LLayer_Find(pFile, DialogItems[1].value))
                 {
                     bezierCurve.SetOxideLayerBezier( LLayer_Find(pFile, DialogItems[1].value) );
