@@ -1468,26 +1468,23 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
     {
         LUpi_LogMessage( "\n\nEuler curve\n\n" );
 
-        if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+        if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
         {
-            if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
-            {
 /*
-                bezierCurve.SetOxideSizeValueBezier( atof(DialogItems[0].value) );
-                if(LLayer_Find(pFile, DialogItems[1].value))
-                {
-                    bezierCurve.SetOxideLayerBezier( LLayer_Find(pFile, DialogItems[1].value) );
-                }
-                else
-                {
-                    LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
-                }
-*/
+            bezierCurve.SetOxideSizeValueBezier( atof(DialogItems[0].value) );
+            if(LLayer_Find(pFile, DialogItems[1].value))
+            {
+                bezierCurve.SetOxideLayerBezier( LLayer_Find(pFile, DialogItems[1].value) );
             }
             else
             {
-//                bezierCurve.SetOxideSizeValueBezier(0);
+                LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
             }
+*/
+        }
+        else
+        {
+            //no oxide
         }
 
         if( twoLabelsHasBeenSelected() )
