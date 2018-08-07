@@ -45,5 +45,7 @@ public:
 
 };
 
+LPoint FindCenter(LPoint left, double leftAngle , LPoint right, double rightAngle);
+double PointDistanceEuler(LPoint start, LPoint end);
 
 #endif

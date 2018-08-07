@@ -54,25 +54,21 @@ LStatus EulerCurve::SetParamEuler(double value){
 }
 
 
-/*
 void EulerCurve::ComputeEulerCurve()
 {
-    char strLayer[MAX_LAYER_NAME];
+    LCell pCell	= this->cell;
+	LFile pFile	= this->file;
+    LLayer pLayer = this->layer;
+
 
     double xStart, yStart, xEnd, yEnd;
     double angleStart, angleEnd;
-    double coef;
-    double distX, distY;
 
     this->nbPointsCurve = 0;
     this->nbPoints = 0;
 
-    double t;
     int i = 0;
-    int j = 0;
-    double x, y;
-    double angle, angle1, angle2;
-    LPoint save1, save2, save3, save4;
+    double angle;
 
     xStart = this->startPoint.GetPoint().x;
     yStart = this->startPoint.GetPoint().y;
@@ -81,39 +77,131 @@ void EulerCurve::ComputeEulerCurve()
     angleStart = this->startPoint.GetAngleRadian();
     angleEnd = this->endPoint.GetAngleRadian();
 
-    coef = 1 - this->paramBezier;
 
 
-LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
+LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
-    distX = xEnd - xStart;
-    distY = yEnd - yStart;
-    if(distX<0)
-        distX = -distX;
-    if(distY<0)
-        distY = -distY;
+    LPoint startPoint = this->startPoint.GetLPoint();
+    LPoint endPoint = this->endPoint.GetLPoint();
+    LPoint center;
+    double startAngle = this->startPoint.GetAngleRadian();
+    double endAngle = this->endPoint.GetAngleRadian();
+    LArcDirection dir;
 
-    this->controlStart.x = (LCoord)round ( xStart + distX * coef * cos(angleStart) );
-    this->controlStart.y = (LCoord)round ( yStart + distY * coef * sin(angleStart) );
-    this->controlEnd.x = (LCoord)round ( xEnd + distX * coef * cos(angleEnd + M_PI) );
-    this->controlEnd.y = (LCoord)round ( yEnd + distY * coef * sin(angleEnd + M_PI) );
+    double x,y;
 
-    //construct the curve
-    this->curve_arr[this->nbPointsCurve] = LPoint_Set( xStart, yStart );
-    this->nbPointsCurve = this->nbPointsCurve + 1;
-    for(t=0.0005; t<1; t=t+0.0005)
+    center = FindCenter(startPoint , startAngle , endPoint , endAngle );
+
+    //find if the arc direction is CC or CCW
+    if(startAngle > 0 && startAngle < M_PI)
     {
-        x = xStart*pow((1-t),3) + 3*this->controlStart.x*pow((1-t),2)*t + 3*this->controlEnd.x*(1-t)*pow(t,2) + xEnd*pow(t,3);
-        y = yStart*pow((1-t),3) + 3*this->controlStart.y*pow((1-t),2)*t + 3*this->controlEnd.y*(1-t)*pow(t,2) + yEnd*pow(t,3);
-        this->curve_arr[this->nbPointsCurve] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
-        this->nbPointsCurve = this->nbPointsCurve + 1;
+        if(endPoint.x<startPoint.x)
+            dir = CCW;
+        else
+            dir = CW;
     }
-    this->curve_arr[this->nbPointsCurve] = LPoint_Set( xEnd, yEnd );
+    else if(startAngle > M_PI && startAngle < 2*M_PI)
+    {
+        if(endPoint.x>startPoint.x)
+            dir = CCW;
+        else
+            dir = CW;
+    }
+    else if(startAngle == M_PI)
+    {
+        if(endPoint.y>startPoint.y)
+            dir = CW;
+        else
+            dir = CCW;
+    }
+    else if(startAngle == 0 || startAngle == 2*M_PI)
+    {
+        if(endPoint.y>startPoint.y)
+            dir = CCW;
+        else
+            dir = CW;
+    }
+
+    double radius = PointDistanceEuler(startPoint, center);
+    double delta = this->paramEuler;
+
+    LPoint movedCenter = center;
+
+    double coef;
+
+    double dThetaStep = 0;
+    LGrid_v16_30 grid;
+	LFile_GetGrid_v16_30( pFile, &grid );
+
+    dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 20);
+    
+    if(dir == CCW)
+    {
+        startAngle = startAngle - M_PI/2.0;
+        endAngle = endAngle - M_PI/2.0;
+    }
+    else
+    {
+        startAngle = startAngle + M_PI/2.0;
+        endAngle = endAngle + M_PI/2.0;
+    }
+
+    double coefXY = 1;
+    double incrementCoefXY;
+    double currentCoefXY = 1;
+
+    coefXY = PointDistanceEuler(endPoint, center)/(radius);
+
+    incrementCoefXY = (coefXY-1)/(fabs((endAngle-startAngle)/dThetaStep));
+
+    this->curve_arr[this->nbPointsCurve] = startPoint;
     this->nbPointsCurve = this->nbPointsCurve + 1;
+
+    if(dir == CCW)
+    {
+        for (double dTheta = startAngle; dTheta < endAngle; dTheta += dThetaStep )
+        {
+            LUpi_LogMessage(LFormat("%lf out of %lf\n", dTheta, endAngle));
+
+            coef = 2*M_PI*(dTheta-startAngle)/(endAngle-startAngle);
+            coef = fabs(cos(coef)-1);
+
+            x = ( center.x + (radius + delta*coef)*cos(dTheta)*currentCoefXY );
+            y = ( center.y + (radius + delta*coef)*sin(dTheta)*currentCoefXY );
+
+            this->curve_arr[this->nbPointsCurve] = LPoint_Set( x , y );
+            this->nbPointsCurve = this->nbPointsCurve + 1;
+
+            currentCoefXY = currentCoefXY + incrementCoefXY*coef;
+            if(coefXY > 1 && currentCoefXY>coefXY)
+                currentCoefXY = coefXY;
+            if(coefXY < 1 && currentCoefXY<coefXY)
+                currentCoefXY = coefXY;
+        }
+    }
+    else if(dir == CW)
+    {
+        for(double dTheta = startAngle; dTheta > endAngle; dTheta -= dThetaStep )
+        {
+            LUpi_LogMessage(LFormat("%lf out of %lf\n", dTheta, endAngle));
+
+            coef = 2*M_PI*(dTheta-startAngle)/(endAngle-startAngle);
+            coef = fabs(cos(coef)-1);
+
+            x = ( center.x + (radius + delta*coef)*cos(dTheta)*currentCoefXY );
+            y = ( center.y + (radius + delta*coef)*sin(dTheta)*currentCoefXY );
+
+            this->curve_arr[this->nbPointsCurve] = LPoint_Set( x , y );
+            this->nbPointsCurve = this->nbPointsCurve + 1;
+        }
+    }
+
+    this->curve_arr[this->nbPointsCurve] = endPoint;
+    this->nbPointsCurve = this->nbPointsCurve + 1;
+
 
     //construct the guide from the curve
     this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xStart + sin(angleStart) * this->guideWidth / 2.0) , (LCoord)round(yStart - cos(angleStart) * this->guideWidth / 2.0));
-    save1 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
     for(i=1; i<this->nbPointsCurve-1; i++)
     {
@@ -122,11 +210,9 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
         this->nbPoints = this->nbPoints + 1;
     }
     this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xEnd + sin(angleEnd) * this->guideWidth / 2.0) , (LCoord)round(yEnd - cos(angleEnd) * this->guideWidth / 2.0));
-    save2 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
 
     this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xEnd + sin(angleEnd + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEnd - cos(angleEnd + M_PI) * this->guideWidth / 2.0));
-    save3 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
     for(i=this->nbPointsCurve-2; i>=1; i--)
     {
@@ -135,53 +221,16 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
         this->nbPoints = this->nbPoints + 1;
     }
     this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xStart + sin(angleStart + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yStart - cos(angleStart + M_PI) * this->guideWidth / 2.0));
-    save4 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
 
-    LUpi_LogMessage(LFormat("nbPoints %d\n",this->nbPoints));
-
-    //delete the points that intersect with the polygon
-    j=1;
-    while(j != 0)
-    {
-        j=0;
-        for(i=0; i<this->nbPoints; i++)
-        {
-            if((save1.x==this->point_arr[i].x && save1.y==this->point_arr[i].y) || (save2.x==this->point_arr[i].x && save2.y==this->point_arr[i].y) || (save3.x==this->point_arr[i].x && save3.y==this->point_arr[i].y) || (save4.x==this->point_arr[i].x && save4.y==this->point_arr[i].y))
-                continue;
-            if(i==0)
-                angle1 = atan2(this->point_arr[0].y-this->point_arr[this->nbPoints-1].y,this->point_arr[0].x-this->point_arr[this->nbPoints-1].x) - M_PI;
-            else
-                angle1 = atan2(this->point_arr[i].y-this->point_arr[i-1].y,this->point_arr[i].x-this->point_arr[i-1].x) - M_PI;
-            if(i==nbPoints-1)
-                angle2 = atan2(this->point_arr[this->nbPoints-1].y-this->point_arr[0].y,this->point_arr[this->nbPoints-1].x-this->point_arr[0].x);
-            else
-                angle2 = atan2(this->point_arr[i].y-this->point_arr[i+1].y,this->point_arr[i].x-this->point_arr[i+1].x);
-            angle = angle2 - angle1;
-            angle = fmod(angle, 2*M_PI);
-            while(angle < 0)
-                angle = angle + 2*M_PI;
-//LUpi_LogMessage(LFormat("i %d\n",i));
-            if( (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
-            {
-                //point_arr[i]=point_arr[(i+1)%nbPoints];
-                //point_arr[(i+1)%nbPoints]=point_arr[i];
-                for(j=i; j<this->nbPoints; j++)
-                    this->point_arr[j]=this->point_arr[(j+1)%this->nbPoints];
-                this->nbPoints = this->nbPoints - 1;
-                j=1;
-            }                
-        }
-    }
-    
-    LUpi_LogMessage(LFormat("nbPoints %d\n",this->nbPoints));
+LUpi_LogMessage(LFormat("nbPoints %d\n",this->nbPoints));
+LUpi_LogMessage(LFormat("Display polygon\n"));
 
     LObject obj;
     obj = LPolygon_New( this->cell, this->layer, this->point_arr, this->nbPoints );
 
-    double dist = LFile_IntUtoMicrons(this->file, ArrayDistance(this->curve_arr, this->nbPointsCurve));
-    LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
-
+//    double dist = LFile_IntUtoMicrons(this->file, ArrayDistance(this->curve_arr, this->nbPointsCurve));
+//    LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
 
     if(this->oxideSizeValue != 0)
     {
@@ -190,7 +239,7 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
         double savedOxideSize = this->oxideSizeValue;
 
         this->layer = this->oxideLayer;
-        this->guideWidth = this->guideWidth + 2*this->oxideSizeValue;
+        this->guideWidth = this->oxideSizeValue;
         this->oxideSizeValue = 0;
 
         this->ComputeEulerCurve();
@@ -200,4 +249,70 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
         this->oxideSizeValue = savedOxideSize;
     }
 }
-*/
+
+
+
+//NON CLASS METHOD
+
+LPoint FindCenter(LPoint left, double leftAngle , LPoint right, double rightAngle)
+{
+    LPoint perpendiculaireLeft, perpendiculaireRight, center;
+    perpendiculaireLeft = LPoint_Set(left.x + 1000*cos(leftAngle + M_PI/2.0), left.y + 1000*sin(leftAngle + M_PI/2.0));
+    perpendiculaireRight = LPoint_Set(right.x + 1000*cos(rightAngle + M_PI/2.0), right.y + 1000*sin(rightAngle + M_PI/2.0));
+
+    //source link: https://www.developpez.net/forums/d369370/applications/developpement-2d-3d-jeux/algo-intersection-2-segments/
+    double Ax = left.x;
+	double Ay = left.y;
+	double Bx = perpendiculaireLeft.x;
+	double By = perpendiculaireLeft.y;
+	double Cx = right.x;
+	double Cy = right.y;
+	double Dx = perpendiculaireRight.x;
+	double Dy = perpendiculaireRight.y;
+    double Sx;
+	double Sy;
+	if(Ax==Bx)
+	{
+		if(Cx==Dx)
+        {
+            return LPoint_Set( (Ax+Cx)/2.0 , (Ay+Cy)/2.0 );
+        }
+		else
+		{
+			double pCD = (Cy-Dy)/(Cx-Dx);
+			Sx = Ax;
+			Sy = pCD*(Ax-Cx)+Cy;
+		}
+	}
+	else
+	{
+		if(Cx==Dx)
+		{
+			double pAB = (Ay-By)/(Ax-Bx);
+			Sx = Cx;
+			Sy = pAB*(Cx-Ax)+Ay;
+		}
+		else
+		{
+			double pCD = (Cy-Dy)/(Cx-Dx);
+			double pAB = (Ay-By)/(Ax-Bx);
+			double oCD = Cy-pCD*Cx;
+			double oAB = Ay-pAB*Ax;
+			Sx = (oAB-oCD)/(pCD-pAB);
+			Sy = pCD*Sx+oCD;
+		}
+	}
+    center.x = (LCoord)Sx;
+    center.y = (LCoord)Sy;
+
+    return center;
+}
+
+double PointDistanceEuler(LPoint start, LPoint end)
+{
+    double dist=0.0;
+    dist = (double)(end.x - start.x)*(end.x - start.x);
+    dist += (double)(end.y - start.y)*(end.y - start.y);
+    dist = sqrt(dist);
+    return dist;
+}

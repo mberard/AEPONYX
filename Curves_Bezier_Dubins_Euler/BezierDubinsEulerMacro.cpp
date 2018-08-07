@@ -63,12 +63,13 @@ bool twoLabelsHasBeenSelected()
 }
 
 
-void BezierAndDubinsMacro()
+void BezierDubinsEulerMacro()
 {
     LUpi_LogMessage( "Macro DEBUT\n" );
 
     DubinsPath path;
     BezierCurve bezierCurve;
+    EulerCurve eulerPath;
     DubinsPoint start, end;
 
     LCell	pCell	=	LCell_GetVisible();
@@ -102,6 +103,7 @@ void BezierAndDubinsMacro()
     float radius;
     float width;
     double paramBezier;
+    double paramEuler;
 
     bool rasterizeWaveguide = true;
 
@@ -110,9 +112,10 @@ void BezierAndDubinsMacro()
     const char *Pick_List [ ] = {
     "Dubins curves with circles",
     "Dubins curves with Bezier curves",
-    "Bezier curves"
+    "Bezier curves",
+    "Euler curves"
     };
-    int nbChoice = 3;
+    int nbChoice = 4;
     int choice = -1;
     choice = LDialog_PickList ("Which type of curve?", Pick_List, nbChoice, 0);
 
@@ -1050,6 +1053,10 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
     {
         LUpi_LogMessage( "\n\nBezier curve\n\n" );
 
+        bezierCurve.SetFile(pFile);
+        bezierCurve.SetCell(pCell);
+        bezierCurve.SetLayer(pLayer);
+
         if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
         {
 
@@ -1464,32 +1471,40 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
             
         }
     }
+
+
+
+
     else if(choice == 3) //Euler curves
     {
         LUpi_LogMessage( "\n\nEuler curve\n\n" );
-
+        
+        eulerPath.SetFile(pFile);
+        eulerPath.SetCell(pCell);
+        eulerPath.SetLayer(pLayer);
+        
         if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
         {
-/*
-            bezierCurve.SetOxideSizeValueBezier( atof(DialogItems[0].value) );
+LUpi_LogMessage(LFormat("%s %s",DialogItems[0].value,DialogItems[1].value ));            
+            eulerPath.SetOxideSizeValueEuler( atof(DialogItems[0].value) );
+
             if(LLayer_Find(pFile, DialogItems[1].value))
             {
-                bezierCurve.SetOxideLayerBezier( LLayer_Find(pFile, DialogItems[1].value) );
+                eulerPath.SetOxideLayerEuler( LLayer_Find(pFile, DialogItems[1].value) );
             }
             else
             {
                 LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
             }
-*/
         }
         else
         {
-            //no oxide
+            eulerPath.SetOxideSizeValueEuler( 0 ); //no oxide
         }
 
+
         if( twoLabelsHasBeenSelected() )
-        {
-/*
+        { 
             LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));
             LSelection pSelection = LSelection_GetList() ;
 
@@ -1549,25 +1564,22 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 return;
             else
                 width = atof(strLayer);
-            
-            strcpy(strLayer, "0.3");
-            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
+
+            strcpy(strLayer, "12000");
+            if ( LDialog_InputBox("Euler parameter", "Euler parameter (suggest: 45° -> 3000, 90° -> 12000, 180° -> 24000)", strLayer) == 0)
                 return;
             else
-                paramBezier = atof(strLayer);
+                paramEuler = atof(strLayer);
 
-            bezierCurve.SetFile(pFile);
-            bezierCurve.SetCell(pCell);
-            bezierCurve.SetLayer(pLayer);
-            bezierCurve.SetStartPoint(start);
-            bezierCurve.SetEndPoint(end);
-            bezierCurve.SetGuideWidth(width);
-            bezierCurve.SetParamBezier(paramBezier);
+            
+            eulerPath.SetStartPoint(start);
+            eulerPath.SetEndPoint(end);
+            eulerPath.SetGuideWidth(width);
+            eulerPath.SetParamEuler(paramEuler);
 
-            bezierCurve.ComputeBezierCurve();
+            eulerPath.ComputeEulerCurve();
 
             return; //fin de programme
-*/
         }
 
 

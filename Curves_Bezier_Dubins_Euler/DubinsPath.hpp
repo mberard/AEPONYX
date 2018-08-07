@@ -21,6 +21,11 @@ private:
     LObject torusMiddle;
     PathType type;
     float guideWidth;
+
+    LObject torusStart_saved;
+    LObject torusEnd_saved;
+    LObject line_saved;
+    LObject torusMiddle_saved;
     
     DubinsPoint startPoint;
     DubinsPoint endPoint;
@@ -98,7 +103,7 @@ public:
 
     float GetArcLength(LPoint circleCenter, LPoint point, LPoint tangent, bool isLeftCircle);
 
-    void RasterizePath();
+    void RasterizePath(bool needToRasterize);
     void DrawArc(LPoint center, LCoord radius, double startAngle, double stopAngle, bool isCCW);
     void Add( double x, double y);
 
