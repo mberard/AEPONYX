@@ -92,10 +92,10 @@ void EulerCurvesMacro()
 LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
     LPoint startPoint = LPoint_Set(0,0);
-    LPoint endPoint = LPoint_Set(400000,250000);
+    LPoint endPoint = LPoint_Set(400000,400000);
     LPoint center;
     double startAngle = 0;
-    double endAngle = 90;
+    double endAngle = 135;
     LArcDirection dir;
 
     double x,y;
@@ -107,35 +107,35 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
     //find if the arc direction is CC or CCW
     if(startAngle > 0 && startAngle < M_PI)
     {
-        if(center.x<startPoint.x)
+        if(endPoint.x<startPoint.x)
             dir = CCW;
         else
             dir = CW;
     }
     else if(startAngle > M_PI && startAngle < 2*M_PI)
     {
-        if(center.x>startPoint.x)
+        if(endPoint.x>startPoint.x)
             dir = CCW;
         else
             dir = CW;
     }
     else if(startAngle == M_PI)
     {
-        if(center.y>startPoint.y)
+        if(endPoint.y>startPoint.y)
             dir = CW;
         else
             dir = CCW;
     }
     else if(startAngle == 0 || startAngle == 2*M_PI)
     {
-        if(center.y>startPoint.y)
+        if(endPoint.y>startPoint.y)
             dir = CCW;
         else
             dir = CW;
     }
 
     double radius = PointDistance(startPoint, center);
-    double delta = 8000;
+    double delta = 20000;
 
     LPoint movedCenter = center;
 
