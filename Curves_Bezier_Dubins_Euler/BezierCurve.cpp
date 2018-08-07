@@ -1,61 +1,61 @@
-#include "BezierCurve.hpp"
+#include "EulerCurve.hpp"
 #include <math.h>
 #include "ldata.h"
 
 //MEMBER METHODS
 
-BezierCurve::BezierCurve(){}
+EulerCurve::EulerCurve(){}
 
-LStatus BezierCurve::SetFile(LFile file){
+LStatus EulerCurve::SetFile(LFile file){
     this->file = file;
     return LStatusOK;
 }
 
-LStatus BezierCurve::SetCell(LCell cell){
+LStatus EulerCurve::SetCell(LCell cell){
     this->cell = cell;
     return LStatusOK;
 }
 
-LStatus BezierCurve::SetLayer(LLayer layer){
+LStatus EulerCurve::SetLayer(LLayer layer){
     this->layer = layer;
     return LStatusOK;
 }
 
-LStatus BezierCurve::SetStartPoint(DubinsPoint point){
+LStatus EulerCurve::SetStartPoint(DubinsPoint point){
     this->startPoint = point;
     return LStatusOK;
 }
 
-LStatus BezierCurve::SetEndPoint(DubinsPoint point){
+LStatus EulerCurve::SetEndPoint(DubinsPoint point){
     this->endPoint = point;
     return LStatusOK;
 }
 
-LStatus BezierCurve::SetGuideWidth(double width){
+LStatus EulerCurve::SetGuideWidth(double width){
     width = LFile_MicronsToIntU( this->file, width );
     this->guideWidth = width;
     return LStatusOK;
 }
 
-LStatus BezierCurve::SetOxideSizeValueBezier(double value){
+LStatus EulerCurve::SetOxideSizeValueEuler(double value){
     value = LFile_MicronsToIntU( this->file, value );
     this->oxideSizeValue = value;
     return LStatusOK;
 }
 
-LStatus BezierCurve::SetOxideLayerBezier(LLayer layer){
+LStatus EulerCurve::SetOxideLayerEuler(LLayer layer){
     this->oxideLayer = layer;
     return LStatusOK;
 }
 
-LStatus BezierCurve::SetParamBezier(double value){
-    this->paramBezier = value;
+LStatus EulerCurve::SetParamEuler(double value){
+    this->paramEuler = value;
     return LStatusOK;
 }
 
 
-
-void BezierCurve::ComputeBezierCurve()
+/*
+void EulerCurve::ComputeEulerCurve()
 {
     char strLayer[MAX_LAYER_NAME];
 
@@ -193,57 +193,11 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
         this->guideWidth = this->guideWidth + 2*this->oxideSizeValue;
         this->oxideSizeValue = 0;
 
-        this->ComputeBezierCurve();
+        this->ComputeEulerCurve();
 
         this->layer = savedLayer;
         this->guideWidth = savedGuideWidth;
         this->oxideSizeValue = savedOxideSize;
     }
 }
-
-
-
-
-
-//NON CLASS METHODS
-
-long Round0or5ToLong(double val)
-{
-	double tmpFloat = val;
-	long tmpInt = 0;
-	if(val >= 0)
-		tmpFloat = (double)(tmpFloat + 2.5)/5.0;
-	else
-		tmpFloat = (double)(tmpFloat - 2.5)/5.0;
-	tmpInt = (long)tmpFloat; //delete the digits after the '.'
-	tmpInt = tmpInt*5;
-	return tmpInt;
-}
-
-long RoundToLong(double value)
-{
-    if(value > 0)
-        return (long)(value+0.5);
-    else
-        return (long)(value-0.5);
-}
-
-double PointDistance(LPoint start, LPoint end)
-{
-    double dist=0.0;
-    dist = (double)(end.x - start.x)*(end.x - start.x);
-    dist += (double)(end.y - start.y)*(end.y - start.y);
-    dist = sqrt(dist);
-    return dist;
-}
-
-double ArrayDistance(LPoint* arr, int nbPoints)
-{
-    double dist = 0;
-    int i = 0;
-    for(i=0; i<nbPoints-1; i++)
-    {
-        dist += PointDistance(arr[i], arr[i+1]);
-    }
-    return dist;
-}
+*/

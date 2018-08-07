@@ -17,13 +17,15 @@ extern "C" {
     #include "DubinsPath.hpp"
     #include "DubinsPoint.hpp"
     #include "BezierCurve.hpp"
+    #include "EulerCurve.hpp"
 
     #include "DubinsPath.cpp"
     #include "DubinsPoint.cpp"
     #include "BezierCurve.cpp"
+    #include "EulerCurve.cpp"
 
     bool twoLabelsHasBeenSelected(void);
-    void BezierAndDubinsMacro(void);
+    void BezierDubinsEulerMacro(void);
 	int UPI_Entry_Point(void);
 }
 
@@ -60,7 +62,7 @@ bool twoLabelsHasBeenSelected()
     }
 }
 
-void BezierAndDubinsMacro()
+void BezierDubinsEulerMacro()
 {
     LUpi_LogMessage( "Macro DEBUT\n" );
 
@@ -105,9 +107,10 @@ void BezierAndDubinsMacro()
     const char *Pick_List [ ] = {
     "Dubins curves with circles",
     "Dubins curves with Bezier curves",
-    "Bezier curves"
+    "Bezier curves",
+    "Euler curves"
     };
-    int nbChoice = 3;
+    int nbChoice = 4;
     int choice = -1;
     choice = LDialog_PickList ("Which type of curve?", Pick_List, nbChoice, 0);
 
@@ -1464,7 +1467,432 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
             bezierCurve.SetParamBezier(paramBezier);
             
             bezierCurve.ComputeBezierCurve();
+        }
+    }
+    else if(choice == 3) //Euler curves
+    {
+        LUpi_LogMessage( "\n\nEuler curve\n\n" );
+
+        if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+        {
+            if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
+            {
+/*
+                bezierCurve.SetOxideSizeValueBezier( atof(DialogItems[0].value) );
+                if(LLayer_Find(pFile, DialogItems[1].value))
+                {
+                    bezierCurve.SetOxideLayerBezier( LLayer_Find(pFile, DialogItems[1].value) );
+                }
+                else
+                {
+                    LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
+                }
+*/
+            }
+            else
+            {
+//                bezierCurve.SetOxideSizeValueBezier(0);
+            }
+        }
+
+        if( twoLabelsHasBeenSelected() )
+        {
+/*
+            LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));
+            LSelection pSelection = LSelection_GetList() ;
+
+            LObject object = LSelection_GetObject(pSelection); //first label is the second one selected
+            LLabel pLabel = (LLabel)object;
+
+            pLabelLocation = LLabel_GetPosition( pLabel );
+            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+            end.SetPoint(xPosLabel , yPosLabel, pFile);
+            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+            {
+                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                {
+                    end.SetAngleDegre( dAngle );
+                }	
+                else
+                {
+                    end.SetAngleDegre( 0 );
+                    LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+                }
+            }		
+            else
+            {
+                end.SetAngleDegre( 0 );
+                LUpi_LogMessage("Angle property not found, 0 by default\n");
+            }
+
+            pSelection = LSelection_GetNext(pSelection); //second label is the first one selected
+            object = LSelection_GetObject(pSelection);
+            pLabel = (LLabel)object;
+
+            pLabelLocation = LLabel_GetPosition( pLabel );
+            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+            start.SetPoint(xPosLabel , yPosLabel, pFile);
+            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+            {
+                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                {
+                    start.SetAngleDegre( dAngle );
+                }	
+                else
+                {
+                    start.SetAngleDegre( 0 );
+                    LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+                }
+            }
+            else
+            {
+                start.SetAngleDegre( 0 );
+                LUpi_LogMessage("Angle property not found, 0 by default\n");
+            }
+
+            strcpy(strLayer, "0.435");
+            if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
+                return;
+            else
+                width = atof(strLayer);
             
+            strcpy(strLayer, "0.3");
+            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
+                return;
+            else
+                paramBezier = atof(strLayer);
+
+            bezierCurve.SetFile(pFile);
+            bezierCurve.SetCell(pCell);
+            bezierCurve.SetLayer(pLayer);
+            bezierCurve.SetStartPoint(start);
+            bezierCurve.SetEndPoint(end);
+            bezierCurve.SetGuideWidth(width);
+            bezierCurve.SetParamBezier(paramBezier);
+
+            bezierCurve.ComputeBezierCurve();
+
+            return; //fin de programme
+*/
+        }
+
+
+
+        strcpy(strPath,"guideFile.csv");
+        LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv|*.txt||", pFile );
+        strPath[strlen(strPath)-2]='\0'; //delete the last 2 char of the string ("|0")
+        
+        if (strPath != NULL)
+        {
+            LFile_GetResolvedFileName( pFile, strPath, cwd, MAX_TDBFILE_NAME ); //get the absolute path of strPath in cwd
+            myFile = fopen(cwd,"r");
+        }
+        
+        if(myFile != NULL)
+        {
+/*
+            strcpy(strLayer, "0.3");
+            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
+                return;
+            else
+                paramBezier = atof(strLayer);
+
+            while(!feof(myFile))
+            {
+                nmbLabel = 0;
+                // reads text until new line 
+                fscanf(myFile,"%[^\n]", line);
+                LUpi_LogMessage(LFormat("Read line: %s\n", line));
+                cpt=0;
+                for(i=0; i<strlen(line);i++)
+                {
+                    if(line[i]==',') //count the number of ',' to know what kind of shape it is
+                        cpt++;
+                }
+
+                token = strtok(line, ","); //first string before the first ',' of line
+
+                if(cpt == 6) //guide,cell1,P1,cell2,P2,radius,width
+                {
+                    token = strtok(NULL, ","); //next token
+                    strcpy(startCellName,token);
+                    token = strtok(NULL, ",");
+                    strcpy(startLabelName,token);
+                    token = strtok(NULL, ",");
+                    strcpy(endCellName,token);
+                    token = strtok(NULL, ",");
+                    strcpy(endLabelName,token);
+                    token = strtok(NULL, ",");
+                    radius = atof(token);
+                    token = strtok(NULL, ",");
+                    width = atof(token);
+                }
+
+                LCell startCell;
+                if(strcmp(startCellName," ")==0)
+                    startCell = pCell;
+                else
+                    startCell = LCell_Find( pFile, startCellName );
+                if(startCell == NULL)
+                {
+                    fscanf(myFile,"\n"); //got to the next line
+                    LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\nInstruction will not be executed \n", startCellName) );
+                    continue;
+                }
+
+                for(LLabel pLabel = LLabel_GetList(startCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+                {
+                    LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+                    
+                    if(strcmp(sLabelName, startLabelName) == 0)
+                    {
+                        pLabelLocation = LLabel_GetPosition( pLabel );
+                        xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+                        yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+
+                        start.SetPoint(xPosLabel , yPosLabel, pFile);
+
+                        if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+                        {
+                            if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                            {
+                                start.SetAngleDegre( dAngle );
+                            }	
+                            else
+                            {
+                                start.SetAngleDegre( 0 );
+                                LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+                            }
+                                
+                        }		
+                        else
+                        {
+                            start.SetAngleDegre( 0 );
+                            LUpi_LogMessage("Angle property not found, 0 by default\n");
+                        }
+                        nmbLabel++;
+                        break;
+                    }
+                    
+                }
+                if(nmbLabel != 1)
+                {
+                    fscanf(myFile,"\n"); //got to the next line
+                    LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",startLabelName, startCellName) );
+                    continue;
+                }
+
+                LCell endCell;
+                if(strcmp(endCellName," ")==0)
+                    endCell = pCell;
+                else
+                    endCell = LCell_Find( pFile, endCellName );
+
+                if(endCell == NULL)
+                {
+                    fscanf(myFile,"\n"); //got to the next line
+                    LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\nInstruction will not be executed \n",endCellName) );
+                    continue;
+                }
+
+                for(LLabel pLabel = LLabel_GetList(endCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+                {
+                    LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+                    
+                    if(strcmp(sLabelName, endLabelName) == 0)
+                    {
+                        pLabelLocation = LLabel_GetPosition( pLabel );
+                        xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+                        yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+
+                        end.SetPoint(xPosLabel , yPosLabel, pFile);
+
+                        if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+                        {
+                            if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                            {
+                                end.SetAngleDegre( dAngle );
+                            }	
+                            else
+                            {
+                                end.SetAngleDegre( 0 );
+                                LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+                            }
+                        }		
+                        else
+                        {
+                            end.SetAngleDegre( 0 );
+                            LUpi_LogMessage("Angle property not found, 0 by default\n");
+                        }
+                        nmbLabel++;
+                        break;
+                    }
+                }
+
+                if(nmbLabel != 2)
+                {
+                    fscanf(myFile,"\n"); //got to the next line
+                    LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\nInstruction will not be executed \n",endLabelName, endCellName) );
+                    continue;
+                }
+
+                
+                bezierCurve.SetFile(pFile);
+                bezierCurve.SetCell(pCell);
+                bezierCurve.SetLayer(pLayer);
+                bezierCurve.SetStartPoint(start);
+                bezierCurve.SetEndPoint(end);
+                bezierCurve.SetGuideWidth(width);
+                bezierCurve.SetParamBezier(paramBezier);
+                
+                bezierCurve.ComputeBezierCurve();
+            
+
+                fscanf(myFile,"\n"); //got to the next line
+            }
+            fclose(myFile);
+*/
+        }
+
+
+
+        else //manual selection
+        {
+/*
+            LDialog_AlertBox(LFormat("No file found: manual selection"));
+            LDialogItem DialogItems[2] = {{ "Cell","cell1"}, { "Name","P1"}};
+            if (LDialog_MultiLineInputBox("Start point",DialogItems,2) == 0)
+                return;
+            strcpy(startCellName,DialogItems[0].value);
+            strcpy(startLabelName,DialogItems[1].value);
+
+            LCell startCell = LCell_Find( pFile, startCellName );
+            if(startCell == NULL)
+            {
+                LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\n", startCellName) );
+                return;
+            }
+
+            for(LLabel pLabel = LLabel_GetList(startCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+            {
+                LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+                
+                if(strcmp(sLabelName, startLabelName) == 0)
+                {
+                    pLabelLocation = LLabel_GetPosition( pLabel );
+                    xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+                    yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+
+                    start.SetPoint(xPosLabel , yPosLabel, pFile);
+
+                    if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+                    {
+                        if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                        {
+                            start.SetAngleDegre( dAngle );
+                        }	
+                        else
+                        {
+                            start.SetAngleDegre( 0 );
+                            LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+                        }
+                            
+                    }		
+                    else
+                    {
+                        start.SetAngleDegre( 0 );
+                        LUpi_LogMessage("Angle property not found, 0 by default\n");
+                    }
+                    nmbLabel++;
+                    break;
+                }
+            }
+            if(nmbLabel != 1)
+            {
+                LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\n",startLabelName, startCellName) );
+                return;
+            }
+
+
+
+            LDialogItem DialogItemsEnd[2] = {{ "Cell","cell2"}, { "Name","P2"}};
+            if (LDialog_MultiLineInputBox("End point",DialogItemsEnd,2) == 0)
+                return;
+            strcpy(endCellName,DialogItemsEnd[0].value);
+            strcpy(endLabelName,DialogItemsEnd[1].value);
+
+            LCell endCell = LCell_Find( pFile, endCellName );
+            if(endCell == NULL)
+            {
+                LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" cell\n",endCellName) );
+                return;
+            }
+
+            for(LLabel pLabel = LLabel_GetList(endCell); pLabel != NULL ; pLabel =  LLabel_GetNext(pLabel))
+            {
+                LLabel_GetName( pLabel, sLabelName, MAX_CELL_NAME );
+
+                if(strcmp(sLabelName, endLabelName) == 0)
+                {
+                    pLabelLocation = LLabel_GetPosition( pLabel );
+                    xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
+                    yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
+
+                    end.SetPoint(xPosLabel , yPosLabel, pFile);
+
+                    if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
+                    {
+                        if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
+                        {
+                            end.SetAngleDegre( dAngle );
+                        }	
+                        else
+                        {
+                            end.SetAngleDegre( 0 );
+                            LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
+                        }
+                            
+                    }		
+                    else
+                    {
+                        end.SetAngleDegre( 0 );
+                        LUpi_LogMessage("Angle property not found, 0 by default\n");
+                    }
+                    nmbLabel++;
+                    break;
+                }
+            }
+
+            if(nmbLabel != 2)
+            {
+                LUpi_LogMessage( LFormat("ERROR: Unable to find \"%s\" label in \"%s\" cell\n",endLabelName, endCellName) );
+                return;
+            }
+
+            strcpy(strLayer, "0.435");
+            if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
+                return;
+            else
+                width = atof(strLayer);
+
+            strcpy(strLayer, "0.3");
+            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
+                return;
+            else
+                paramBezier = atof(strLayer);
+
+            bezierCurve.SetFile(pFile);
+            bezierCurve.SetCell(pCell);
+            bezierCurve.SetLayer(pLayer);
+            bezierCurve.SetStartPoint(start);
+            bezierCurve.SetEndPoint(end);
+            bezierCurve.SetGuideWidth(width);
+            bezierCurve.SetParamBezier(paramBezier);
+            
+            bezierCurve.ComputeBezierCurve();
+*/
         }
     }
     //other choice = nothing
@@ -1474,6 +1902,6 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
 int UPI_Entry_Point(void)
 {
     LMacro_BindToMenuAndHotKey_v9_30(NULL, "F5" /*hotkey*/, 
-			"AEPONYX\\Dubins and Bezier Macro\nWindow", "BezierAndDubinsMacro", NULL /*hotkey category*/);
+			"AEPONYX\\Dubins and Bezier Macro\nWindow", "BezierDubinsEulerMacro", NULL /*hotkey category*/);
 	return 1;
 }
