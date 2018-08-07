@@ -92,13 +92,13 @@ void EulerCurvesMacro()
 LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
     LPoint startPoint = LPoint_Set(0,0);
-    //LPoint endPoint = LPoint_Set(-200000,200000);
-    LPoint endPoint = LPoint_Set(0,200000);
+    LPoint endPoint = LPoint_Set(400000,250000);
     LPoint center;
-    double startAngle = 180;
-    double endAngle = 0;
-    //double endAngle = 0;
+    double startAngle = 0;
+    double endAngle = 90;
     LArcDirection dir;
+
+    double x,y;
 
     startAngle = startAngle*M_PI/180.0;
     endAngle = endAngle*M_PI/180.0;
@@ -135,9 +135,7 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
     }
 
     double radius = PointDistance(startPoint, center);
-    double diffAngle = (endAngle - startAngle)*M_PI/180.0;
-    
-    double delta = 12000;
+    double delta = 8000;
 
     LPoint movedCenter = center;
 
@@ -163,6 +161,38 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
         endAngle = endAngle + M_PI/2.0;
     }
 
+    double coefX = 1;
+    double coefY = 1;
+    double coefXY = 1;
+    double incrementCoefXY;
+    double currentCoefXY = 1;
+    /*
+    if(endPoint.x != center.x)
+    {
+        if(center.x + radius*cos(endAngle) < endPoint.x )
+            coefX = (endPoint.x - center.x)/(radius*cos(endAngle));
+        else
+            coefX = (radius*cos(endAngle))/(endPoint.x - center.x);
+    }
+    if(endPoint.y != center.y)
+    {
+        if(center.y + radius*sin(endAngle) > endPoint.y )
+            coefY = (endPoint.y - center.y)/(radius*sin(endAngle));
+        else
+            coefY = (radius*sin(endAngle))/(endPoint.y - center.y);
+    }
+
+    if(coefX<0)
+        coefX = 1/coefX;
+    if(coefY<0)
+        coefY = 1/coefY;
+
+LUpi_LogMessage(LFormat("coefX %lf coefY %lf\n", coefX,coefY));
+*/
+    coefXY = PointDistance(endPoint, center)/(radius);
+LUpi_LogMessage(LFormat("coefXY max %lf\n", coefXY));
+
+    incrementCoefXY = (coefXY-1)/(fabs((endAngle-startAngle)/dThetaStep));
 
     curve_arr[numberPointsCurveArr] = startPoint;
     numberPointsCurveArr = numberPointsCurveArr + 1;
@@ -177,8 +207,19 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
             coef = 2*M_PI*(dTheta-startAngle)/(endAngle-startAngle);
             coef = fabs(cos(coef)-1);
 
-            curve_arr[numberPointsCurveArr] = LPoint_Set( movedCenter.x + delta*coef*cos(dTheta) , movedCenter.y + delta*coef*sin(dTheta) );
+    LUpi_LogMessage(LFormat("currentCoefXY %lf\n", currentCoefXY));
+
+            x = ( center.x + (radius + delta*coef)*cos(dTheta)*currentCoefXY );
+            y = ( center.y + (radius + delta*coef)*sin(dTheta)*currentCoefXY );
+
+            curve_arr[numberPointsCurveArr] = LPoint_Set( x , y );
             numberPointsCurveArr = numberPointsCurveArr + 1;
+
+            currentCoefXY = currentCoefXY + incrementCoefXY*coef;
+            if(coefXY > 1 && currentCoefXY>coefXY)
+                currentCoefXY = coefXY;
+            if(coefXY < 1 && currentCoefXY<coefXY)
+                currentCoefXY = coefXY;
         }
     }
     else if(dir == CW)
@@ -191,7 +232,7 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
             coef = 2*M_PI*(dTheta-startAngle)/(endAngle-startAngle);
             coef = fabs(cos(coef)-1);
 
-            curve_arr[numberPointsCurveArr] = LPoint_Set( movedCenter.x + delta*coef*cos(dTheta) , movedCenter.y + delta*coef*sin(dTheta) );
+            curve_arr[numberPointsCurveArr] = LPoint_Set( ( movedCenter.x + delta*coef*cos(dTheta) )*coefXY , ( movedCenter.y + delta*coef*sin(dTheta) )*coefXY );
             numberPointsCurveArr = numberPointsCurveArr + 1;
         }
     }
