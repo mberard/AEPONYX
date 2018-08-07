@@ -144,49 +144,37 @@ void BezierAndDubinsMacro()
     {
         LUpi_LogMessage( "\n\nDubins curve with circle\n\n" );
 
-        if ( LDialog_YesNoBox("Do you want to offset the curves?") )
-        {
-            /*Yes is clicked*/
-            path.SetOffsetCurveIsSelected(true);
-            strcpy(value_offset, "0.03");
-            if ( LDialog_InputBox("Offset", "Enter the value of the offset (in microns)", value_offset) == LCANCEL)
-                path.SetOffsetValue(0);
-            else
-            {
-                path.SetOffsetValue( atof(value_offset) );
-            }
-        }
-        else 
-        {
-            /*No is clicked*/
-            path.SetOffsetCurveIsSelected(false);
+        path.SetOffsetCurveIsSelected(true);
+        strcpy(value_offset, "0.00");
+        if ( LDialog_InputBox("Offset", "Enter the value of the offset (in microns)", value_offset) == LCANCEL)
             path.SetOffsetValue(0);
-        }
-
-        if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+        else
         {
-            if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
-            {
+            path.SetOffsetValue( atof(value_offset) );
+        }
+        if(atof(value_offset) == 0.0)
+            path.SetOffsetCurveIsSelected(false);
+        else
+            path.SetOffsetCurveIsSelected(true);
 
-                path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
-                if(LLayer_Find(pFile, DialogItems[1].value))
-                {
-                    path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
-                }
-                else
-                {
-                    LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
-                }
+
+        if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
+        {
+            path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
+            if(LLayer_Find(pFile, DialogItems[1].value))
+            {
+                path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
             }
             else
             {
-                path.SetOxideSizeValue(0);
+                LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
             }
         }
         else
         {
             path.SetOxideSizeValue(0);
         }
+        
 
         if ( LDialog_YesNoBox("Do you want to rasterize the waveguide?") )
         {
@@ -621,30 +609,25 @@ void BezierAndDubinsMacro()
             path.SetParamBezier(paramBezier);
         }
 
-        if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+        
+        if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
         {
-            if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
-            {
 
-                path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
-                if(LLayer_Find(pFile, DialogItems[1].value))
-                {
-                    path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
-                }
-                else
-                {
-                    LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
-                }
+            path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
+            if(LLayer_Find(pFile, DialogItems[1].value))
+            {
+                path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
             }
             else
             {
-                path.SetOxideSizeValue(0);
+                LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
             }
         }
         else
         {
             path.SetOxideSizeValue(0);
         }
+        
 
         if( twoLabelsHasBeenSelected() )
         {
@@ -1064,26 +1047,24 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
     {
         LUpi_LogMessage( "\n\nBezier curve\n\n" );
 
-        if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+        if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
         {
-            if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
-            {
 
-                bezierCurve.SetOxideSizeValueBezier( 2*atof(DialogItems[0].value) );
-                if(LLayer_Find(pFile, DialogItems[1].value))
-                {
-                    bezierCurve.SetOxideLayerBezier( LLayer_Find(pFile, DialogItems[1].value) );
-                }
-                else
-                {
-                    LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
-                }
+            bezierCurve.SetOxideSizeValueBezier( 2*atof(DialogItems[0].value) );
+            if(LLayer_Find(pFile, DialogItems[1].value))
+            {
+                bezierCurve.SetOxideLayerBezier( LLayer_Find(pFile, DialogItems[1].value) );
             }
             else
             {
-                bezierCurve.SetOxideSizeValueBezier(0);
+                LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
             }
         }
+        else
+        {
+            bezierCurve.SetOxideSizeValueBezier(0);
+        }
+        
 
         if( twoLabelsHasBeenSelected() )
         {
