@@ -95,7 +95,7 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
     LPoint endPoint = LPoint_Set(400000,400000);
     LPoint center;
     double startAngle = 0;
-    double endAngle = 135;
+    double endAngle = 90;
     LArcDirection dir;
 
     double x,y;
@@ -161,34 +161,10 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
         endAngle = endAngle + M_PI/2.0;
     }
 
-    double coefX = 1;
-    double coefY = 1;
     double coefXY = 1;
     double incrementCoefXY;
     double currentCoefXY = 1;
-    /*
-    if(endPoint.x != center.x)
-    {
-        if(center.x + radius*cos(endAngle) < endPoint.x )
-            coefX = (endPoint.x - center.x)/(radius*cos(endAngle));
-        else
-            coefX = (radius*cos(endAngle))/(endPoint.x - center.x);
-    }
-    if(endPoint.y != center.y)
-    {
-        if(center.y + radius*sin(endAngle) > endPoint.y )
-            coefY = (endPoint.y - center.y)/(radius*sin(endAngle));
-        else
-            coefY = (radius*sin(endAngle))/(endPoint.y - center.y);
-    }
 
-    if(coefX<0)
-        coefX = 1/coefX;
-    if(coefY<0)
-        coefY = 1/coefY;
-
-LUpi_LogMessage(LFormat("coefX %lf coefY %lf\n", coefX,coefY));
-*/
     coefXY = PointDistance(endPoint, center)/(radius);
 LUpi_LogMessage(LFormat("coefXY max %lf\n", coefXY));
 
