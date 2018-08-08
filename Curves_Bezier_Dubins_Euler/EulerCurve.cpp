@@ -92,34 +92,41 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
     center = FindCenter(startPoint , startAngle , endPoint , endAngle );
 
-    //find if the arc direction is CC or CCW
-    if(startAngle > 0 && startAngle < M_PI)
+    //find if the arc direction is CW or CCW
+    double angleStartEnd;
+    angleStartEnd = atan2(endPoint.y-startPoint.y, endPoint.x-startPoint.x);
+    while(angleStartEnd<0)
+        angleStartEnd = angleStartEnd + 2*M_PI;
+    while(angleStartEnd < startAngle)
+        angleStartEnd = angleStartEnd + 2*M_PI;
+
+    if(angleStartEnd-startAngle == 0)
     {
-        if(endPoint.x<startPoint.x)
+        if(startAngle<endAngle)
             dir = CCW;
         else
-            dir = CW;
+            dir = CW;                    
     }
-    else if(startAngle > M_PI && startAngle < 2*M_PI)
+    else if(angleStartEnd-startAngle > M_PI)
+        dir = CW;
+    else if(angleStartEnd-startAngle == M_PI)
     {
-        if(endPoint.x>startPoint.x)
-            dir = CCW;
-        else
+        if(startAngle<endAngle)
             dir = CW;
+        else
+            dir = CCW;  
     }
-    else if(startAngle == M_PI)
+    else if(angleStartEnd-startAngle < M_PI)
+        dir = CCW;
+
+    switch(dir)
     {
-        if(endPoint.y>startPoint.y)
-            dir = CW;
-        else
-            dir = CCW;
-    }
-    else if(startAngle == 0 || startAngle == 2*M_PI)
-    {
-        if(endPoint.y>startPoint.y)
-            dir = CCW;
-        else
-            dir = CW;
+        case CCW:
+            LUpi_LogMessage("dans compute CCW\n");
+            break;
+        case CW:
+            LUpi_LogMessage("dans compute CW\n");
+            break;
     }
 
     double radius = PointDistanceEuler(startPoint, center);

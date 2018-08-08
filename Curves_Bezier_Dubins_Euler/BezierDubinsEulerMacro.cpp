@@ -1567,40 +1567,47 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
             {
                 double tmpParam, tmpStart,tmpEnd;
                 LPoint tmpStartPoint, tmpEndPoint;
+                double angleStartEnd;
                 LArcDirection tmpDir;
                 char tmpStr[10];
                 tmpStart = start.GetAngleDegre();
                 tmpEnd = end.GetAngleDegre();
                 tmpStartPoint = start.GetLPoint();
                 tmpEndPoint = end.GetLPoint();
-                if(tmpStart > 0 && tmpStart < 180)
+                angleStartEnd = atan2(tmpEndPoint.y-tmpStartPoint.y, tmpEndPoint.x-tmpStartPoint.x)*180/M_PI;
+                while(angleStartEnd<0)
+                    angleStartEnd = angleStartEnd + 360;
+                while(angleStartEnd < tmpStart)
+                    angleStartEnd = angleStartEnd + 360;
+
+                if(angleStartEnd-tmpStart == 0)
                 {
-                    if(tmpEndPoint.x<tmpStartPoint.x)
+                    if(tmpStart<tmpEnd)
                         tmpDir = CCW;
                     else
-                        tmpDir = CW;
+                        tmpDir = CW;                    
                 }
-                else if(tmpStart > 180 && tmpStart < 360)
+                else if(angleStartEnd-tmpStart > 180)
+                    tmpDir = CW;
+                else if(angleStartEnd-tmpStart == 180)
                 {
-                    if(tmpEndPoint.x>tmpStartPoint.x)
-                        tmpDir = CCW;
-                    else
-                        tmpDir = CW;
-                }
-                else if(tmpStart == 180)
-                {
-                    if(tmpEndPoint.y>tmpStartPoint.y)
+                    if(tmpStart<tmpEnd)
                         tmpDir = CW;
                     else
-                        tmpDir = CCW;
+                        tmpDir = CCW;  
                 }
-                else if(tmpStart == 0 || tmpStart == 360)
-                {
-                    if(tmpEndPoint.y>tmpStartPoint.y)
-                        tmpDir = CCW;
-                    else
-                        tmpDir = CW;
-                }
+                else if(angleStartEnd-tmpStart < 180)
+                    tmpDir = CCW;
+                
+    switch(tmpDir)
+    {
+        case CCW:
+            LUpi_LogMessage("dans main CCW\n");
+            break;
+        case CW:
+            LUpi_LogMessage("dans main CW\n");
+            break;
+    }
 
                 while(tmpStart>tmpEnd)
                     tmpEnd = tmpEnd + 360;
@@ -1679,6 +1686,15 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                     else
                         tmpDir = CW;
                 }
+    switch(tmpDir)
+    {
+        case CCW:
+            LUpi_LogMessage("dans main CCW\n");
+            break;
+        case CW:
+            LUpi_LogMessage("dans main CW\n");
+            break;
+    }
 
                 while(tmpStart>tmpEnd)
                     tmpEnd = tmpEnd + 360;
@@ -2008,6 +2024,15 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                     else
                         tmpDir = CW;
                 }
+    switch(tmpDir)
+    {
+        case CCW:
+            LUpi_LogMessage("dans main CCW\n");
+            break;
+        case CW:
+            LUpi_LogMessage("dans main CW\n");
+            break;
+    }
 
                 while(tmpStart>tmpEnd)
                     tmpEnd = tmpEnd + 360;
