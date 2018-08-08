@@ -1598,16 +1598,6 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 }
                 else if(angleStartEnd-tmpStart < 180)
                     tmpDir = CCW;
-                
-    switch(tmpDir)
-    {
-        case CCW:
-            LUpi_LogMessage("dans main CCW\n");
-            break;
-        case CW:
-            LUpi_LogMessage("dans main CW\n");
-            break;
-    }
 
                 while(tmpStart>tmpEnd)
                     tmpEnd = tmpEnd + 360;
@@ -1648,62 +1638,8 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
         
         if(myFile != NULL)
         {
-
-            {
-                double tmpParam, tmpStart,tmpEnd;
-                LPoint tmpStartPoint, tmpEndPoint;
-                LArcDirection tmpDir;
-                char tmpStr[10];
-                tmpStart = start.GetAngleDegre();
-                tmpEnd = end.GetAngleDegre();
-                tmpStartPoint = start.GetLPoint();
-                tmpEndPoint = end.GetLPoint();
-                if(tmpStart > 0 && tmpStart < 180)
-                {
-                    if(tmpEndPoint.x<tmpStartPoint.x)
-                        tmpDir = CCW;
-                    else
-                        tmpDir = CW;
-                }
-                else if(tmpStart > 180 && tmpStart < 360)
-                {
-                    if(tmpEndPoint.x>tmpStartPoint.x)
-                        tmpDir = CCW;
-                    else
-                        tmpDir = CW;
-                }
-                else if(tmpStart == 180)
-                {
-                    if(tmpEndPoint.y>tmpStartPoint.y)
-                        tmpDir = CW;
-                    else
-                        tmpDir = CCW;
-                }
-                else if(tmpStart == 0 || tmpStart == 360)
-                {
-                    if(tmpEndPoint.y>tmpStartPoint.y)
-                        tmpDir = CCW;
-                    else
-                        tmpDir = CW;
-                }
-    switch(tmpDir)
-    {
-        case CCW:
-            LUpi_LogMessage("dans main CCW\n");
-            break;
-        case CW:
-            LUpi_LogMessage("dans main CW\n");
-            break;
-    }
-
-                while(tmpStart>tmpEnd)
-                    tmpEnd = tmpEnd + 360;
-                tmpParam = 267*(tmpEnd - tmpStart);
-                if(tmpDir == CW)
-                    tmpParam = 267*(360 - (tmpEnd - tmpStart));
-                
-                strcpy(strLayer, itoa((long)tmpParam,tmpStr,10));
-            }
+            strcpy(strLayer, "24000");
+            
             if ( LDialog_InputBox("Euler parameter", "Parameter suggests: 45d = 3K, 90d = 12K, 180d = 24K", strLayer) == 0)
                 return;
             else
@@ -2024,15 +1960,6 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                     else
                         tmpDir = CW;
                 }
-    switch(tmpDir)
-    {
-        case CCW:
-            LUpi_LogMessage("dans main CCW\n");
-            break;
-        case CW:
-            LUpi_LogMessage("dans main CW\n");
-            break;
-    }
 
                 while(tmpStart>tmpEnd)
                     tmpEnd = tmpEnd + 360;
