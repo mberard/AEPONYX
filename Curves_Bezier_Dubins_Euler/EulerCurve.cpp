@@ -135,6 +135,15 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
     dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 20);
     
+    if(startAngle>endAngle && dir==CCW)
+    {
+        endAngle = endAngle + 2*M_PI;
+    }
+    else if(startAngle<endAngle && dir==CW)
+    {
+        startAngle = startAngle + 2*M_PI;
+    }
+
     if(dir == CCW)
     {
         startAngle = startAngle - M_PI/2.0;
