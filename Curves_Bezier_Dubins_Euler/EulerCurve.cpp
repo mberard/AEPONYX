@@ -206,25 +206,26 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
 
     this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xStart + sin(angleStart) * this->guideWidth / 2.0) , (LCoord)round(yStart - cos(angleStart) * this->guideWidth / 2.0));
     this->nbPoints = this->nbPoints + 1;
+
     for(i=1; i<this->nbPointsCurve-1; i++)
     {
         angle = atan2( this->curve_arr[i+1].y-this->curve_arr[i].y , this->curve_arr[i+1].x-this->curve_arr[i].x );
         this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(this->curve_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(this->curve_arr[i].y - cos(angle) * this->guideWidth / 2.0));
         this->nbPoints = this->nbPoints + 1;
     }
+    
     this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xEnd + sin(angleEnd) * this->guideWidth / 2.0) , (LCoord)round(yEnd - cos(angleEnd) * this->guideWidth / 2.0));
     this->nbPoints = this->nbPoints + 1;
 
     this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xEnd + sin(angleEnd + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEnd - cos(angleEnd + M_PI) * this->guideWidth / 2.0));
     this->nbPoints = this->nbPoints + 1;
+    
     for(i=this->nbPointsCurve-2; i>1; i--)
     {
         angle = atan2( this->curve_arr[i-1].y-this->curve_arr[i].y , this->curve_arr[i-1].x-this->curve_arr[i].x );
         this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(this->curve_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(this->curve_arr[i].y - cos(angle) * this->guideWidth / 2.0));
         this->nbPoints = this->nbPoints + 1;
     }
-    //this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xStart + sin(angleStart + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yStart - cos(angleStart + M_PI) * this->guideWidth / 2.0));
-    //this->nbPoints = this->nbPoints + 1;
 
 LUpi_LogMessage(LFormat("nbPoints %d\n",this->nbPoints));
 LUpi_LogMessage(LFormat("Display polygon\n"));
