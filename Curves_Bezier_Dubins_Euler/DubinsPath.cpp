@@ -112,6 +112,11 @@ LStatus DubinsPath::SetParamBezier(double value){
     return LStatusOK;
 }
 
+LStatus DubinsPath::SetParamEuler(double value){
+    this->paramEuler = value;
+    return LStatusOK;
+}
+
 LFile DubinsPath::GetFile(){
     return this->file;
 }

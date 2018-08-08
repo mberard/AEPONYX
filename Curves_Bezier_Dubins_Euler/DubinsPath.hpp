@@ -51,6 +51,7 @@ private:
     int nbPoints;
 
     double paramBezier;
+    double paramEuler;
 
     LCell cell;
     LFile file;
@@ -73,6 +74,7 @@ public:
     LStatus SetOxideSizeValue(double value);
     LStatus SetOxideLayer(LLayer layer);
     LStatus SetParamBezier(double paramBezier);
+    LStatus SetParamEuler(double paramEuler);
 
     double GetOxideSizeValue();
 
