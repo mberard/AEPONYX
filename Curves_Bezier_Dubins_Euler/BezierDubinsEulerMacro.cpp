@@ -1484,8 +1484,7 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
         eulerPath.SetLayer(pLayer);
         
         if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
-        {
-LUpi_LogMessage(LFormat("%s %s",DialogItems[0].value,DialogItems[1].value ));            
+        {         
             eulerPath.SetOxideSizeValueEuler( atof(DialogItems[0].value) );
 
             if(LLayer_Find(pFile, DialogItems[1].value))
