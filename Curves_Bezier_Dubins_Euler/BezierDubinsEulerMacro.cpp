@@ -1566,7 +1566,7 @@ LUpi_LogMessage(LFormat("%s %s",DialogItems[0].value,DialogItems[1].value ));
                 width = atof(strLayer);
 
             strcpy(strLayer, "12000");
-            if ( LDialog_InputBox("Euler parameter", "Euler parameter (suggest: 45° -> 3000, 90° -> 12000, 180° -> 24000)", strLayer) == 0)
+            if ( LDialog_InputBox("Euler parameter", "Euler parameter (suggests: 45d = 3000, 90d = 12000, 180d = 24000)", strLayer) == 0)
                 return;
             else
                 paramEuler = atof(strLayer);
@@ -1596,12 +1596,12 @@ LUpi_LogMessage(LFormat("%s %s",DialogItems[0].value,DialogItems[1].value ));
         
         if(myFile != NULL)
         {
-/*
-            strcpy(strLayer, "0.3");
-            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
+LUpi_LogMessage(LFormat("file %p", myFile));
+            strcpy(strLayer, "12000");
+            if ( LDialog_InputBox("Euler parameter", "Euler parameter (suggests: 45d = 3000, 90d = 12000, 180d = 24000)", strLayer) == 0)
                 return;
             else
-                paramBezier = atof(strLayer);
+                paramEuler = atof(strLayer);
 
             while(!feof(myFile))
             {
@@ -1743,21 +1743,21 @@ LUpi_LogMessage(LFormat("%s %s",DialogItems[0].value,DialogItems[1].value ));
                 }
 
                 
-                bezierCurve.SetFile(pFile);
-                bezierCurve.SetCell(pCell);
-                bezierCurve.SetLayer(pLayer);
-                bezierCurve.SetStartPoint(start);
-                bezierCurve.SetEndPoint(end);
-                bezierCurve.SetGuideWidth(width);
-                bezierCurve.SetParamBezier(paramBezier);
+                eulerPath.SetFile(pFile);
+                eulerPath.SetCell(pCell);
+                eulerPath.SetLayer(pLayer);
+                eulerPath.SetStartPoint(start);
+                eulerPath.SetEndPoint(end);
+                eulerPath.SetGuideWidth(width);
+                eulerPath.SetParamEuler(paramEuler);
                 
-                bezierCurve.ComputeBezierCurve();
+                eulerPath.ComputeEulerCurve();
             
 
                 fscanf(myFile,"\n"); //got to the next line
             }
             fclose(myFile);
-*/
+
         }
 
 
