@@ -1572,6 +1572,8 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 while(tmpStart>tmpEnd)
                     tmpEnd = tmpEnd + 360;
                 tmpParam = 267*(tmpEnd - tmpStart);
+                if(tmpParam > 48060)
+                    tmpParam = 267*(360 - (tmpEnd - tmpStart));
                 strcpy(strLayer, itoa((long)tmpParam,tmpStr,10));
             }
             if ( LDialog_InputBox("Euler parameter", "Parameter suggests: 45d = 3K, 90d = 12K, 180d = 24K", strLayer) == 0)
@@ -1613,6 +1615,8 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 while(tmpStart>tmpEnd)
                     tmpEnd = tmpEnd + 360;
                 tmpParam = 267*(tmpEnd - tmpStart);
+                if(tmpParam > 48060)
+                    tmpParam = 267*(360 - (tmpEnd - tmpStart));
                 strcpy(strLayer, itoa((long)tmpParam,tmpStr,10));
             }
             if ( LDialog_InputBox("Euler parameter", "Parameter suggests: 45d = 3K, 90d = 12K, 180d = 24K", strLayer) == 0)
@@ -1906,6 +1910,8 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 while(tmpStart>tmpEnd)
                     tmpEnd = tmpEnd + 360;
                 tmpParam = 267*(tmpEnd - tmpStart);
+                if(tmpParam > 48060)
+                    tmpParam = 267*(360 - (tmpEnd - tmpStart));
                 strcpy(strLayer, itoa((long)tmpParam,tmpStr,10));
             }
             if ( LDialog_InputBox("Euler parameter", "Parameter suggests: 45d = 12K, 90d = 24K, 180d = 48K", strLayer) == 0)
