@@ -1596,7 +1596,6 @@ LUpi_LogMessage(LFormat("%s %s",DialogItems[0].value,DialogItems[1].value ));
         
         if(myFile != NULL)
         {
-LUpi_LogMessage(LFormat("file %p", myFile));
             strcpy(strLayer, "12000");
             if ( LDialog_InputBox("Euler parameter", "Euler parameter (suggests: 45d = 3000, 90d = 12000, 180d = 24000)", strLayer) == 0)
                 return;
@@ -1764,7 +1763,7 @@ LUpi_LogMessage(LFormat("file %p", myFile));
 
         else //manual selection
         {
-/*
+
             LDialog_AlertBox(LFormat("No file found: manual selection"));
             LDialogItem DialogItems[2] = {{ "Cell","cell1"}, { "Name","P1"}};
             if (LDialog_MultiLineInputBox("Start point",DialogItems,2) == 0)
@@ -1881,22 +1880,22 @@ LUpi_LogMessage(LFormat("file %p", myFile));
             else
                 width = atof(strLayer);
 
-            strcpy(strLayer, "0.3");
-            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
+            strcpy(strLayer, "12000");
+            if ( LDialog_InputBox("Euler parameter", "Euler parameter (suggests: 45d = 3000, 90d = 12000, 180d = 24000)", strLayer) == 0)
                 return;
             else
-                paramBezier = atof(strLayer);
+                paramEuler = atof(strLayer);
 
-            bezierCurve.SetFile(pFile);
-            bezierCurve.SetCell(pCell);
-            bezierCurve.SetLayer(pLayer);
-            bezierCurve.SetStartPoint(start);
-            bezierCurve.SetEndPoint(end);
-            bezierCurve.SetGuideWidth(width);
-            bezierCurve.SetParamBezier(paramBezier);
+            eulerPath.SetFile(pFile);
+            eulerPath.SetCell(pCell);
+            eulerPath.SetLayer(pLayer);
+            eulerPath.SetStartPoint(start);
+            eulerPath.SetEndPoint(end);
+            eulerPath.SetGuideWidth(width);
+            eulerPath.SetParamEuler(paramEuler);
             
-            bezierCurve.ComputeBezierCurve();
-*/
+            eulerPath.ComputeEulerCurve();
+
         }
     }
     //other choice = nothing
