@@ -1565,8 +1565,17 @@ LUpi_LogMessage(LFormat("%s %s",DialogItems[0].value,DialogItems[1].value ));
             else
                 width = atof(strLayer);
 
-            strcpy(strLayer, "12000");
-            if ( LDialog_InputBox("Euler parameter", "Euler parameter (suggests: 45d = 3000, 90d = 12000, 180d = 24000)", strLayer) == 0)
+            {
+                double tmpParam, tmpStart,tmpEnd;
+                char tmpStr[10];
+                tmpStart = start.GetAngleDegre();
+                tmpEnd = end.GetAngleDegre();
+                while(tmpStart>tmpEnd)
+                    tmpEnd = tmpEnd + 360;
+                tmpParam = 267*(tmpEnd - tmpStart);
+                strcpy(strLayer, itoa((long)tmpParam,tmpStr,10));
+            }
+            if ( LDialog_InputBox("Euler parameter", "Parameter suggests: 45d = 3K, 90d = 12K, 180d = 24K", strLayer) == 0)
                 return;
             else
                 paramEuler = atof(strLayer);
@@ -1596,8 +1605,18 @@ LUpi_LogMessage(LFormat("%s %s",DialogItems[0].value,DialogItems[1].value ));
         
         if(myFile != NULL)
         {
-            strcpy(strLayer, "12000");
-            if ( LDialog_InputBox("Euler parameter", "Euler parameter (suggests: 45d = 3000, 90d = 12000, 180d = 24000)", strLayer) == 0)
+
+            {
+                double tmpParam, tmpStart,tmpEnd;
+                char tmpStr[10];
+                tmpStart = start.GetAngleDegre();
+                tmpEnd = end.GetAngleDegre();
+                while(tmpStart>tmpEnd)
+                    tmpEnd = tmpEnd + 360;
+                tmpParam = 267*(tmpEnd - tmpStart);
+                strcpy(strLayer, itoa((long)tmpParam,tmpStr,10));
+            }
+            if ( LDialog_InputBox("Euler parameter", "Parameter suggests: 45d = 3K, 90d = 12K, 180d = 24K", strLayer) == 0)
                 return;
             else
                 paramEuler = atof(strLayer);
@@ -1880,8 +1899,17 @@ LUpi_LogMessage(LFormat("%s %s",DialogItems[0].value,DialogItems[1].value ));
             else
                 width = atof(strLayer);
 
-            strcpy(strLayer, "12000");
-            if ( LDialog_InputBox("Euler parameter", "Euler parameter (suggests: 45d = 3000, 90d = 12000, 180d = 24000)", strLayer) == 0)
+            {
+                double tmpParam, tmpStart,tmpEnd;
+                char tmpStr[10];
+                tmpStart = start.GetAngleDegre();
+                tmpEnd = end.GetAngleDegre();
+                while(tmpStart>tmpEnd)
+                    tmpEnd = tmpEnd + 360;
+                tmpParam = 267*(tmpEnd - tmpStart);
+                strcpy(strLayer, itoa((long)tmpParam,tmpStr,10));
+            }
+            if ( LDialog_InputBox("Euler parameter", "Parameter suggests: 45d = 12K, 90d = 24K, 180d = 48K", strLayer) == 0)
                 return;
             else
                 paramEuler = atof(strLayer);
