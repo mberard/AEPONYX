@@ -122,10 +122,10 @@ LUpi_LogMessage(LFormat("\n\n\n\n\n"));
     switch(dir)
     {
         case CCW:
-            LUpi_LogMessage("dans compute CCW\n");
+            LUpi_LogMessage("CCW\n");
             break;
         case CW:
-            LUpi_LogMessage("dans compute CW\n");
+            LUpi_LogMessage("CW\n");
             break;
     }
 

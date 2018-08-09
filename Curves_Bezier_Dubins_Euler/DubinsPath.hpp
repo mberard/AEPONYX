@@ -110,6 +110,7 @@ public:
     void Add( double x, double y);
 
     void DubinsPathWithBezierCurves();
+    void DubinsPathWithEulerCurves();
 
 };
 
