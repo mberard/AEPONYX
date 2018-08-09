@@ -1846,13 +1846,13 @@ void DubinsPath::DubinsPathWithEulerCurves()
 
     double coef;
 
-    LPoint curve1_arr[MAX_POLYGON_SIZE_BEZIER];
+    LPoint curve1_arr[MAX_POLYGON_SIZE_EULER];
     int nbPointsCurve1 = 0;
-    LPoint curve2_arr[MAX_POLYGON_SIZE_BEZIER];
+    LPoint curve2_arr[MAX_POLYGON_SIZE_EULER];
     int nbPointsCurve2 = 0;
-    LPoint middle_arr[MAX_POLYGON_SIZE_BEZIER];
+    LPoint middle_arr[MAX_POLYGON_SIZE_EULER];
     int nbPointsMiddle = 0;
-    LPoint point_arr[MAX_POLYGON_SIZE_BEZIER];
+    LPoint point_arr[MAX_POLYGON_SIZE_EULER];
     int nbPoints = 0;
 
     int i;
@@ -2208,7 +2208,7 @@ void DubinsPath::DubinsPathWithEulerCurves()
 
     //construct the guide
     //right curve1
-    point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve1 + sin(angleStartCurve1) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve1 - cos(angleStartCurve1) * this->guideWidth / 2.0));
+    point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve1 + cos(angleStartCurve1) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve1 + sin(angleStartCurve1) * this->guideWidth / 2.0));
     nbPoints = nbPoints + 1 ;
     for(i=1; i<nbPointsCurve1-1; i++)
     {
@@ -2216,12 +2216,12 @@ void DubinsPath::DubinsPathWithEulerCurves()
         point_arr[nbPoints] = LPoint_Set((LCoord)round(curve1_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(curve1_arr[i].y - cos(angle) * this->guideWidth / 2.0));
         nbPoints = nbPoints + 1;
     }
-    point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve1 + sin(angleEndCurve1) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve1 - cos(angleEndCurve1) * this->guideWidth / 2.0));
+    point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve1 + cos(angleEndCurve1) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve1 + sin(angleEndCurve1) * this->guideWidth / 2.0));
     nbPoints = nbPoints + 1;
     //if necessary, right curve middle
     if(this->type == RLR || this->type == LRL)
     {
-        point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve1 + sin(angleEndCurve1) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve1 - cos(angleEndCurve1) * this->guideWidth / 2.0));
+        point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve1 + cos(angleEndCurve1) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve1 + sin(angleEndCurve1) * this->guideWidth / 2.0));
         nbPoints = nbPoints + 1 ;
         for(i=1; i<nbPointsMiddle-1; i++)
         {
@@ -2229,11 +2229,11 @@ void DubinsPath::DubinsPathWithEulerCurves()
             point_arr[nbPoints] = LPoint_Set((LCoord)round(middle_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(middle_arr[i].y - cos(angle) * this->guideWidth / 2.0));
             nbPoints = nbPoints + 1;
         }
-        point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve2 + sin(angleStartCurve2) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve2 - cos(angleStartCurve2) * this->guideWidth / 2.0));
+        point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve2 + cos(angleStartCurve2) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve2 + sin(angleStartCurve2) * this->guideWidth / 2.0));
         nbPoints = nbPoints + 1;
     }
     //right curve2
-    point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve2 + sin(angleStartCurve2) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve2 - cos(angleStartCurve2) * this->guideWidth / 2.0));
+    point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve2 + cos(angleStartCurve2) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve2 + sin(angleStartCurve2) * this->guideWidth / 2.0));
     nbPoints = nbPoints + 1 ;
     for(i=1; i<nbPointsCurve2-1; i++)
     {
@@ -2241,11 +2241,11 @@ void DubinsPath::DubinsPathWithEulerCurves()
         point_arr[nbPoints] = LPoint_Set((LCoord)round(curve2_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(curve2_arr[i].y - cos(angle) * this->guideWidth / 2.0));
         nbPoints = nbPoints + 1;
     }
-    point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve2 + sin(angleEndCurve2) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve2 - cos(angleEndCurve2) * this->guideWidth / 2.0));
+    point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve2 + cos(angleEndCurve2) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve2 + sin(angleEndCurve2) * this->guideWidth / 2.0));
     nbPoints = nbPoints + 1;
     
     //left curve2
-    point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve2 + sin(angleEndCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve2 - cos(angleEndCurve2 + M_PI) * this->guideWidth / 2.0));
+    point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve2 + cos(angleEndCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve2 + sin(angleEndCurve2 + M_PI) * this->guideWidth / 2.0));
     nbPoints = nbPoints + 1;
     for(i=nbPointsCurve2-2; i>1; i--)
     {
@@ -2253,12 +2253,12 @@ void DubinsPath::DubinsPathWithEulerCurves()
         point_arr[nbPoints] = LPoint_Set((LCoord)round(curve2_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(curve2_arr[i].y - cos(angle) * this->guideWidth / 2.0));
         nbPoints = nbPoints + 1;
     }
-    point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve2 + sin(angleStartCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve2 - cos(angleStartCurve2 + M_PI) * this->guideWidth / 2.0));
+    point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve2 + cos(angleStartCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve2 + sin(angleStartCurve2 + M_PI) * this->guideWidth / 2.0));
     nbPoints = nbPoints + 1;
     //if necessary, left curve middle
     if(this->type == RLR || this->type == LRL)
     {
-        point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve2 + sin(angleStartCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve2 - cos(angleStartCurve2 + M_PI) * this->guideWidth / 2.0));
+        point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve2 + cos(angleStartCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve2 + sin(angleStartCurve2 + M_PI) * this->guideWidth / 2.0));
         nbPoints = nbPoints + 1;
         for(i=nbPointsCurve1-2; i>1; i--)
         {
@@ -2266,11 +2266,11 @@ void DubinsPath::DubinsPathWithEulerCurves()
             point_arr[nbPoints] = LPoint_Set((LCoord)round(middle_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(middle_arr[i].y - cos(angle) * this->guideWidth / 2.0));
             nbPoints = nbPoints + 1;
         }
-        point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve1 + sin(angleEndCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve1 - cos(angleEndCurve1 + M_PI) * this->guideWidth / 2.0));
+        point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve1 + cos(angleEndCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve1 + sin(angleEndCurve1 + M_PI) * this->guideWidth / 2.0));
         nbPoints = nbPoints + 1;
     }
     //left curve1
-    point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve1 + sin(angleEndCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve1 - cos(angleEndCurve1 + M_PI) * this->guideWidth / 2.0));
+    point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve1 + cos(angleEndCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve1 + sin(angleEndCurve1 + M_PI) * this->guideWidth / 2.0));
     nbPoints = nbPoints + 1;
     for(i=nbPointsCurve1-2; i>1; i--)
     {
@@ -2278,7 +2278,7 @@ void DubinsPath::DubinsPathWithEulerCurves()
         point_arr[nbPoints] = LPoint_Set((LCoord)round(curve1_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(curve1_arr[i].y - cos(angle) * this->guideWidth / 2.0));
         nbPoints = nbPoints + 1;
     }
-    point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve1 + sin(angleStartCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve1 - cos(angleStartCurve1 + M_PI) * this->guideWidth / 2.0));
+    point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve1 + cos(angleStartCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve1 + sin(angleStartCurve1 + M_PI) * this->guideWidth / 2.0));
     nbPoints = nbPoints + 1;
 
 
@@ -2311,7 +2311,6 @@ void DubinsPath::DubinsPathWithEulerCurves()
         LObject_Delete( this->cell, this->torusMiddle );
         LObject_Delete( this->cell, this->line );
     }
-
 }
 
 

@@ -6,7 +6,7 @@
 
 #define EXCLUDE_LEDIT_LEGACY_UPI //This statement make the C language macros, which are now superseded by C++ functions, unavailable.
 
-#define MAX_POLYGON_SIZE_EULER 15000
+#define MAX_POLYGON_SIZE_EULER 8000
 
 class EulerCurve{
 private:
