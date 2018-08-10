@@ -483,7 +483,7 @@ void DubinsPath::ComputeDubinsPaths(){
 }
 
 
-void DubinsPath::DrawLine()
+void DubinsPath::DrawLine() //only when the dubin path is a unique line
 {
     LPoint point_arr[4];
     float dx, dy;
@@ -504,8 +504,8 @@ void DubinsPath::DrawLine()
 
 
 void DubinsPath::StoreRSRPath()
-{
-    double angleTorusPoint, angleTorusTangent;
+{ 
+    double angleTorusPoint, angleTorusTangent, angleTorusTangentRadian;
 
     LTorusParams params;
     params.ptCenter = this->centerStartRightCircle;
@@ -513,7 +513,8 @@ void DubinsPath::StoreRSRPath()
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartRightCircle.y , this->startPoint.GetLPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
-    
+    angleTorusTangentRadian = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x );
+
     params.dStartAngle = RoundAngle(angleTorusTangent);
     params.dStopAngle = RoundAngle(angleTorusPoint);
     
@@ -529,23 +530,17 @@ void DubinsPath::StoreRSRPath()
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
     }
 
-
     LPoint point_arr[4];
-    float dx, dy;
-    dx = this->endTangent.x - this->startTangent.x;
-    dy = this->endTangent.y - this->startTangent.y;
-    point_arr[0] = LPoint_Set( this->startTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[1] = LPoint_Set( this->endTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[2] = LPoint_Set( this->endTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[3] = LPoint_Set( this->startTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
-    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+    point_arr[0] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
+    point_arr[1] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
 
     params.ptCenter = this->centerEndRightCircle;
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndRightCircle.y , this->endPoint.GetLPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
-    
+    angleTorusTangentRadian = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x );
+
     params.dStartAngle = RoundAngle(angleTorusPoint);
     params.dStopAngle = RoundAngle(angleTorusTangent);
     
@@ -560,11 +555,18 @@ void DubinsPath::StoreRSRPath()
         params.dStopAngle = 0;
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
     }
+
+
+    
+    point_arr[2] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
+    point_arr[3] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
+    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+
 }
 
 void DubinsPath::StoreLSLPath()
 {
-    double angleTorusPoint, angleTorusTangent;
+    double angleTorusPoint, angleTorusTangent, angleTorusTangentRadian;
 
     LTorusParams params;
     params.ptCenter = this->centerStartLeftCircle;
@@ -572,7 +574,8 @@ void DubinsPath::StoreLSLPath()
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetLPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
-    
+    angleTorusTangentRadian = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x );
+
     params.dStartAngle = RoundAngle(angleTorusPoint);
     params.dStopAngle = RoundAngle(angleTorusTangent);
     
@@ -588,22 +591,19 @@ void DubinsPath::StoreLSLPath()
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
     }
 
+
     LPoint point_arr[4];
-    float dx, dy;
-    dx = this->endTangent.x - this->startTangent.x;
-    dy = this->endTangent.y - this->startTangent.y;
-    point_arr[0] = LPoint_Set( this->startTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[1] = LPoint_Set( this->endTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[2] = LPoint_Set( this->endTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[3] = LPoint_Set( this->startTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
-    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+    point_arr[0] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
+    point_arr[1] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius, params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
+    
 
     params.ptCenter = this->centerEndLeftCircle;
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetLPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
-    
+    angleTorusTangentRadian = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x );
+
     params.dStartAngle = RoundAngle(angleTorusTangent);
     params.dStopAngle = RoundAngle(angleTorusPoint);
     
@@ -618,11 +618,16 @@ void DubinsPath::StoreLSLPath()
         params.dStopAngle = 0;
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
     }
+    
+    
+    point_arr[2] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius, params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
+    point_arr[3] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
+    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 }
 
 void DubinsPath::StoreRSLPath()
 {
-    double angleTorusPoint, angleTorusTangent;
+    double angleTorusPoint, angleTorusTangent, angleTorusTangentRadian;
 
     LTorusParams params;
     params.ptCenter = this->centerStartRightCircle;
@@ -630,7 +635,8 @@ void DubinsPath::StoreRSLPath()
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartRightCircle.y , this->startPoint.GetLPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
-    
+    angleTorusTangentRadian = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x );
+
     params.dStartAngle = RoundAngle(angleTorusTangent);
     params.dStopAngle = RoundAngle(angleTorusPoint);
     
@@ -647,20 +653,15 @@ void DubinsPath::StoreRSLPath()
     }
 
     LPoint point_arr[4];
-    float dx, dy;
-    dx = this->endTangent.x - this->startTangent.x;
-    dy = this->endTangent.y - this->startTangent.y;
-    point_arr[0] = LPoint_Set( this->startTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[1] = LPoint_Set( this->endTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[2] = LPoint_Set( this->endTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[3] = LPoint_Set( this->startTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
-    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+    point_arr[0] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
+    point_arr[1] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius, params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
 
     params.ptCenter = this->centerEndLeftCircle;
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetLPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
+    angleTorusTangentRadian = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusTangent);
     params.dStopAngle = RoundAngle(angleTorusPoint);
@@ -676,11 +677,15 @@ void DubinsPath::StoreRSLPath()
         params.dStopAngle = 0;
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
     }
+
+    point_arr[2] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
+    point_arr[3] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius, params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
+    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 }
 
 void DubinsPath::StoreLSRPath()
 {
-    double angleTorusPoint, angleTorusTangent;
+    double angleTorusPoint, angleTorusTangent, angleTorusTangentRadian;
 
     LTorusParams params;
     params.ptCenter = this->centerStartLeftCircle;
@@ -688,6 +693,7 @@ void DubinsPath::StoreLSRPath()
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetLPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
+    angleTorusTangentRadian = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusPoint);
     params.dStopAngle = RoundAngle(angleTorusTangent);
@@ -705,20 +711,16 @@ void DubinsPath::StoreLSRPath()
     }
 
     LPoint point_arr[4];
-    float dx, dy;
-    dx = this->endTangent.x - this->startTangent.x;
-    dy = this->endTangent.y - this->startTangent.y;
-    point_arr[0] = LPoint_Set( this->startTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[1] = LPoint_Set( this->endTangent.x+(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y-(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[2] = LPoint_Set( this->endTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->endTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
-    point_arr[3] = LPoint_Set( this->startTangent.x-(sin(atan2(dy,dx))*this->guideWidth/2) , this->startTangent.y+(cos(atan2(dy,dx))*this->guideWidth/2) );
-    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+    point_arr[0] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
+    point_arr[1] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius, params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
+
 
     params.ptCenter = this->centerEndRightCircle;
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
     angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndRightCircle.y , this->endPoint.GetLPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
+    angleTorusTangentRadian = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusPoint);
     params.dStopAngle = RoundAngle(angleTorusTangent);
@@ -734,6 +736,10 @@ void DubinsPath::StoreLSRPath()
         params.dStopAngle = 0;
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
     }
+
+    point_arr[2] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
+    point_arr[3] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius, params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
+    this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 }
 
 void DubinsPath::StoreRLRPath()
