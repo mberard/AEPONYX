@@ -1930,7 +1930,7 @@ void DubinsPath::DubinsPathWithEulerCurves()
             LUpi_LogMessage("CW\n");
             break;
     }
-    dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 20);
+    dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
     
     if(angleStartCurve1>angleEndCurve1 && dir==CCW)
         angleEndCurve1 = angleEndCurve1 + 2*M_PI;
@@ -2032,7 +2032,7 @@ void DubinsPath::DubinsPathWithEulerCurves()
             LUpi_LogMessage("CW\n");
             break;
     }
-    dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 20);
+    dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
     
     if(angleStartCurve2>angleEndCurve2 && dir==CCW)
         angleEndCurve2 = angleEndCurve2 + 2*M_PI;
@@ -2137,7 +2137,7 @@ void DubinsPath::DubinsPathWithEulerCurves()
                 LUpi_LogMessage("CW\n");
                 break;
         }
-        dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 20);
+        dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
         
         if(angleEndCurve1>angleStartCurve2 && dir==CCW)
             angleStartCurve2 = angleStartCurve2 + 2*M_PI;
