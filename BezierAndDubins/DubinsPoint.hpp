@@ -6,7 +6,8 @@
 class DubinsPoint{
 private:
     DPoint point;
-    float angle;
+    float angleRadian;
+    float angleDegre;
 
 public:
     DubinsPoint();

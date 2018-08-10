@@ -512,7 +512,7 @@ void DubinsPath::StoreRSRPath()
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
-    angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartRightCircle.y , this->startPoint.GetLPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
+    angleTorusPoint = this->startPoint.GetAngleDegre()+90;
     angleTorusTangentRadian = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusTangent);
@@ -538,7 +538,7 @@ void DubinsPath::StoreRSRPath()
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
-    angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndRightCircle.y , this->endPoint.GetLPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
+    angleTorusPoint = this->endPoint.GetAngleDegre()+90;
     angleTorusTangentRadian = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusPoint);
@@ -573,7 +573,7 @@ void DubinsPath::StoreLSLPath()
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
-    angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetLPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
+    angleTorusPoint = this->startPoint.GetAngleDegre()-90;
     angleTorusTangentRadian = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusPoint);
@@ -601,7 +601,7 @@ void DubinsPath::StoreLSLPath()
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
-    angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetLPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
+    angleTorusPoint = this->endPoint.GetAngleDegre()-90;
     angleTorusTangentRadian = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusTangent);
@@ -634,7 +634,7 @@ void DubinsPath::StoreRSLPath()
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x ) *180.0/M_PI;
-    angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartRightCircle.y , this->startPoint.GetLPoint().x - this->centerStartRightCircle.x ) *180.0/M_PI;
+    angleTorusPoint = this->startPoint.GetAngleDegre()+90;
     angleTorusTangentRadian = atan2( this->startTangent.y - this->centerStartRightCircle.y , this->startTangent.x - this->centerStartRightCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusTangent);
@@ -660,7 +660,7 @@ void DubinsPath::StoreRSLPath()
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x ) *180.0/M_PI;
-    angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndLeftCircle.y , this->endPoint.GetLPoint().x - this->centerEndLeftCircle.x ) *180.0/M_PI;
+    angleTorusPoint = this->endPoint.GetAngleDegre()-90;
     angleTorusTangentRadian = atan2( this->endTangent.y - this->centerEndLeftCircle.y , this->endTangent.x - this->centerEndLeftCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusTangent);
@@ -692,7 +692,7 @@ void DubinsPath::StoreLSRPath()
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x ) *180.0/M_PI;
-    angleTorusPoint = atan2( this->startPoint.GetLPoint().y - this->centerStartLeftCircle.y , this->startPoint.GetLPoint().x - this->centerStartLeftCircle.x ) *180.0/M_PI;
+    angleTorusPoint = this->startPoint.GetAngleDegre()-90;
     angleTorusTangentRadian = atan2( this->startTangent.y - this->centerStartLeftCircle.y , this->startTangent.x - this->centerStartLeftCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusPoint);
@@ -719,7 +719,7 @@ void DubinsPath::StoreLSRPath()
     params.nInnerRadius = this->radius - this->guideWidth / 2.0 - this->offsetValue;
     params.nOuterRadius = this->radius + this->guideWidth / 2.0 - this->offsetValue;
     angleTorusTangent = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x ) *180.0/M_PI;
-    angleTorusPoint = atan2( this->endPoint.GetLPoint().y - this->centerEndRightCircle.y , this->endPoint.GetLPoint().x - this->centerEndRightCircle.x ) *180.0/M_PI;
+    angleTorusPoint = this->endPoint.GetAngleDegre()+90;
     angleTorusTangentRadian = atan2( this->endTangent.y - this->centerEndRightCircle.y , this->endTangent.x - this->centerEndRightCircle.x );
 
     params.dStartAngle = RoundAngle(angleTorusPoint);
