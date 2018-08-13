@@ -272,12 +272,17 @@ void AATorusFilletWithoutDeformation(void)
         
         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
         {
+            //detect if it is an instance
+                //garder que les polygones dans couches ONO ou OX
+            //mettre dans une layer particuliere
             LObject object = LSelection_GetObject(pSelection);
             obj_arr[nbPolygonSelected] = object;
             nbPolygonSelected++;
         }
         LUpi_LogMessage(LFormat("nbPolygonSelected %d\n", nbPolygonSelected));    
 
+        //mettre tous les polygones de la layer dans un tableau pour l'operation boolenne
+        
         LCell_BooleanOperation(pCell,
                                LBoolOp_OR, 
                                NULL, 
