@@ -455,7 +455,8 @@ void DubinsPath::ComputeDubinsPaths(){
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
     }
 
-
+//LCircle_New(this->cell, this->layer, this->startTangent, 10);
+//LCircle_New(this->cell, this->layer, this->endTangent, 10);
 
     switch(shortestType)
     {
