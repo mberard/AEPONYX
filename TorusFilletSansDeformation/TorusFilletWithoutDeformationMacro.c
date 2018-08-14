@@ -27,26 +27,21 @@ void RecursiveInstanceDetection(LInstance instance, LCell cell, LLayer originLay
     LObject obj;
     //find the right cell
     LCell instancedCell = LInstance_GetCell(instance);
+
+    for(LInstance newInstance = LInstance_GetList( instancedCell ) ; newInstance != NULL ; newInstance = LInstance_GetNext( newInstance ) )
+    {
+        RecursiveInstanceDetection((LInstance)newInstance, cell, originLayer, destinationLayer, transform);
+    }
+
     //garder que les polygones dans la layer objectif
     for(LObject instancedObject = LObject_GetList(instancedCell, originLayer) ; instancedObject != NULL ; instancedObject = LObject_GetNext(instancedObject) )
     {
-LUpi_LogMessage("Dans le for\n");
-        if( LObject_GetShape(instancedObject) == LObjInstance)
-        {
-LUpi_LogMessage("WOOOOOOOOOW C'EST RECURSIF\n");
-            RecursiveInstanceDetection( (LInstance)instancedObject, cell, originLayer, destinationLayer, transform);
-        }
-            
-        else
-        {
-            //les copier a la bonne position dans la bonne layer temporaire
-            obj = LObject_Copy( cell, destinationLayer, instancedObject );
-            LObject tmp_obj_arr[1];
-            tmp_obj_arr[0] = obj;
-            LObject_ConvertToPolygon( cell, tmp_obj_arr, 1 );
-            LObject_Transform_Ex99( tmp_obj_arr[0], transform );
-        }
-        
+        //les copier a la bonne position dans la bonne layer temporaire
+        obj = LObject_Copy( cell, destinationLayer, instancedObject );
+        LObject tmp_obj_arr[1];
+        tmp_obj_arr[0] = obj;
+        LObject_ConvertToPolygon( cell, tmp_obj_arr, 1 );
+        LObject_Transform_Ex99( tmp_obj_arr[0], transform );
     }
 }
 
