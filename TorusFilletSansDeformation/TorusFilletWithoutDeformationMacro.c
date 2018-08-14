@@ -187,6 +187,7 @@ void AATorusFilletWithoutDeformation(void)
 
     LLayer tmpLayer;
     LLayer tmpLayerGrow;
+    LLayer tmpLayerWithAllPolygons;
 
     char strLayer[MAX_LAYER_NAME];
 
@@ -269,20 +270,50 @@ void AATorusFilletWithoutDeformation(void)
 
         LLayer_New( pFile, NULL, "tmpGrow");
         tmpLayerGrow = LLayer_Find(pFile, "tmpGrow");
+
+        LLayer_New( pFile, NULL, "tmpLayerWithAllPolygons");
+        tmpLayerWithAllPolygons = LLayer_Find(pFile, "tmpLayerWithAllPolygons");
         
         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
         {
-            //detect if it is an instance
-                //garder que les polygones dans couches ONO ou OX
-            //mettre dans une layer particuliere
+            
             LObject object = LSelection_GetObject(pSelection);
+            //detect if it is an instance
+            if( LObject_GetShape(object) == LObjInstance)
+            {
+                LInstance inst = (LInstance)object;
+                LTransform_Ex99 transform = LInstance_GetTransform_Ex99( inst );
+                LObject obj;
+                //find the right cell
+                LCell instancedCell = LInstance_GetCell(inst);
+char szCellName[2048];
+LCell_GetName(instancedCell, szCellName, 2048);
+LUpi_LogMessage(LFormat("cell name %s\n", szCellName));
+                //garder que les polygones dans la layer objectif
+                for(LObject instancedObject = LObject_GetList(instancedCell, pLayer) ; instancedObject != NULL ; instancedObject = LObject_GetNext(instancedObject) )
+                {
+                    //les copier a la bonne position dans la bonne layer temporaire
+                    obj = LObject_Copy( pCell, tmpLayerWithAllPolygons, instancedObject );
+                    LObject tmp_obj_arr[1];
+                    tmp_obj_arr[0] = obj;
+                    LObject_ConvertToPolygon( pCell, tmp_obj_arr, 1 );
+                    LObject_Transform_Ex99( tmp_obj_arr[0], transform );
+                }
+            }
+            else
+            {
+                //les copier dans la bonne layer temporaire
+                LObject_Copy( pCell, tmpLayerWithAllPolygons, object );
+            }
+        }
+            
+        //mettre tous les polygones de la layer dans un tableau pour l'operation boolenne
+        for(LObject object = LObject_GetList(pCell, tmpLayerWithAllPolygons) ; object != NULL ; object = LObject_GetNext(object) )
+        {
             obj_arr[nbPolygonSelected] = object;
             nbPolygonSelected++;
         }
-        LUpi_LogMessage(LFormat("nbPolygonSelected %d\n", nbPolygonSelected));    
-
-        //mettre tous les polygones de la layer dans un tableau pour l'operation boolenne
-        
+        LUpi_LogMessage(LFormat("nbPolygonSelected %d\n", nbPolygonSelected));
         LCell_BooleanOperation(pCell,
                                LBoolOp_OR, 
                                NULL, 
@@ -292,7 +323,6 @@ void AATorusFilletWithoutDeformation(void)
                                0, 
                                tmpLayer, 
                                LFALSE );
-
         LCell_BooleanOperation(pCell,
                                LBoolOp_OR, 
                                NULL, 
