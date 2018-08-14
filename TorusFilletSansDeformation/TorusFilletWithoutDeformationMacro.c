@@ -13,6 +13,43 @@
 #define LIMIT_FAST_APPROACH_3 1.55
 
 
+void RecursiveInstanceDetection(LInstance instance, LCell cell, LLayer originLayer, LLayer destinationLayer, LTransform_Ex99 prevTransform)
+{
+
+    LTransform_Ex99 transform;
+    transform = LInstance_GetTransform_Ex99( instance );
+    transform.translation.x = transform.translation.x + prevTransform.translation.x;
+    transform.translation.y = transform.translation.y + prevTransform.translation.y;
+    transform.orientation = transform.orientation + prevTransform.orientation;
+    transform.magnification.num = transform.magnification.num * prevTransform.magnification.num;
+    transform.magnification.denom = transform.magnification.denom * prevTransform.magnification.denom;
+    
+    LObject obj;
+    //find the right cell
+    LCell instancedCell = LInstance_GetCell(instance);
+    //garder que les polygones dans la layer objectif
+    for(LObject instancedObject = LObject_GetList(instancedCell, originLayer) ; instancedObject != NULL ; instancedObject = LObject_GetNext(instancedObject) )
+    {
+LUpi_LogMessage("Dans le for\n");
+        if( LObject_GetShape(instancedObject) == LObjInstance)
+        {
+LUpi_LogMessage("WOOOOOOOOOW C'EST RECURSIF\n");
+            RecursiveInstanceDetection( (LInstance)instancedObject, cell, originLayer, destinationLayer, transform);
+        }
+            
+        else
+        {
+            //les copier a la bonne position dans la bonne layer temporaire
+            obj = LObject_Copy( cell, destinationLayer, instancedObject );
+            LObject tmp_obj_arr[1];
+            tmp_obj_arr[0] = obj;
+            LObject_ConvertToPolygon( cell, tmp_obj_arr, 1 );
+            LObject_Transform_Ex99( tmp_obj_arr[0], transform );
+        }
+        
+    }
+}
+
 double PointDistance(LPoint start, LPoint end)
 {
     double dist=0.0;
@@ -281,14 +318,12 @@ void AATorusFilletWithoutDeformation(void)
             //detect if it is an instance
             if( LObject_GetShape(object) == LObjInstance)
             {
+/*
                 LInstance inst = (LInstance)object;
                 LTransform_Ex99 transform = LInstance_GetTransform_Ex99( inst );
                 LObject obj;
                 //find the right cell
                 LCell instancedCell = LInstance_GetCell(inst);
-char szCellName[2048];
-LCell_GetName(instancedCell, szCellName, 2048);
-LUpi_LogMessage(LFormat("cell name %s\n", szCellName));
                 //garder que les polygones dans la layer objectif
                 for(LObject instancedObject = LObject_GetList(instancedCell, pLayer) ; instancedObject != NULL ; instancedObject = LObject_GetNext(instancedObject) )
                 {
@@ -299,6 +334,14 @@ LUpi_LogMessage(LFormat("cell name %s\n", szCellName));
                     LObject_ConvertToPolygon( pCell, tmp_obj_arr, 1 );
                     LObject_Transform_Ex99( tmp_obj_arr[0], transform );
                 }
+*/
+                LTransform_Ex99 transformOrigin;
+                transformOrigin.translation.x = 0;
+                transformOrigin.translation.y = 0;
+                transformOrigin.orientation = 0;
+                transformOrigin.magnification.num = 1;
+                transformOrigin.magnification.denom = 1;
+                RecursiveInstanceDetection((LInstance)object, pCell, pLayer, tmpLayerWithAllPolygons, transformOrigin);
             }
             else
             {
@@ -306,7 +349,7 @@ LUpi_LogMessage(LFormat("cell name %s\n", szCellName));
                 LObject_Copy( pCell, tmpLayerWithAllPolygons, object );
             }
         }
-            
+    
         //mettre tous les polygones de la layer dans un tableau pour l'operation boolenne
         for(LObject object = LObject_GetList(pCell, tmpLayerWithAllPolygons) ; object != NULL ; object = LObject_GetNext(object) )
         {
@@ -592,6 +635,11 @@ LUpi_LogMessage(LFormat("cell name %s\n", szCellName));
         LObject_Delete( pCell, obj );
     }
     LLayer_Delete( pFile, tmpLayerGrow );
+    for(LObject obj = LObject_GetList(pCell, tmpLayerWithAllPolygons) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        LObject_Delete( pCell, obj );
+    }
+    LLayer_Delete( pFile, tmpLayerWithAllPolygons );
 
     LUpi_LogMessage(LFormat("\nEND MACRO\n"));
 }
