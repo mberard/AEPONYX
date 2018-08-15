@@ -231,7 +231,7 @@ void AATorusFilletWithoutDeformation(void)
     long numberVertex = 0;
 
     LPoint points_from_grow[MAX_POLYGON_SIZE];
-    int numberPointsFromeGrow = 0;
+    int numberPointsFromGrow = 0;
     LPoint points_already_used[MAX_POLYGON_SIZE];
     int numberPointsAlreadyUsed = 0;
     int isAlreadyUsed = 0;
@@ -299,6 +299,7 @@ void AATorusFilletWithoutDeformation(void)
         else
             onlyWithLabel = 1;
 
+        //create the tmp layers
         LLayer_New( pFile, NULL, "tmp");
         tmpLayer = LLayer_Find(pFile, "tmp");
 
@@ -308,9 +309,9 @@ void AATorusFilletWithoutDeformation(void)
         LLayer_New( pFile, NULL, "tmpLayerWithAllPolygons");
         tmpLayerWithAllPolygons = LLayer_Find(pFile, "tmpLayerWithAllPolygons");
         
+        //for each selected element
         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
         {
-            
             LObject object = LSelection_GetObject(pSelection);
             //detect if it is an instance
             if( LObject_GetShape(object) == LObjInstance)
@@ -338,6 +339,8 @@ void AATorusFilletWithoutDeformation(void)
             nbPolygonSelected++;
         }
         LUpi_LogMessage(LFormat("nbPolygonSelected %d\n", nbPolygonSelected));
+
+        //OR with all polygons
         LCell_BooleanOperation(pCell,
                                LBoolOp_OR, 
                                NULL, 
@@ -347,6 +350,8 @@ void AATorusFilletWithoutDeformation(void)
                                0, 
                                tmpLayer, 
                                LFALSE );
+
+        //OR and GROW for all polygons
         LCell_BooleanOperation(pCell,
                                LBoolOp_OR, 
                                NULL, 
@@ -372,6 +377,8 @@ void AATorusFilletWithoutDeformation(void)
                                tmpLayerGrow, 
                                LTRUE );
 
+        //for each polygons after the OR/OR-GROW
+        //detect and store all points that need to be fillet
         for(LObject obj = LObject_GetList(pCell, tmpLayerGrow) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
             originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
@@ -409,12 +416,14 @@ void AATorusFilletWithoutDeformation(void)
                 
                 if( angle < M_PI - ANGLE_LIMIT ) //if not in the limit range and concave
                 {
-                    points_from_grow[numberPointsFromeGrow] = original_point_arr[i];
-                    numberPointsFromeGrow++;
+                    points_from_grow[numberPointsFromGrow] = original_point_arr[i];
+                    numberPointsFromGrow++;
                 }
             }
         }
 
+        //for each polygons after the OR/OR-GROW
+        //create the torus on the right place
         for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
             originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
@@ -459,7 +468,7 @@ void AATorusFilletWithoutDeformation(void)
                 
                 if( angle < M_PI - ANGLE_LIMIT ) //if not in the limit range and concave
                 {
-                    if(onlyWithLabel == 1)
+                    if(onlyWithLabel == 1) //if only angle near label
                     {
                         int hasLabelNear = 0;
                         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
@@ -472,7 +481,7 @@ void AATorusFilletWithoutDeformation(void)
                                     hasLabelNear = 1;
                             }
                         }
-                        if(hasLabelNear == 0)
+                        if(hasLabelNear == 0) //if no label detected
                             continue;
                     }
 
@@ -480,7 +489,7 @@ void AATorusFilletWithoutDeformation(void)
                     
                     savedPoint = LPoint_Set(-1,-1);
                     minDist = 9999999999.999999999;
-                    for(j = 0; j < numberPointsFromeGrow; j++)
+                    for(j = 0; j < numberPointsFromGrow; j++)
                     {
                         if(centerIsBetweenPoints(LPoint_Set(prevX,prevY), original_point_arr[i], LPoint_Set(nextX,nextY), points_from_grow[j]) == 1)
                         {
@@ -501,7 +510,7 @@ void AATorusFilletWithoutDeformation(void)
                     {
 
                         minDist = 9999999999.999999999;
-                        for(j = 0; j < numberPointsFromeGrow; j++)
+                        for(j = 0; j < numberPointsFromGrow; j++)
                         {
                             if(PointDistance(center,points_from_grow[j])<minDist)
                             {
@@ -550,7 +559,7 @@ void AATorusFilletWithoutDeformation(void)
     if(onlyWithLabel != 1)
     {
         LUpi_LogMessage("\n\nTest the last points\n");
-        for(i=0; i<numberPointsFromeGrow; i++)
+        for(i=0; i<numberPointsFromGrow; i++)
         {
             isAlreadyUsed = 0;
             for(j=0; j<numberPointsAlreadyUsed; j++)
