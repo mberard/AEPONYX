@@ -1,6 +1,10 @@
 #include "DubinsPoint.hpp"
 #include <math.h>
 
+/*
+    only getter and setter for Dubins points
+*/
+
 DubinsPoint::DubinsPoint(){}
 
 DubinsPoint::DubinsPoint(double x, double y, float angle, LFile pFile){
