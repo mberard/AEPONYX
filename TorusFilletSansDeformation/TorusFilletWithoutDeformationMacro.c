@@ -17,7 +17,8 @@ void RecursiveInstanceDetection(LInstance instance, LCell cell, LLayer originLay
 {
 
     LTransform_Ex99 transform;
-    transform = LInstance_GetTransform_Ex99( instance );
+    transform = LInstance_GetTransform_Ex99( instance ); //get the transform form this to the previous one
+    //add it to the previous one (add translation and orientation, multiply magnification)
     transform.translation.x = transform.translation.x + prevTransform.translation.x;
     transform.translation.y = transform.translation.y + prevTransform.translation.y;
     transform.orientation = transform.orientation + prevTransform.orientation;
@@ -28,19 +29,20 @@ void RecursiveInstanceDetection(LInstance instance, LCell cell, LLayer originLay
     //find the right cell
     LCell instancedCell = LInstance_GetCell(instance);
 
+    //if there is an instance in this instance
     for(LInstance newInstance = LInstance_GetList( instancedCell ) ; newInstance != NULL ; newInstance = LInstance_GetNext( newInstance ) )
     {
+        //recall the same function
         RecursiveInstanceDetection((LInstance)newInstance, cell, originLayer, destinationLayer, transform);
     }
 
-    //garder que les polygones dans la layer objectif
+    //copy polygons from an instance to the tmp layer
     for(LObject instancedObject = LObject_GetList(instancedCell, originLayer) ; instancedObject != NULL ; instancedObject = LObject_GetNext(instancedObject) )
     {
-        //les copier a la bonne position dans la bonne layer temporaire
         obj = LObject_Copy( cell, destinationLayer, instancedObject );
         LObject tmp_obj_arr[1];
         tmp_obj_arr[0] = obj;
-        LObject_ConvertToPolygon( cell, tmp_obj_arr, 1 );
+        LObject_ConvertToPolygon( cell, tmp_obj_arr, 1 ); //necessary to ensure the tranform will be good (especially for box)
         LObject_Transform_Ex99( tmp_obj_arr[0], transform );
     }
 }
@@ -313,6 +315,7 @@ void AATorusFilletWithoutDeformation(void)
             //detect if it is an instance
             if( LObject_GetShape(object) == LObjInstance)
             {
+                //set the tranform to null operand (0 translation and orientation, 1 magnification) for the first iteration of recursive function
                 LTransform_Ex99 transformOrigin;
                 transformOrigin.translation.x = 0;
                 transformOrigin.translation.y = 0;
@@ -323,12 +326,12 @@ void AATorusFilletWithoutDeformation(void)
             }
             else
             {
-                //les copier dans la bonne layer temporaire
+                //copy in the right tmp layer
                 LObject_Copy( pCell, tmpLayerWithAllPolygons, object );
             }
         }
     
-        //mettre tous les polygones de la layer dans un tableau pour l'operation boolenne
+        //all polygons from the tmp layer in an object array for bollean aperation
         for(LObject object = LObject_GetList(pCell, tmpLayerWithAllPolygons) ; object != NULL ; object = LObject_GetNext(object) )
         {
             obj_arr[nbPolygonSelected] = object;
