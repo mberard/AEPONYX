@@ -74,7 +74,7 @@ void AutomaticNumerotationEmptyNumberMacro()
 
     if(Picked == -1)
         return;
-    else if(Picked == 1)
+    else if(Picked == 1) //delete existing numerotation
     {
         LCell cellListItem = LCell_GetList(pFile);
 
@@ -84,7 +84,7 @@ void AutomaticNumerotationEmptyNumberMacro()
             LInstance_GetName(inst, strName, MAX_TDBFILE_NAME );
             if(strName[0]=='A' && strName[1]=='U' && strName[2]=='T' && strName[3]=='O' && strName[4]=='_')
             {
-                LInstance_Delete( pCell, inst);
+                LInstance_Delete( pCell, inst); //delete instance beginning by "AUTO_"
             }
         }
 
@@ -98,7 +98,7 @@ void AutomaticNumerotationEmptyNumberMacro()
                     LCell toBeDeleted = cellListItem;
                     cellListItem = LCell_GetNext(cellListItem);
                     LCell_Delete( toBeDeleted );
-                    LUpi_LogMessage(LFormat("Deleting cell %s\n", strName));
+                    LUpi_LogMessage(LFormat("Deleting cell %s\n", strName)); //delete instance beginning by "AUTO_"
                 }
                 else
                     cellListItem = LCell_GetNext(cellListItem);
@@ -110,6 +110,7 @@ void AutomaticNumerotationEmptyNumberMacro()
         return; //end of the macro
     }
 
+//choice to create a numerotation (choice == 0)
     LSelection pSelection = LSelection_GetList();
     if(pSelection)
     {
@@ -123,8 +124,8 @@ void AutomaticNumerotationEmptyNumberMacro()
                 LUpi_LogMessage( LFormat("%s\n",LLabel_GetName( (LLabel)object, strName, MAX_CELL_NAME ) ) );
             }
         }
-        if(cpt == 1)
-            strcpy(strNameWanted, strName); //preloaded text in the dialog box
+        if(cpt == 1) //if a label is selected
+            strcpy(strNameWanted, strName); //preloaded text in the dialog box with the name of the label selected
         else
             strcpy(strNameWanted, "labelName"); //preloaded text in the dialog box
     }
@@ -138,7 +139,7 @@ void AutomaticNumerotationEmptyNumberMacro()
         for(LLabel pLab = LLabel_GetList(pCell); pLab != NULL; pLab = LLabel_GetNext(pLab) ) //for each label
         {
             LLabel_GetName( pLab, strName, MAX_TDBFILE_NAME );
-            if( strcmp(strName, strNameWanted) == 0 )
+            if( strcmp(strName, strNameWanted) == 0 ) //try to find the label
             {
                 LUpi_LogMessage(LFormat("Label found %s\n",strName));
                 LPoint point = LLabel_GetPosition(pLab);
@@ -150,7 +151,7 @@ void AutomaticNumerotationEmptyNumberMacro()
         }
     }
 
-    if(hasLabel == 0)
+    if(hasLabel == 0) //if no label found, return
         return;
 
     strcpy(buffer, "100.0");
@@ -177,6 +178,7 @@ void AutomaticNumerotationEmptyNumberMacro()
     else
         return;
 
+    //is the increment in the good direction
     if(stopNumber < startNumber && increment > 0 )
     {
         LUpi_LogMessage("Impossible to reach the stop number from the start number with this increment");
@@ -188,6 +190,7 @@ void AutomaticNumerotationEmptyNumberMacro()
         return;
     }
 
+    //is it possible to reach the destination ?
     diff = abs(stopNumber - startNumber);
     while(diff > 0)
     {
@@ -243,6 +246,7 @@ void AutomaticNumerotationEmptyNumberMacro()
             newCell = LCell_New(pFile, strName);
         }
 
+        //create the text
         LCell_MakeLogo( newCell,
                         strText,
                         textSize,
@@ -291,7 +295,8 @@ void AutomaticNumerotationEmptyNumberMacro()
         value = value + increment;
         cpt= cpt + 1;
     }
-    //generate the last value = stopNumber
+
+//generate the last value = stopNumber
 
     itoa(value, strText, 10);
     //create a new cell
@@ -308,6 +313,7 @@ void AutomaticNumerotationEmptyNumberMacro()
         newCell = LCell_New(pFile, strName);
     }
 
+    //creating the text
     LCell_MakeLogo( newCell,
                         strText,
                         textSize,
