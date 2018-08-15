@@ -313,23 +313,6 @@ void AATorusFilletWithoutDeformation(void)
             //detect if it is an instance
             if( LObject_GetShape(object) == LObjInstance)
             {
-/*
-                LInstance inst = (LInstance)object;
-                LTransform_Ex99 transform = LInstance_GetTransform_Ex99( inst );
-                LObject obj;
-                //find the right cell
-                LCell instancedCell = LInstance_GetCell(inst);
-                //garder que les polygones dans la layer objectif
-                for(LObject instancedObject = LObject_GetList(instancedCell, pLayer) ; instancedObject != NULL ; instancedObject = LObject_GetNext(instancedObject) )
-                {
-                    //les copier a la bonne position dans la bonne layer temporaire
-                    obj = LObject_Copy( pCell, tmpLayerWithAllPolygons, instancedObject );
-                    LObject tmp_obj_arr[1];
-                    tmp_obj_arr[0] = obj;
-                    LObject_ConvertToPolygon( pCell, tmp_obj_arr, 1 );
-                    LObject_Transform_Ex99( tmp_obj_arr[0], transform );
-                }
-*/
                 LTransform_Ex99 transformOrigin;
                 transformOrigin.translation.x = 0;
                 transformOrigin.translation.y = 0;
