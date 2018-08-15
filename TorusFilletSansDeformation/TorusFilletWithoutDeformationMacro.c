@@ -489,7 +489,7 @@ void AATorusFilletWithoutDeformation(void)
                     
                     savedPoint = LPoint_Set(-1,-1);
                     minDist = 9999999999.999999999;
-                    for(j = 0; j < numberPointsFromGrow; j++)
+                    for(j = 0; j < numberPointsFromGrow; j++) //find the closest point saved from the grow
                     {
                         if(centerIsBetweenPoints(LPoint_Set(prevX,prevY), original_point_arr[i], LPoint_Set(nextX,nextY), points_from_grow[j]) == 1)
                         {
@@ -502,13 +502,12 @@ void AATorusFilletWithoutDeformation(void)
                     }
                     points_already_used[numberPointsAlreadyUsed] = savedPoint;
                     numberPointsAlreadyUsed = numberPointsAlreadyUsed + 1;
-                    center = savedPoint;
+                    center = savedPoint; //center is one of the point saved from the grow
                     
-                    center = FindTangentFromCenter(i, original_point_arr, originalNumberVertex, fillet, center, &rightAngle, &leftAngle);
+                    center = FindTangentFromCenter(i, original_point_arr, originalNumberVertex, fillet, center, &rightAngle, &leftAngle); //find the tangent angles
 
                     if( !(center.x == -1 && center.y == -1) )
                     {
-
                         minDist = 9999999999.999999999;
                         for(j = 0; j < numberPointsFromGrow; j++)
                         {
@@ -526,22 +525,22 @@ void AATorusFilletWithoutDeformation(void)
                         LUpi_LogMessage(LFormat("rightAngle %lf\n",rightAngle));
                         LUpi_LogMessage(LFormat("leftAngle %lf\n\n\n",leftAngle));
 
-                        if(PointDistance(original_point_arr[i], center) > 100*fillet)
+                        if(PointDistance(original_point_arr[i], center) > 100*fillet) //if too big
                         {
                             tParams.ptCenter = original_point_arr[i];
                             tParams.nInnerRadius = fillet;
-                            tParams.nOuterRadius = fillet+1000;
+                            tParams.nOuterRadius = fillet+1000; //only a 1 micron torus
                         }
                         else
                         {
                             tParams.ptCenter = center;
                             tParams.nInnerRadius = fillet;
-                            tParams.nOuterRadius = max(PointDistance(original_point_arr[i], center)*1.05, fillet*1.5);
+                            tParams.nOuterRadius = max(PointDistance(original_point_arr[i], center)*1.05, fillet*1.5); //a little bit more than the distance center-angle
                         }
                         tParams.dStartAngle = rightAngle;
                         tParams.dStopAngle = leftAngle;
 
-                        LTorus_CreateNew( pCell, pLayer, &tParams );
+                        LTorus_CreateNew( pCell, pLayer, &tParams ); //create the torus
                     }
                     else
                     {
@@ -559,7 +558,7 @@ void AATorusFilletWithoutDeformation(void)
     if(onlyWithLabel != 1)
     {
         LUpi_LogMessage("\n\nTest the last points\n");
-        for(i=0; i<numberPointsFromGrow; i++)
+        for(i=0; i<numberPointsFromGrow; i++) //add torus if a point from the grow has not been processed
         {
             isAlreadyUsed = 0;
             for(j=0; j<numberPointsAlreadyUsed; j++)
@@ -615,6 +614,7 @@ void AATorusFilletWithoutDeformation(void)
         }
     }
 
+    //delete the objects and tmp layers
     for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
         LObject_Delete( pCell, obj );
