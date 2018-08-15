@@ -4,6 +4,7 @@
 
 //// PRIVATE METHODS ////
 
+//update the position of the circle used to compute the best path
 LStatus DubinsPath::UpdateCircleCenter(){
     DPoint Dcenter;
     LPoint Lcenter;
@@ -38,8 +39,10 @@ LStatus DubinsPath::UpdateCircleCenter(){
 
 //// PUBLIC METHODS ////
 
+//constructor
 DubinsPath::DubinsPath(){}
 
+//setters
 LStatus DubinsPath::SetGuideWidth(float width){
     this->guideWidth = LFile_MicronsToIntU( this->file, width );
     return LStatusOK;
@@ -112,6 +115,7 @@ LStatus DubinsPath::SetParamBezier(double value){
     return LStatusOK;
 }
 
+//getters
 LFile DubinsPath::GetFile(){
     return this->file;
 }
@@ -128,7 +132,7 @@ double DubinsPath::GetOxideSizeValue(){
     return LFile_IntUtoMicrons(this->file, this->oxideSizeValue);
 }
 
-
+//compute the lenght of the different type
 float DubinsPath::ComputeRSRLength()
 {
     float returnDistance;
@@ -189,6 +193,7 @@ float DubinsPath::ComputeLRLLength()
     return returnDistance;
 }
 
+//compute the tangent points for the different type of path
 void DubinsPath::GetLSLorRSRTangent(LPoint startCircleCenter, LPoint endCircleCenter, bool isBottom)
 {
     LCoord xStart, xEnd, yStart, yEnd;
@@ -293,7 +298,7 @@ void DubinsPath::GetRLRorLRLTangent(LPoint startCircleCenter, LPoint endCircleCe
     this->endTangent.y = this->centerMiddleCircle.y + yNormalised * this->radius;
 }
 
-
+//get the length of an arc
 float DubinsPath::GetArcLength(LPoint centerCircle, LPoint startPoint, LPoint tangent, bool isLeftCircle)
 {
     float theta, returnDistance;
@@ -320,7 +325,7 @@ float DubinsPath::GetArcLength(LPoint centerCircle, LPoint startPoint, LPoint ta
         return returnDistance;
 }
 
-
+//function to find the best path and call the appropriate functions to create it
 void DubinsPath::ComputeDubinsPaths(){
 
     float xStart, xEnd, yStart, yEnd;
@@ -455,9 +460,7 @@ void DubinsPath::ComputeDubinsPaths(){
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
     }
 
-//LCircle_New(this->cell, this->layer, this->startTangent, 10);
-//LCircle_New(this->cell, this->layer, this->endTangent, 10);
-
+    //call the appropriate function
     switch(shortestType)
     {
         case RSR:
@@ -519,6 +522,7 @@ void DubinsPath::StoreRSRPath()
     params.dStartAngle = RoundAngle(angleTorusTangent);
     params.dStopAngle = RoundAngle(angleTorusPoint);
     
+    //create the start torus
     if(params.dStartAngle != params.dStopAngle)
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
     else
@@ -531,6 +535,7 @@ void DubinsPath::StoreRSRPath()
         this->torusStart = LTorus_CreateNew(this->cell, this->layer, &params);
     }
 
+    //compute the first two points of the line
     LPoint point_arr[4];
     point_arr[0] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
     point_arr[1] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
@@ -545,6 +550,7 @@ void DubinsPath::StoreRSRPath()
     params.dStartAngle = RoundAngle(angleTorusPoint);
     params.dStopAngle = RoundAngle(angleTorusTangent);
     
+    //create end torus
     if(params.dStartAngle != params.dStopAngle)
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
     else
@@ -557,10 +563,10 @@ void DubinsPath::StoreRSRPath()
         this->torusEnd = LTorus_CreateNew(this->cell, this->layer, &params);
     }
 
-
-    
+    //compute 2 last points of the line
     point_arr[2] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
     point_arr[3] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
+    //create the line
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 
 }
@@ -743,6 +749,7 @@ void DubinsPath::StoreLSRPath()
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 }
 
+//for RLR and LRL, same but with 3 torus (no line)
 void DubinsPath::StoreRLRPath()
 {
     double angleTorusPointStart, angleTorusTangentStart, angleTorusPointEnd, angleTorusTangentEnd;
@@ -877,6 +884,7 @@ void DubinsPath::StoreLRLPath()
     }
 }
 
+//rasterize for every type of path
 void DubinsPath::RasterizePath(bool needToRasterize)
 {
     bool startTorusExist, endTorusExist;
@@ -1365,7 +1373,7 @@ void DubinsPath::RasterizePath(bool needToRasterize)
         savedOxideSize = this->oxideSizeValue;
         this->guideWidth = this->oxideSizeValue;
         this->layer = this->oxideLayer;
-        if(!needToRasterize)
+        if(!needToRasterize) //if no rasterizer, save the polygons
         {
             this->torusStart_saved = this->torusStart;
             this->torusEnd_saved = this->torusEnd;
@@ -1402,9 +1410,9 @@ void DubinsPath::RasterizePath(bool needToRasterize)
             default:
                 LDialog_AlertBox(LFormat("Path error"));
         }
+        //to not have an infinite loop
         this->oxideSizeValue = 0;
-        //this->RasterizePath();
-
+        //put back the previous parameter
         this->guideWidth = savedWidth;
         this->layer = savedLayer;
         this->oxideSizeValue = savedOxideSize;
@@ -1438,29 +1446,25 @@ void DubinsPath::DrawArc(LPoint center, LCoord radius, double startAngle, double
     
     if(isCCW)
     {
-LUpi_LogMessage(LFormat("Start %lf %ld\n", center.y + radius * sin( startAngle ), Round0or5(center.y + radius * sin( startAngle )) ));
         this->Add( center.x + radius * cos( startAngle ), center.y + radius * sin( startAngle ) );
 		//dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
         dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 8);
 		for (double dTheta = startAngle; dTheta < stopAngle; dTheta += dThetaStep )
 			this->Add( center.x + radius * cos( dTheta ), center.y + radius * sin( dTheta ) );
 		this->Add( center.x + radius * cos( stopAngle ), center.y + radius * sin( stopAngle ) );
-LUpi_LogMessage(LFormat("End   %lf %ld\n", center.x + radius * cos( stopAngle ), Round0or5(center.y + radius * sin( stopAngle )) ));
     }
     else
     {
-LUpi_LogMessage(LFormat("End   %lf %ld\n", center.x + radius * cos( stopAngle ), Round0or5(center.y + radius * sin( stopAngle )) ));
         this->Add( center.x + radius * cos( stopAngle ), center.y + radius * sin( stopAngle ) );
 		//dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 10);
         dThetaStep = 2*acos(1 - (double)grid.manufacturing_grid_size / radius / 8);
 		for (double dTheta = stopAngle; dTheta > startAngle; dTheta -= dThetaStep )
 			this->Add( center.x + radius * cos( dTheta ), center.y + radius * sin( dTheta ) );
 		this->Add( center.x + radius * cos( startAngle ), center.y + radius * sin( startAngle ) );
-LUpi_LogMessage(LFormat("Start %lf %ld\n", center.y + radius * sin( startAngle ), Round0or5(center.y + radius * sin( startAngle )) ));
     }
 }
 
-
+//when we select bezier curves instead of circle
 void DubinsPath::DubinsPathWithBezierCurves()
 {
     double xStartCurve1, yStartCurve1, xEndCurve1, yEndCurve1;
@@ -1531,11 +1535,12 @@ void DubinsPath::DubinsPathWithBezierCurves()
 
     coef = 1 - this->paramBezier;
 
-    if(this->type == RSR || this->type == LSL || this->type== RSL || this->type == LSR)
+    if(this->type == RSR || this->type == LSL || this->type== RSL || this->type == LSR) //only 2 bezier in those cases
     {
         dist1 = PointDistance(this->startPoint.GetLPoint(), this->startTangent)/1.3;
         dist2 = PointDistance(this->endTangent, this->endPoint.GetLPoint())/1.3;
 
+        //compute controle points
         controlStartCurve1.x = (LCoord)round ( xStartCurve1 + dist1 * coef * cos(angleStartCurve1) );
         controlStartCurve1.y = (LCoord)round ( yStartCurve1 + dist1 * coef * sin(angleStartCurve1) );
         controlEndCurve1.x = (LCoord)round ( xEndCurve1 + dist1 * coef * cos(angleEndCurve1 + M_PI) );
@@ -1624,7 +1629,7 @@ void DubinsPath::DubinsPathWithBezierCurves()
         save4 = point_arr[nbPoints];
         nbPoints = nbPoints + 1;
     }
-    else if(this->type == RLR || this->type == LRL)
+    else if(this->type == RLR || this->type == LRL) //with 3 torus
     {
         LPoint controlStartMiddle, controlEndMiddle; 
 
@@ -1644,6 +1649,7 @@ void DubinsPath::DubinsPathWithBezierCurves()
             angleStartCurve2 = atan2(this->endTangent.y - centerEndRightCircle.y , this->endTangent.x - centerEndRightCircle.x) - M_PI/2.0;
         }
         
+        //compute the control points
         controlStartCurve1.x = (LCoord)round ( xStartCurve1 + dist1 * coef * cos(angleStartCurve1) );
         controlStartCurve1.y = (LCoord)round ( yStartCurve1 + dist1 * coef * sin(angleStartCurve1) );
         controlEndCurve1.x = (LCoord)round ( xEndCurve1 + dist1 * coef * cos(angleEndCurve1 + M_PI) );
@@ -1792,8 +1798,6 @@ void DubinsPath::DubinsPathWithBezierCurves()
                 angle = angle + 2*M_PI;
             if( (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
             {
-                //point_arr[i]=point_arr[(i+1)%nbPoints];
-                //point_arr[(i+1)%nbPoints]=point_arr[i];
                 for(j=i; j<nbPoints; j++)
                     point_arr[j]=point_arr[(j+1)%nbPoints];
                 nbPoints = nbPoints - 1;
@@ -1802,6 +1806,7 @@ void DubinsPath::DubinsPathWithBezierCurves()
         }
     }
 
+    //create the polygon
     LObject obj;
     obj = LPolygon_New( this->cell, this->layer, point_arr, nbPoints );
     double dist;
@@ -1810,6 +1815,7 @@ void DubinsPath::DubinsPathWithBezierCurves()
     
     LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
     
+    //if we need a oxide
     if(this->oxideSizeValue != 0)
     {
         LLayer savedLayer = this->layer;
