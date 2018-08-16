@@ -299,6 +299,13 @@ void AATorusFilletWithoutDeformation(void)
         else
             onlyWithLabel = 1;
 
+        if(LLayer_Find(pFile, "tmp"))
+            LLayer_Delete( pFile, LLayer_Find(pFile, "tmp") );
+        if(LLayer_Find(pFile, "tmpGrow"))
+            LLayer_Delete( pFile, LLayer_Find(pFile, "tmpGrow") );
+        if(LLayer_Find(pFile, "tmpLayerWithAllPolygons"))
+            LLayer_Delete( pFile, LLayer_Find(pFile, "tmpLayerWithAllPolygons") );
+
         //create the tmp layers
         LLayer_New( pFile, NULL, "tmp");
         tmpLayer = LLayer_Find(pFile, "tmp");
