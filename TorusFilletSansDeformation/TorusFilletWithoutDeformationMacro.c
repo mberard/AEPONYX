@@ -316,6 +316,7 @@ void AATorusFilletWithoutDeformation(void)
             //detect if it is an instance
             if( LObject_GetShape(object) == LObjInstance)
             {
+                
                 //set the tranform to null operand (0 translation and orientation, 1 magnification) for the first iteration of recursive function
                 LTransform_Ex99 transformOrigin;
                 transformOrigin.translation.x = 0;
@@ -331,7 +332,6 @@ void AATorusFilletWithoutDeformation(void)
                 LObject_Copy( pCell, tmpLayerWithAllPolygons, object );
             }
         }
-    
         //all polygons from the tmp layer in an object array for bollean aperation
         for(LObject object = LObject_GetList(pCell, tmpLayerWithAllPolygons) ; object != NULL ; object = LObject_GetNext(object) )
         {
