@@ -299,6 +299,7 @@ void AATorusFilletWithoutDeformation(void)
         else
             onlyWithLabel = 1;
 
+        //delete the tmp cells if already exists
         if(LLayer_Find(pFile, "tmp"))
             LLayer_Delete( pFile, LLayer_Find(pFile, "tmp") );
         if(LLayer_Find(pFile, "tmpGrow"))
