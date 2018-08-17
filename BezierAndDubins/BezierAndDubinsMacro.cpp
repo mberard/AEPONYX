@@ -76,7 +76,7 @@ void BezierAndDubinsMacro()
 
     char cwd[MAX_TDBFILE_NAME];
 	char strPath[MAX_LENGTH_PATH];
-    char* token;
+    char* token; //to read the file
    	FILE * myFile = NULL;
     char line[256];
 
@@ -85,6 +85,7 @@ void BezierAndDubinsMacro()
 
     char value_offset[50];
 
+    //to find the points locations
     LPoint pLabelLocation;
     double xPosLabel, yPosLabel;
     char startLabelName[MAX_CELL_NAME];
