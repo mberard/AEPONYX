@@ -571,6 +571,7 @@ void DubinsPath::StoreRSRPath()
 
 }
 
+//same methods as RSR but with a different ordre
 void DubinsPath::StoreLSLPath()
 {
     double angleTorusPoint, angleTorusTangent, angleTorusTangentRadian;
@@ -632,6 +633,7 @@ void DubinsPath::StoreLSLPath()
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 }
 
+//same methods as RSR but with a different ordre
 void DubinsPath::StoreRSLPath()
 {
     double angleTorusPoint, angleTorusTangent, angleTorusTangentRadian;
@@ -690,6 +692,7 @@ void DubinsPath::StoreRSLPath()
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 }
 
+//same methods as RSR but with a different ordre
 void DubinsPath::StoreLSRPath()
 {
     double angleTorusPoint, angleTorusTangent, angleTorusTangentRadian;
@@ -749,7 +752,7 @@ void DubinsPath::StoreLSRPath()
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
 }
 
-//for RLR and LRL, same but with 3 torus (no line)
+//for RLR and LRL, same methods but with 3 torus (no line)
 void DubinsPath::StoreRLRPath()
 {
     double angleTorusPointStart, angleTorusTangentStart, angleTorusPointEnd, angleTorusTangentEnd;
@@ -817,6 +820,7 @@ void DubinsPath::StoreRLRPath()
     }
 }
 
+//for RLR and LRL, same methods but with 3 torus (no line)
 void DubinsPath::StoreLRLPath()
 {
     double angleTorusPointStart, angleTorusTangentStart, angleTorusPointEnd, angleTorusTangentEnd;
