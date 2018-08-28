@@ -75,7 +75,7 @@ void AutomaticNumerotationMacro()
     {
         LCell cellListItem = LCell_GetList(pFile);
         
-        bigCell = LCell_Find(pFile, "AutomaticNumerotation");
+        bigCell = LCell_Find(pFile, "AutomaticNumerotation"); //cell with all the other instance of numerotation
 
         LInstance inst;
         if(bigCell)
@@ -84,8 +84,8 @@ void AutomaticNumerotationMacro()
 
         inst = LInstance_Find(pCell, "Die numerotation");
         if(inst)
-            LInstance_Delete(pCell, inst);
-        LCell_Delete( bigCell );
+            LInstance_Delete(pCell, inst); //delete the instance of the big cell in pCell
+        LCell_Delete( bigCell ); //delete the cell
 
         while ( cellListItem != NULL )
         {
@@ -93,7 +93,7 @@ void AutomaticNumerotationMacro()
             LUpi_LogMessage(LFormat("try cell %s\n", strName));
             if(strlen(strName)>=8)
             {
-                if(strName[0]=='T' && strName[1]=='_' && strName[2]=='C')
+                if(strName[0]=='T' && strName[1]=='_' && strName[2]=='C') //delete the cell beginning by T_C; could be done with regex
                 {
                     LCell toBeDeleted = cellListItem;
                     cellListItem = LCell_GetNext(cellListItem);
@@ -111,7 +111,7 @@ void AutomaticNumerotationMacro()
     }
 
 //if we choose 0 ("Create an automatic numerotation")
-    for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
+    for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) ) //saved the windows opened before the macro
     {
         activeWindows[numberWindows] = pWindow;
         numberWindows++;
@@ -138,7 +138,7 @@ void AutomaticNumerotationMacro()
         }
     }
 
-    if(hasLabel == 0)
+    if(hasLabel == 0) //label not found
         return;
 
     strcpy(buffer, "100.0");
@@ -170,19 +170,6 @@ void AutomaticNumerotationMacro()
     else
         return;
 
-/*
-    if ( LDialog_YesNoBox("Do you want to add oxide ?") )
-    {
-        oxideChoice = 1;
-        strcpy(strName, "OX"); //preloaded text in the dialog box
-        if ( LDialog_InputBox("Oxide layer", "Enter the name of the oxide layer", strName) == 0)
-            return;
-        else
-            oxideLayer = LLayer_Find(pFile, strName);
-    }
-    else
-        oxideChoice = 0;
-*/
     if(LDialog_MultiLineInputBox("Oxide and facet",DialogItems3,2))
     {
 
@@ -223,7 +210,7 @@ void AutomaticNumerotationMacro()
     {
         for(int j = 0; j<nbCol; j++)
         {
-            strcpy(strText, "");
+            strcpy(strText, ""); //concatenate the name CxxLxx
             strcat(strText, "C");
             if(j+1 < 10)
                 strcat(strText, "0");
@@ -236,18 +223,19 @@ void AutomaticNumerotationMacro()
             strcat(strText, buffer);
 
             strcpy(strName, "");
-            strcat(strName, "T_");
+            strcat(strName, "T_"); //adding T_CxxLxx
             strcat(strName, strText);
 
             smallCell = LCell_Find(pFile, strName);
             if(smallCell == NULL)
-                smallCell = LCell_New(pFile, strName);
+                smallCell = LCell_New(pFile, strName); //create cell if not exist
             else
             {
-                LCell_Delete( smallCell );
-                smallCell = LCell_New(pFile, strName);
+                LCell_Delete( smallCell ); 
+                smallCell = LCell_New(pFile, strName); //if already exist: delete and redo
             }
 
+            //create text CxxLxx
             LCell_MakeLogo( smallCell,
                                 strText,
                                 textSize,
@@ -265,6 +253,7 @@ void AutomaticNumerotationMacro()
                                 "",
                                 NULL );
 
+            // create oxide fillet rectangle
             if(oxideFilletValue != 0)
             {
                 long rectShift = LFile_MicronsToIntU(pFile, 5);
@@ -294,6 +283,7 @@ void AutomaticNumerotationMacro()
 				}
             }
 
+            // create facet fillet rectangle
             if(facetFilletValue != 0)
             {
                 long rectShift = LFile_MicronsToIntU(pFile, 15);
@@ -340,7 +330,7 @@ void AutomaticNumerotationMacro()
     }
 
     
-    for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) )
+    for( pWindow = LWindow_GetList(); Assigned(pWindow); pWindow = LWindow_GetNext(pWindow) ) //keep only the windows from the beginning openned
     {
         hasBeenFoundInArray = 0;
         for(int i = 0; i<numberWindows; i++)
@@ -355,7 +345,7 @@ void AutomaticNumerotationMacro()
             LWindow_Close(pWindow);
     }
 
-    if(!(LInstance_Find(pCell, "Die numerotation")))
+    if(!(LInstance_Find(pCell, "Die numerotation"))) //add an instance with all the numerotation in the right cell and layer
     {
         transformation.translation.x = ref_x;
         transformation.translation.y = ref_y;
