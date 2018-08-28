@@ -16,10 +16,10 @@ private:
     LFile file;
     LLayer layer;
 
-    DubinsPoint startPoint;
-    DubinsPoint endPoint;
-    LPoint controlStart;
-    LPoint controlEnd;
+    DubinsPoint startPoint; //position and angle
+    DubinsPoint endPoint; //position and angle
+    LPoint controlStart; //compute
+    LPoint controlEnd; //compute
 
     LPoint curve_arr[MAX_POLYGON_SIZE_BEZIER];
     int nbPointsCurve;

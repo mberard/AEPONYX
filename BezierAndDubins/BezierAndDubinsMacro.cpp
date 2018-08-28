@@ -76,7 +76,7 @@ void BezierAndDubinsMacro()
 
     char cwd[MAX_TDBFILE_NAME];
 	char strPath[MAX_LENGTH_PATH];
-    char* token;
+    char* token; //to read the file
    	FILE * myFile = NULL;
     char line[256];
 
@@ -85,6 +85,7 @@ void BezierAndDubinsMacro()
 
     char value_offset[50];
 
+    //to find the points locations
     LPoint pLabelLocation;
     double xPosLabel, yPosLabel;
     char startLabelName[MAX_CELL_NAME];
@@ -102,7 +103,7 @@ void BezierAndDubinsMacro()
 
     bool rasterizeWaveguide = true;
 
-    LDialogItem DialogItems[2] = {{ "Oxide size on each size (in microns)","10"}, { "Oxide layer","OX"}};
+    LDialogItem DialogItems[2] = {{ "Oxide size on each side (in microns)","10"}, { "Oxide layer","OX"}};
 
     const char *Pick_List [ ] = {
     "Dubins curves with circles",
@@ -128,7 +129,6 @@ void BezierAndDubinsMacro()
 		return;
     }
     LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
-    //LDialog_AlertBox(LFormat("The guide will be added in Layer %s", sLayerName));
 
     //get the path
 	if (getcwd(cwd, sizeof(cwd)) == NULL)
@@ -140,66 +140,48 @@ void BezierAndDubinsMacro()
     path.SetCell(pCell);
     path.SetLayer(pLayer);
 
-    if(choice == 0)
+    if(choice == 0) //Dubins curve with circles
     {
         LUpi_LogMessage( "\n\nDubins curve with circle\n\n" );
 
-        if ( LDialog_YesNoBox("Do you want to offset the curves?") )
-        {
-            /*Yes is clicked*/
-            path.SetOffsetCurveIsSelected(true);
-            strcpy(value_offset, "0.03");
-            if ( LDialog_InputBox("Offset", "Enter the value of the offset (in microns)", value_offset) == LCANCEL)
-                path.SetOffsetValue(0);
-            else
-            {
-                path.SetOffsetValue( atof(value_offset) );
-            }
-        }
-        else 
-        {
-            /*No is clicked*/
-            path.SetOffsetCurveIsSelected(false);
+        path.SetOffsetCurveIsSelected(true); //offset?
+        strcpy(value_offset, "0.00");
+        if ( LDialog_InputBox("Offset", "Enter the value of the offset (in microns)", value_offset) == LCANCEL)
             path.SetOffsetValue(0);
-        }
-
-        if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+        else
         {
-            if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
-            {
+            path.SetOffsetValue( atof(value_offset) );
+        }
+        if(atof(value_offset) == 0.0)
+            path.SetOffsetCurveIsSelected(false);
+        else
+            path.SetOffsetCurveIsSelected(true);
 
-                path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
-                if(LLayer_Find(pFile, DialogItems[1].value))
-                {
-                    path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
-                }
-                else
-                {
-                    LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
-                }
+
+        if(LDialog_MultiLineInputBox("Oxide",DialogItems,2)) //oxide?
+        {
+            path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
+            if(LLayer_Find(pFile, DialogItems[1].value))
+            {
+                path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
             }
             else
             {
-                path.SetOxideSizeValue(0);
+                LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
             }
         }
         else
         {
             path.SetOxideSizeValue(0);
         }
+        
 
         if ( LDialog_YesNoBox("Do you want to rasterize the waveguide?") )
-        {
-            /*Yes is clicked*/
-            rasterizeWaveguide = true;
-        }
-        else 
-        {
-            /*No is clicked*/
-            rasterizeWaveguide = false;
-        }
+            rasterizeWaveguide = true; /*Yes is clicked*/
+        else
+            rasterizeWaveguide = false; /*No is clicked*/
 
-        if( twoLabelsHasBeenSelected() )
+        if( twoLabelsHasBeenSelected() ) //2 labels selected : we will store the positions and angles
         {
             LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));
             LSelection pSelection = LSelection_GetList() ;
@@ -207,6 +189,7 @@ void BezierAndDubinsMacro()
             LObject object = LSelection_GetObject(pSelection); //first label is the second one selected
             LLabel pLabel = (LLabel)object;
 
+            //endLabel
             pLabelLocation = LLabel_GetPosition( pLabel );
             xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
             yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
@@ -233,6 +216,7 @@ void BezierAndDubinsMacro()
             object = LSelection_GetObject(pSelection);
             pLabel = (LLabel)object;
 
+            //startLabel
             pLabelLocation = LLabel_GetPosition( pLabel );
             xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
             yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
@@ -266,6 +250,7 @@ void BezierAndDubinsMacro()
             else
                 width = atof(strLayer);
 
+            //store in the dubinsPath object
             path.SetStartPoint(start);
             path.SetEndPoint(end);
             path.SetRadius(radius);
@@ -287,7 +272,7 @@ void BezierAndDubinsMacro()
         }
 
 
-
+        //if not 2 label selected, try with the file
         strcpy(strPath,"guideFile.csv");
         LDialog_File( strPath, "CSV file", strPath, "CSV Files (*.csv)|*.csv|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", 1, "Enter path of the CSV file containing the guides between labels", "OK", "csv", "*.csv|*.txt||", pFile );
         strPath[strlen(strPath)-2]='\0'; //delete the last 2 char of the string ("|0")
@@ -463,7 +448,7 @@ void BezierAndDubinsMacro()
 
 
 
-        else //manual selection
+        else //manual selection (= no label selected and no file found/selected)
         {
             LDialog_AlertBox(LFormat("No file found: manual selection"));
             LDialogItem DialogItems[2] = {{ "Cell","cell1"}, { "Name","P1"}};
@@ -608,7 +593,7 @@ void BezierAndDubinsMacro()
     }
 
 
-    if(choice == 1)
+    if(choice == 1) //Dubins curve with Bézier
     {
         LUpi_LogMessage( "\n\nDubins curve with Bézier\n\n" );
 
@@ -621,30 +606,25 @@ void BezierAndDubinsMacro()
             path.SetParamBezier(paramBezier);
         }
 
-        if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+        
+        if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
         {
-            if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
-            {
 
-                path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
-                if(LLayer_Find(pFile, DialogItems[1].value))
-                {
-                    path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
-                }
-                else
-                {
-                    LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
-                }
+            path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
+            if(LLayer_Find(pFile, DialogItems[1].value))
+            {
+                path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
             }
             else
             {
-                path.SetOxideSizeValue(0);
+                LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
             }
         }
         else
         {
             path.SetOxideSizeValue(0);
         }
+        
 
         if( twoLabelsHasBeenSelected() )
         {
@@ -1060,30 +1040,28 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
 
 
 
-    else if(choice == 2)
+    else if(choice == 2) //Bezier curves
     {
         LUpi_LogMessage( "\n\nBezier curve\n\n" );
 
-        if ( LDialog_YesNoBox("Do you want to add oxide ?") )
+        if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
         {
-            if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
-            {
 
-                bezierCurve.SetOxideSizeValueBezier( 2*atof(DialogItems[0].value) );
-                if(LLayer_Find(pFile, DialogItems[1].value))
-                {
-                    bezierCurve.SetOxideLayerBezier( LLayer_Find(pFile, DialogItems[1].value) );
-                }
-                else
-                {
-                    LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
-                }
+            bezierCurve.SetOxideSizeValueBezier( 2*atof(DialogItems[0].value) );
+            if(LLayer_Find(pFile, DialogItems[1].value))
+            {
+                bezierCurve.SetOxideLayerBezier( LLayer_Find(pFile, DialogItems[1].value) );
             }
             else
             {
-                bezierCurve.SetOxideSizeValueBezier(0);
+                LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
             }
         }
+        else
+        {
+            bezierCurve.SetOxideSizeValueBezier(0);
+        }
+        
 
         if( twoLabelsHasBeenSelected() )
         {

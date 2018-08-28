@@ -4,8 +4,10 @@
 
 //MEMBER METHODS
 
+//constructor
 BezierCurve::BezierCurve(){}
 
+//setters
 LStatus BezierCurve::SetFile(LFile file){
     this->file = file;
     return LStatusOK;
@@ -112,6 +114,8 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
     this->nbPointsCurve = this->nbPointsCurve + 1;
 
     //construct the guide from the curve
+    
+    //right side of the curve
     this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xStart + sin(angleStart) * this->guideWidth / 2.0) , (LCoord)round(yStart - cos(angleStart) * this->guideWidth / 2.0));
     save1 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
@@ -125,6 +129,7 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
     save2 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
 
+    //left side of the curve
     this->point_arr[this->nbPoints] = LPoint_Set((LCoord)round(xEnd + sin(angleEnd + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEnd - cos(angleEnd + M_PI) * this->guideWidth / 2.0));
     save3 = this->point_arr[this->nbPoints];
     this->nbPoints = this->nbPoints + 1;
@@ -161,11 +166,9 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
             angle = fmod(angle, 2*M_PI);
             while(angle < 0)
                 angle = angle + 2*M_PI;
-//LUpi_LogMessage(LFormat("i %d\n",i));
+            
             if( (angle > M_PI - ANGLE_LIMIT && angle < M_PI +ANGLE_LIMIT) ) //if not in the limit range
             {
-                //point_arr[i]=point_arr[(i+1)%nbPoints];
-                //point_arr[(i+1)%nbPoints]=point_arr[i];
                 for(j=i; j<this->nbPoints; j++)
                     this->point_arr[j]=this->point_arr[(j+1)%this->nbPoints];
                 this->nbPoints = this->nbPoints - 1;
@@ -176,13 +179,14 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
     
     LUpi_LogMessage(LFormat("nbPoints %d\n",this->nbPoints));
 
+    //create the path
     LObject obj;
     obj = LPolygon_New( this->cell, this->layer, this->point_arr, this->nbPoints );
 
     double dist = LFile_IntUtoMicrons(this->file, ArrayDistance(this->curve_arr, this->nbPointsCurve));
     LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
 
-
+    //create the path of oxide if necessary
     if(this->oxideSizeValue != 0)
     {
         LLayer savedLayer = this->layer;
