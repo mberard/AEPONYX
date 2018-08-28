@@ -206,7 +206,7 @@ void AutomaticNumerotationMacro()
     for(LInstance inst = LInstance_GetList(bigCell); inst != NULL; inst = LInstance_GetNext(inst)) 
                 LInstance_Delete(bigCell, inst); //deleting all the instance in bigCell
     
-    for(int i = 0; i<nbLine; i++)
+    for(int i = nbLine; i>0; i--)
     {
         for(int j = 0; j<nbCol; j++)
         {
@@ -217,9 +217,9 @@ void AutomaticNumerotationMacro()
             itoa(j+1, buffer, 10);
             strcat(strText, buffer);
             strcat(strText, "L");
-            if(i+1 < 10)
+            if(i < 10)
                 strcat(strText, "0");
-            itoa(i+1, buffer, 10);
+            itoa(i, buffer, 10);
             strcat(strText, buffer);
 
             strcpy(strName, "");
@@ -316,7 +316,7 @@ void AutomaticNumerotationMacro()
             if(!(LInstance_Find(bigCell, strText))) //add the instance that not already exist
             {
                 transformation.translation.x = j*delta_x;
-                transformation.translation.y = i*delta_y;
+                transformation.translation.y = (nbLine-i)*delta_y;
                 transformation.orientation = 0.0;
                 transformation.magnification.num = 1;
                 transformation.magnification.denom = 1;
