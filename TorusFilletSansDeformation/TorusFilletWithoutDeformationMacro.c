@@ -13,6 +13,40 @@
 #define LIMIT_FAST_APPROACH_3 1.55
 
 
+void RecursiveInstanceDetection(LInstance instance, LCell cell, LLayer originLayer, LLayer destinationLayer, LTransform_Ex99 prevTransform)
+{
+
+    LTransform_Ex99 transform;
+    transform = LInstance_GetTransform_Ex99( instance ); //get the transform form this to the previous one
+    //add it to the previous one (add translation and orientation, multiply magnification)
+    transform.translation.x = transform.translation.x + prevTransform.translation.x;
+    transform.translation.y = transform.translation.y + prevTransform.translation.y;
+    transform.orientation = transform.orientation + prevTransform.orientation;
+    transform.magnification.num = transform.magnification.num * prevTransform.magnification.num;
+    transform.magnification.denom = transform.magnification.denom * prevTransform.magnification.denom;
+    
+    LObject obj;
+    //find the right cell
+    LCell instancedCell = LInstance_GetCell(instance);
+
+    //if there is an instance in this instance
+    for(LInstance newInstance = LInstance_GetList( instancedCell ) ; newInstance != NULL ; newInstance = LInstance_GetNext( newInstance ) )
+    {
+        //recall the same function
+        RecursiveInstanceDetection((LInstance)newInstance, cell, originLayer, destinationLayer, transform);
+    }
+
+    //copy polygons from an instance to the tmp layer
+    for(LObject instancedObject = LObject_GetList(instancedCell, originLayer) ; instancedObject != NULL ; instancedObject = LObject_GetNext(instancedObject) )
+    {
+        obj = LObject_Copy( cell, destinationLayer, instancedObject );
+        LObject tmp_obj_arr[1];
+        tmp_obj_arr[0] = obj;
+        LObject_ConvertToPolygon( cell, tmp_obj_arr, 1 ); //necessary to ensure the tranform will be good (especially for box)
+        LObject_Transform_Ex99( tmp_obj_arr[0], transform );
+    }
+}
+
 double PointDistance(LPoint start, LPoint end)
 {
     double dist=0.0;
@@ -187,6 +221,7 @@ void AATorusFilletWithoutDeformation(void)
 
     LLayer tmpLayer;
     LLayer tmpLayerGrow;
+    LLayer tmpLayerWithAllPolygons;
 
     char strLayer[MAX_LAYER_NAME];
 
@@ -196,7 +231,7 @@ void AATorusFilletWithoutDeformation(void)
     long numberVertex = 0;
 
     LPoint points_from_grow[MAX_POLYGON_SIZE];
-    int numberPointsFromeGrow = 0;
+    int numberPointsFromGrow = 0;
     LPoint points_already_used[MAX_POLYGON_SIZE];
     int numberPointsAlreadyUsed = 0;
     int isAlreadyUsed = 0;
@@ -264,20 +299,56 @@ void AATorusFilletWithoutDeformation(void)
         else
             onlyWithLabel = 1;
 
+        //delete the tmp cells if already exists
+        if(LLayer_Find(pFile, "tmp"))
+            LLayer_Delete( pFile, LLayer_Find(pFile, "tmp") );
+        if(LLayer_Find(pFile, "tmpGrow"))
+            LLayer_Delete( pFile, LLayer_Find(pFile, "tmpGrow") );
+        if(LLayer_Find(pFile, "tmpLayerWithAllPolygons"))
+            LLayer_Delete( pFile, LLayer_Find(pFile, "tmpLayerWithAllPolygons") );
+
+        //create the tmp layers
         LLayer_New( pFile, NULL, "tmp");
         tmpLayer = LLayer_Find(pFile, "tmp");
 
         LLayer_New( pFile, NULL, "tmpGrow");
         tmpLayerGrow = LLayer_Find(pFile, "tmpGrow");
+
+        LLayer_New( pFile, NULL, "tmpLayerWithAllPolygons");
+        tmpLayerWithAllPolygons = LLayer_Find(pFile, "tmpLayerWithAllPolygons");
         
+        //for each selected element
         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
         {
             LObject object = LSelection_GetObject(pSelection);
+            //detect if it is an instance
+            if( LObject_GetShape(object) == LObjInstance)
+            {
+                
+                //set the tranform to null operand (0 translation and orientation, 1 magnification) for the first iteration of recursive function
+                LTransform_Ex99 transformOrigin;
+                transformOrigin.translation.x = 0;
+                transformOrigin.translation.y = 0;
+                transformOrigin.orientation = 0;
+                transformOrigin.magnification.num = 1;
+                transformOrigin.magnification.denom = 1;
+                RecursiveInstanceDetection((LInstance)object, pCell, pLayer, tmpLayerWithAllPolygons, transformOrigin);
+            }
+            else
+            {
+                //copy in the right tmp layer
+                LObject_Copy( pCell, tmpLayerWithAllPolygons, object );
+            }
+        }
+        //all polygons from the tmp layer in an object array for bollean aperation
+        for(LObject object = LObject_GetList(pCell, tmpLayerWithAllPolygons) ; object != NULL ; object = LObject_GetNext(object) )
+        {
             obj_arr[nbPolygonSelected] = object;
             nbPolygonSelected++;
         }
-        LUpi_LogMessage(LFormat("nbPolygonSelected %d\n", nbPolygonSelected));    
+        LUpi_LogMessage(LFormat("nbPolygonSelected %d\n", nbPolygonSelected));
 
+        //OR with all polygons
         LCell_BooleanOperation(pCell,
                                LBoolOp_OR, 
                                NULL, 
@@ -288,6 +359,7 @@ void AATorusFilletWithoutDeformation(void)
                                tmpLayer, 
                                LFALSE );
 
+        //OR and GROW for all polygons
         LCell_BooleanOperation(pCell,
                                LBoolOp_OR, 
                                NULL, 
@@ -313,6 +385,8 @@ void AATorusFilletWithoutDeformation(void)
                                tmpLayerGrow, 
                                LTRUE );
 
+        //for each polygons after the OR/OR-GROW
+        //detect and store all points that need to be fillet
         for(LObject obj = LObject_GetList(pCell, tmpLayerGrow) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
             originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
@@ -350,12 +424,14 @@ void AATorusFilletWithoutDeformation(void)
                 
                 if( angle < M_PI - ANGLE_LIMIT ) //if not in the limit range and concave
                 {
-                    points_from_grow[numberPointsFromeGrow] = original_point_arr[i];
-                    numberPointsFromeGrow++;
+                    points_from_grow[numberPointsFromGrow] = original_point_arr[i];
+                    numberPointsFromGrow++;
                 }
             }
         }
 
+        //for each polygons after the OR/OR-GROW
+        //create the torus on the right place
         for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
         {
             originalNumberVertex = LVertex_GetArray( obj, original_point_arr, MAX_POLYGON_SIZE );
@@ -400,7 +476,7 @@ void AATorusFilletWithoutDeformation(void)
                 
                 if( angle < M_PI - ANGLE_LIMIT ) //if not in the limit range and concave
                 {
-                    if(onlyWithLabel == 1)
+                    if(onlyWithLabel == 1) //if only angle near label
                     {
                         int hasLabelNear = 0;
                         for(LSelection pSelection = LSelection_GetList() ; pSelection != NULL; pSelection = LSelection_GetNext(pSelection) )
@@ -413,7 +489,7 @@ void AATorusFilletWithoutDeformation(void)
                                     hasLabelNear = 1;
                             }
                         }
-                        if(hasLabelNear == 0)
+                        if(hasLabelNear == 0) //if no label detected
                             continue;
                     }
 
@@ -421,7 +497,7 @@ void AATorusFilletWithoutDeformation(void)
                     
                     savedPoint = LPoint_Set(-1,-1);
                     minDist = 9999999999.999999999;
-                    for(j = 0; j < numberPointsFromeGrow; j++)
+                    for(j = 0; j < numberPointsFromGrow; j++) //find the closest point saved from the grow
                     {
                         if(centerIsBetweenPoints(LPoint_Set(prevX,prevY), original_point_arr[i], LPoint_Set(nextX,nextY), points_from_grow[j]) == 1)
                         {
@@ -434,15 +510,14 @@ void AATorusFilletWithoutDeformation(void)
                     }
                     points_already_used[numberPointsAlreadyUsed] = savedPoint;
                     numberPointsAlreadyUsed = numberPointsAlreadyUsed + 1;
-                    center = savedPoint;
+                    center = savedPoint; //center is one of the point saved from the grow
                     
-                    center = FindTangentFromCenter(i, original_point_arr, originalNumberVertex, fillet, center, &rightAngle, &leftAngle);
+                    center = FindTangentFromCenter(i, original_point_arr, originalNumberVertex, fillet, center, &rightAngle, &leftAngle); //find the tangent angles
 
                     if( !(center.x == -1 && center.y == -1) )
                     {
-
                         minDist = 9999999999.999999999;
-                        for(j = 0; j < numberPointsFromeGrow; j++)
+                        for(j = 0; j < numberPointsFromGrow; j++)
                         {
                             if(PointDistance(center,points_from_grow[j])<minDist)
                             {
@@ -458,22 +533,22 @@ void AATorusFilletWithoutDeformation(void)
                         LUpi_LogMessage(LFormat("rightAngle %lf\n",rightAngle));
                         LUpi_LogMessage(LFormat("leftAngle %lf\n\n\n",leftAngle));
 
-                        if(PointDistance(original_point_arr[i], center) > 100*fillet)
+                        if(PointDistance(original_point_arr[i], center) > 100*fillet) //if too big
                         {
                             tParams.ptCenter = original_point_arr[i];
                             tParams.nInnerRadius = fillet;
-                            tParams.nOuterRadius = fillet+1000;
+                            tParams.nOuterRadius = fillet+1000; //only a 1 micron torus
                         }
                         else
                         {
                             tParams.ptCenter = center;
                             tParams.nInnerRadius = fillet;
-                            tParams.nOuterRadius = max(PointDistance(original_point_arr[i], center)*1.05, fillet*1.5);
+                            tParams.nOuterRadius = max(PointDistance(original_point_arr[i], center)*1.05, fillet*1.5); //a little bit more than the distance center-angle
                         }
                         tParams.dStartAngle = rightAngle;
                         tParams.dStopAngle = leftAngle;
 
-                        LTorus_CreateNew( pCell, pLayer, &tParams );
+                        LTorus_CreateNew( pCell, pLayer, &tParams ); //create the torus
                     }
                     else
                     {
@@ -491,7 +566,7 @@ void AATorusFilletWithoutDeformation(void)
     if(onlyWithLabel != 1)
     {
         LUpi_LogMessage("\n\nTest the last points\n");
-        for(i=0; i<numberPointsFromeGrow; i++)
+        for(i=0; i<numberPointsFromGrow; i++) //add torus if a point from the grow has not been processed
         {
             isAlreadyUsed = 0;
             for(j=0; j<numberPointsAlreadyUsed; j++)
@@ -547,6 +622,7 @@ void AATorusFilletWithoutDeformation(void)
         }
     }
 
+    //delete the objects and tmp layers
     for(LObject obj = LObject_GetList(pCell, tmpLayer) ; obj != NULL; obj = LObject_GetNext(obj) )
     {
         LObject_Delete( pCell, obj );
@@ -557,6 +633,11 @@ void AATorusFilletWithoutDeformation(void)
         LObject_Delete( pCell, obj );
     }
     LLayer_Delete( pFile, tmpLayerGrow );
+    for(LObject obj = LObject_GetList(pCell, tmpLayerWithAllPolygons) ; obj != NULL; obj = LObject_GetNext(obj) )
+    {
+        LObject_Delete( pCell, obj );
+    }
+    LLayer_Delete( pFile, tmpLayerWithAllPolygons );
 
     LUpi_LogMessage(LFormat("\nEND MACRO\n"));
 }

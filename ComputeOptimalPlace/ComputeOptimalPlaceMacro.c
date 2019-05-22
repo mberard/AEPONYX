@@ -75,7 +75,7 @@ void ComputeOptimalPlaceMacro()
 
     LPoint startCenter, endCenter;
 
-    if(twoLabelsHasBeenSelected() == 1)
+    if(twoLabelsHasBeenSelected() == 1) //if 2 labels are selected, we take their positions and angles
     {
         LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));
         LSelection pSelection = LSelection_GetList() ;
@@ -125,8 +125,9 @@ void ComputeOptimalPlaceMacro()
             LUpi_LogMessage("Angle property not found, 0 by default\n");
         }
     }
-    else
+    else //ask which label
     {
+        //first label (start)
         LDialogItem DialogItems[2] = {{ "Cell","cell1"}, { "Name","P1"}};
         if (LDialog_MultiLineInputBox("Start point",DialogItems,2) == 0)
             return;
@@ -147,7 +148,6 @@ void ComputeOptimalPlaceMacro()
             if(strcmp(sLabelName, startLabelName) == 0)
             {
                 startPoint = LLabel_GetPosition( pLabel );
-
                 if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
                 {
                     if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
@@ -159,7 +159,6 @@ void ComputeOptimalPlaceMacro()
                         startAngle = 0;
                         LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
                     }
-                        
                 }		
                 else
                 {
@@ -176,8 +175,7 @@ void ComputeOptimalPlaceMacro()
             return;
         }
 
-
-
+        //second label (end)
         LDialogItem DialogItemsEnd[2] = {{ "Cell","cell2"}, { "Name","P2"}};
         if (LDialog_MultiLineInputBox("End point",DialogItemsEnd,2) == 0)
             return;
@@ -261,10 +259,7 @@ void ComputeOptimalPlaceMacro()
         xMaxEnd = endCenter.x + radius ;
         yMinEnd = endCenter.y - radius ;
         yMaxEnd = endCenter.y + radius ;
-//LUpi_LogMessage(LFormat("angles %lf %lf %lf\n\n",angle-90,angle,angle+90 ));
-//LUpi_LogMessage(LFormat("endCenter %ld %ld\n\n",endCenter.x, endCenter.y ));
-//LUpi_LogMessage(LFormat("xMinStart %ld\nxMaxStart %ld\nyMinStart %ld\nyMaxStart %ld\nxMinEnd %ld\nxMaxEnd %ld\nyMinEnd %ld\nyMaxEnd %ld\n\n", xMinStart,xMaxStart,yMinStart,yMaxStart,xMinEnd,xMaxEnd,yMinEnd,yMaxEnd));
-
+        
         //for fixed Y
         if( (yMinStart > yMinEnd && yMinStart < yMaxEnd) || (yMaxStart > yMinEnd && yMaxStart < yMaxEnd) )
         {
