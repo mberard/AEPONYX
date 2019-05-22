@@ -69,7 +69,7 @@ void BezierAndDubinsMacro()
     DubinsPoint start, end;
 
     LCell	pCell	=	LCell_GetVisible();
-	LFile	pFile	=	LCell_GetFile(pCell);
+	 LFile	pFile	=	LCell_GetFile(pCell);
     LLayer pLayer;
     char sLayerName[MAX_LAYER_NAME];
     char strLayer[MAX_LAYER_NAME];
@@ -103,7 +103,11 @@ void BezierAndDubinsMacro()
 
     bool rasterizeWaveguide = true;
 
+<<<<<<< HEAD
+    LDialogItem DialogItems[2] = {{ "Oxide size on each size (in microns)","5"}, { "Oxide layer","OX"}};
+=======
     LDialogItem DialogItems[2] = {{ "Oxide size on each side (in microns)","10"}, { "Oxide layer","OX"}};
+>>>>>>> refs/remotes/origin/master
 
     const char *Pick_List [ ] = {
     "Dubins curves with circles",
@@ -117,7 +121,7 @@ void BezierAndDubinsMacro()
     if(choice == -1)
         return;
 
-    strcpy(strLayer, "WGUIDE"); //preloaded text in the dialog box
+    strcpy(strLayer, "WG"); //preloaded text in the dialog box
 	if ( LDialog_InputBox("Layer", "Enter name of the layer of the active cell in which the guide will be loaded", strLayer) == 0)
 		return;
 	else
@@ -244,7 +248,7 @@ void BezierAndDubinsMacro()
             else
                 radius = atof(strLayer);
 
-            strcpy(strLayer, "0.435");
+            strcpy(strLayer, "0.45");
             if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
                 return;
             else
