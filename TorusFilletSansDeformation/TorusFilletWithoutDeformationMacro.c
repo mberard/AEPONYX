@@ -253,7 +253,7 @@ void AATorusFilletWithoutDeformation(void)
             fillet = LFile_MicronsToIntU(pFile,atof(strFillet));
         LUpi_LogMessage(LFormat("fillet: %lf\n", fillet));
 
-        strcpy(strLayer, "OX"); //preloaded text in the dialog box
+        strcpy(strLayer, "WGGROW010"); //preloaded text in the dialog box
 		if ( LDialog_InputBox("Layer", "Enter name of the layer in which the polygon will be loaded", strLayer) == 0)
 			return;
 		else
