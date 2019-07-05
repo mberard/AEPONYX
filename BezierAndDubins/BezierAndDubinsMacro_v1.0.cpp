@@ -101,13 +101,13 @@ void BezierAndDubinsMacro()
     float width;
     double paramBezier;
 
-    bool rasterizeWaveguide = true;
+    int rasterizeWaveguide = 1;
 
-<<<<<<< HEAD
-    LDialogItem DialogItems[2] = {{ "Oxide size on each size (in microns)","5"}, { "Oxide layer","OX"}};
+/*<<<<<<< HEAD
+    LDialogItem DialogItems[2] = {{ "Oxide size on each size (in microns)","5"}, { "Oxide layer","OX"}};/*
 =======
     LDialogItem DialogItems[2] = {{ "Oxide size on each side (in microns)","10"}, { "Oxide layer","OX"}};
->>>>>>> refs/remotes/origin/master
+>>>>>>> refs/remotes/origin/master*/
 
     const char *Pick_List [ ] = {
     "Dubins curves with circles",
@@ -120,20 +120,18 @@ void BezierAndDubinsMacro()
 
     if(choice == -1)
         return;
-
-    strcpy(strLayer, "WG"); //preloaded text in the dialog box
-	if ( LDialog_InputBox("Layer", "Enter name of the layer of the active cell in which the guide will be loaded", strLayer) == 0)
-		return;
-	else
-		pLayer = LLayer_Find(pFile, strLayer);
-
-	if(NotAssigned(pLayer)) //the layer is not found
-	{
-		LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", strLayer));
-		return;
-    }
-    LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
-
+	
+	
+	strcpy(strLayer, "WG"); //preloaded text for the dialog box
+	
+	//Make the list of the items for the MultiLineDialogBox
+	LDialogItem dialog_items[5];
+	//The prompts
+	strcpy(dialog_items[0].prompt, "Layer name of the active cell:");
+	//The values entered in parameters
+	strcpy(dialog_items[0].value, strLayer); 
+	/* To be continued lower according to the selection made in the first dialogBox */
+	
     //get the path
 	if (getcwd(cwd, sizeof(cwd)) == NULL)
 		LUpi_LogMessage(LFormat("getcwd() error: %s\n",strerror(errno)));
@@ -142,48 +140,59 @@ void BezierAndDubinsMacro()
 
     path.SetFile(pFile);
     path.SetCell(pCell);
-    path.SetLayer(pLayer);
 
-    if(choice == 0) //Dubins curve with circles
-    {
+
+    if(choice == 0){ //Dubins curves with circles
         LUpi_LogMessage( "\n\nDubins curve with circle\n\n" );
 
         path.SetOffsetCurveIsSelected(true); //offset?
-        strcpy(value_offset, "0.00");
-        if ( LDialog_InputBox("Offset", "Enter the value of the offset (in microns)", value_offset) == LCANCEL)
-            path.SetOffsetValue(0);
-        else
-        {
-            path.SetOffsetValue( atof(value_offset) );
-        }
-        if(atof(value_offset) == 0.0)
-            path.SetOffsetCurveIsSelected(false);
-        else
-            path.SetOffsetCurveIsSelected(true);
+        strcpy(value_offset, "0.0");
+		
+		//The prompts
+		strcpy(dialog_items[1].prompt, "Offset value (in microns):");
+		strcpy(dialog_items[2].prompt, "Oxide size on each size (in microns):");
+		strcpy(dialog_items[3].prompt, "Oxide layer:");
+		strcpy(dialog_items[4].prompt, "Do you want to rasterize the waveguide?");
+		//The values entered in parameters
+		strcpy(dialog_items[1].value, value_offset);
+		strcpy(dialog_items[2].value, "5");
+		strcpy(dialog_items[3].value, "OX");
+		strcpy(dialog_items[4].value, "1");
+		
+		//Calls the the dialog box
+		if(!LDialog_MultiLineInputBox("Dubins curves with circles", dialog_items, 5)){
+			return;
+		}
+		
+		//Declare variables & assign values from the dialogue box
+		pLayer = LLayer_Find(pFile, dialog_items[0].value); //the layer value
+		strcpy(value_offset, dialog_items[1].value);
+		rasterizeWaveguide = LFile_MicronsToIntU(pFile, atoi(dialog_items[4].value)); 
+		
+		//set the layer for DubinsPath
+		path.SetLayer(pLayer);
+		
+		//the offset value
+        path.SetOffsetValue( atof(value_offset) ); 
+        if(atof(value_offset) == 0.0) 
+            path.SetOffsetCurveIsSelected(false); 
+		else
+            path.SetOffsetCurveIsSelected(true); 
 
-
-        if(LDialog_MultiLineInputBox("Oxide",DialogItems,2)) //oxide?
-        {
-            path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
-            if(LLayer_Find(pFile, DialogItems[1].value))
-            {
-                path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
-            }
-            else
-            {
-                LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
-            }
-        }
-        else
-        {
-            path.SetOxideSizeValue(0);
-        }
+		//the oxide layer and size
+		path.SetOxideSizeValue(2*atof(dialog_items[2].value));
+		if(LLayer_Find(pFile, dialog_items[3].value)){
+			path.SetOxideLayer(LLayer_Find(pFile, dialog_items[3].value));
+		}else{
+			LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
+		}
         
-
-        if ( LDialog_YesNoBox("Do you want to rasterize the waveguide?") )
-            rasterizeWaveguide = true; /*Yes is clicked*/
-        else
-            rasterizeWaveguide = false; /*No is clicked*/
+		//catch some errors
+		if(NotAssigned(pLayer)){ //the layer is not found
+			LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", strLayer));
+			return;
+		}
+		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
 
         if( twoLabelsHasBeenSelected() ) //2 labels selected : we will store the positions and angles
         {
@@ -597,38 +606,51 @@ void BezierAndDubinsMacro()
     }
 
 
-    if(choice == 1) //Dubins curve with Bézier
-    {
+    if(choice == 1){ //Dubins curve with Bézier
         LUpi_LogMessage( "\n\nDubins curve with Bézier\n\n" );
 
         strcpy(strLayer, "0.3");
-        if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
-            return;
-        else
-        {
-            paramBezier = atof(strLayer);
-            path.SetParamBezier(paramBezier);
-        }
+		
+		//The prompts
+		strcpy(dialog_items[1].prompt, "Bezier parameter (between 0 and 1):");
+		strcpy(dialog_items[2].prompt, "Oxide size on each size (in microns):");
+		strcpy(dialog_items[3].prompt, "Oxide layer:");
+		//The values entered in parameters
+		strcpy(dialog_items[1].value, strLayer);
+		strcpy(dialog_items[2].value, "5");
+		strcpy(dialog_items[3].value, "OX");
+		
+		//Calls the the dialog box
+		if(!LDialog_MultiLineInputBox("Dubins curves with Bezier", dialog_items, 4)){
+			return;
+		}
+		
+		//Declare variables & assign values from the dialogue box
+		pLayer = LLayer_Find(pFile, dialog_items[0].value); //the layer value
+		strcpy(strLayer, dialog_items[1].value);
+		
+		//set the layer for DubinsPath
+		path.SetLayer(pLayer);
+		
+		//Bezier parameter
+		paramBezier = atof(strLayer);
+		path.SetParamBezier(paramBezier);    
+		
+		//the oxide layer and size
+		path.SetOxideSizeValue(2*atof(dialog_items[2].value));
+		if(LLayer_Find(pFile, dialog_items[3].value)){
+			path.SetOxideLayer(LLayer_Find(pFile, dialog_items[3].value));
+		}else{
+			LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
+		}
+		
+		//catch some errors
+		if(NotAssigned(pLayer)){ //the layer is not found
+			LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", strLayer));
+			return;
+		}
+		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
 
-        
-        if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
-        {
-
-            path.SetOxideSizeValue( 2*atof(DialogItems[0].value) );
-            if(LLayer_Find(pFile, DialogItems[1].value))
-            {
-                path.SetOxideLayer( LLayer_Find(pFile, DialogItems[1].value) );
-            }
-            else
-            {
-                LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
-            }
-        }
-        else
-        {
-            path.SetOxideSizeValue(0);
-        }
-        
 
         if( twoLabelsHasBeenSelected() )
         {
@@ -1044,29 +1066,43 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
 
 
 
-    else if(choice == 2) //Bezier curves
-    {
+    else if(choice == 2){ //Bezier curves
         LUpi_LogMessage( "\n\nBezier curve\n\n" );
 
-        if(LDialog_MultiLineInputBox("Oxide",DialogItems,2))
-        {
+		//The prompts
+		strcpy(dialog_items[1].prompt, "Oxide size on each size (in microns):");
+		strcpy(dialog_items[2].prompt, "Oxide layer:");
+		//The values entered in parameters
+		strcpy(dialog_items[1].value, "5");
+		strcpy(dialog_items[2].value, "OX");
+		
+		//Calls the the dialog box
+		if(!LDialog_MultiLineInputBox("Bezier curves", dialog_items, 3)){
+			return;
+		}
+		
+		//Declare variables & assign values from the dialogue box
+		pLayer = LLayer_Find(pFile, dialog_items[0].value); //the layer value
+		
+		//set the layer for DubinsPath
+		path.SetLayer(pLayer);
 
-            bezierCurve.SetOxideSizeValueBezier( 2*atof(DialogItems[0].value) );
-            if(LLayer_Find(pFile, DialogItems[1].value))
-            {
-                bezierCurve.SetOxideLayerBezier( LLayer_Find(pFile, DialogItems[1].value) );
-            }
-            else
-            {
-                LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
-            }
-        }
-        else
-        {
-            bezierCurve.SetOxideSizeValueBezier(0);
-        }
+		//the oxide layer and size
+		bezierCurve.SetOxideSizeValueBezier(2*atof(dialog_items[1].value));
+		if(LLayer_Find(pFile, dialog_items[2].value)){
+			bezierCurve.SetOxideLayerBezier(LLayer_Find(pFile, dialog_items[2].value));
+		}else{
+			LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
+		}
         
-
+		//catch some errors
+		if(NotAssigned(pLayer)){ //the layer is not found
+			LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", strLayer));
+			return;
+		}
+		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
+		
+		
         if( twoLabelsHasBeenSelected() )
         {
             LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));
