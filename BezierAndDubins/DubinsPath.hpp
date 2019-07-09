@@ -43,7 +43,11 @@ private:
 
     bool offsetCurveIsSelected;
     double offsetValue;
-
+	
+	double WGGROW003SizeValue;
+	double WGOVL010SizeValue;
+	double WGOVLHOLESizeValue;
+	
     double oxideSizeValue;
     LLayer oxideLayer;
 
@@ -55,6 +59,8 @@ private:
     LCell cell;
     LFile file;
     LLayer layer;
+	
+	LLayer WGGROW003Layer, WGOVL010Layer, WGOVLHOLELayer;
 
     LStatus UpdateCircleCenter();
 
@@ -68,8 +74,14 @@ public:
     LStatus SetFile(LFile file);
     LStatus SetCell(LCell cell);
     LStatus SetLayer(LLayer layer);
+	LStatus SetWGGROW003Layer(LLayer layer);
+	LStatus SetWGOVL010Layer(LLayer layer);
+	LStatus SetWGOVLHOLELayer(LLayer layer);
     LStatus SetOffsetCurveIsSelected(bool choice);
     LStatus SetOffsetValue(double value);
+	LStatus SetWGGROW003SizeValue(double value);
+	LStatus SetWGOVL010SizeValue(double value);
+	LStatus SetWGOVLHOLESizeValue(double value);
     LStatus SetOxideSizeValue(double value);
     LStatus SetOxideLayer(LLayer layer);
     LStatus SetParamBezier(double paramBezier);
@@ -108,6 +120,7 @@ public:
     void Add( double x, double y);
 
     void DubinsPathWithBezierCurves();
+	void DubinsPathWithBezierCurvesCall();
 
 };
 

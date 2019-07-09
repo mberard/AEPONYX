@@ -210,20 +210,17 @@ LFile	pFile	=	LCell_GetFile(pCell);
     return center;
 }
 
-void AATorusFilletWithoutDeformation(void)
-{
+void AATorusFilletWithoutDeformation(void){
     LCell	pCell	=	LCell_GetVisible();
 	LFile	pFile	=	LCell_GetFile(pCell);
-    LLayer  pLayer;
-
+    
+	double fillet = 2.5;
+	LLayer  pLayer;
+	char strLayer[MAX_LAYER_NAME];
+	int onlyWithLabel = 0;
+	
     LObject obj_arr[MAX_NUMBER_POLYGON];
     int nbPolygonSelected = 0;
-
-    LLayer tmpLayer;
-    LLayer tmpLayerGrow;
-    LLayer tmpLayerWithAllPolygons;
-
-    char strLayer[MAX_LAYER_NAME];
 
     LPoint original_point_arr[MAX_POLYGON_SIZE];
     long originalNumberVertex = 0;
@@ -242,24 +239,15 @@ void AATorusFilletWithoutDeformation(void)
     LCoord y = 0;
     LCoord nextX = 0;
     LCoord nextY = 0;
+	
+	LLayer tmpLayer, tmpLayerGrow, tmpLayerWithAllPolygons;
+    LPoint tanLeft, tanRight, center;
 
-    LPoint tanLeft;
-    LPoint tanRight;
-    LPoint center;
-
-    long dxPrev;
-    long dyPrev;
-    long dxNext;
-    long dyNext;
-
+    long dxPrev, dyPrev, dxNext, dyNext;
     double angle, angle1, angle2;
     double leftAngle, rightAngle;
 
-    int onlyWithLabel = 0;
     LCoord xLabel, yLabel;
-
-    double fillet;
-    char strFillet[20];
 
     LTorusParams tParams;
 
@@ -271,34 +259,36 @@ void AATorusFilletWithoutDeformation(void)
     long minDist;
     LPoint savedPoint;
 
-
     LUpi_LogMessage("\n\n\n\n\nSTART MACRO\n");
 
-    if(LSelection_GetList() == NULL) //if no selection made
-	{
+    if(LSelection_GetList() == NULL){ //if no selection were made
         LUpi_LogMessage("No selection were made\n");
 		return;
-	}
-    else
-    {
-        strcpy(strFillet, "2.5"); //preloaded text in the dialog box
-		if ( LDialog_InputBox("Fillet", "Enter the fillet value (in microns)", strFillet) == 0)
+	}else{
+		strcpy(strLayer, "WGGROW010"); //preloaded text for the dialog box
+		
+		//Make the list of the items for the MultiLineDialogBox
+		LDialogItem dialog_items[3];
+		//The prompts
+		strcpy(dialog_items[0].prompt, "Fillet value (in microns):");
+		strcpy(dialog_items[1].prompt, "Layer name:");
+		strcpy(dialog_items[2].prompt, "Fillet all the angles?");
+		//The values entered in parameters
+		sprintf(dialog_items[0].value, "%0.1f", fillet);
+		strcpy(dialog_items[1].value, strLayer);
+		sprintf(dialog_items[2].value, "%i", onlyWithLabel);
+		
+		//Calls the the dialog box
+		if(!LDialog_MultiLineInputBox("Fillet Sans Deformation", dialog_items, 3)){
 			return;
-		else
-            fillet = LFile_MicronsToIntU(pFile,atof(strFillet));
-        LUpi_LogMessage(LFormat("fillet: %lf\n", fillet));
-
-        strcpy(strLayer, "WGGROW010"); //preloaded text in the dialog box
-		if ( LDialog_InputBox("Layer", "Enter name of the layer in which the polygon will be loaded", strLayer) == 0)
-			return;
-		else
-            pLayer = LLayer_Find(pFile, strLayer);
-        
-        if( LDialog_YesNoBox("Fillet all the angles? (No = only angles near a label)") )
-            onlyWithLabel = 0;
-        else
-            onlyWithLabel = 1;
-
+		}
+		
+		//Declare variables & assign values from the dialogue box
+		fillet = LFile_MicronsToIntU(pFile,atof(dialog_items[0].value));
+		pLayer = LLayer_Find(pFile, dialog_items[1].value);
+		onlyWithLabel = LFile_MicronsToIntU(pFile,atoi(dialog_items[2].value));
+		
+		
         //delete the tmp cells if already exists
         if(LLayer_Find(pFile, "tmp"))
             LLayer_Delete( pFile, LLayer_Find(pFile, "tmp") );

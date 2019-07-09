@@ -27,8 +27,14 @@ private:
     int nbPoints;
 
     double guideWidth;
-
+	
+	double WGGROW003SizeValue;
+    double WGOVL010SizeValue;
+    double WGOVLHOLESizeValue;
     double oxideSizeValue;
+	LLayer WGGROW003Layer;
+    LLayer WGOVL010Layer;
+    LLayer WGOVLHOLELayer;
     LLayer oxideLayer;
 
     double paramBezier;
@@ -41,10 +47,17 @@ public:
     LStatus SetStartPoint(DubinsPoint point);
     LStatus SetEndPoint(DubinsPoint point);
     LStatus SetGuideWidth(double width);
-    LStatus SetOxideSizeValueBezier(double value);
+	LStatus SetWGGROW003SizeValueBezier(double value);   
+	LStatus SetWGOVL010SizeValueBezier(double value);
+	LStatus SetWGOVLHOLESizeValueBezier(double value);
+	LStatus SetOxideSizeValueBezier(double value);
+	LStatus SetWGGROW003LayerBezier(LLayer layer);
+	LStatus SetWGOVL010LayerBezier(LLayer layer);
+	LStatus SetWGOVLHOLELayerBezier(LLayer layer);
     LStatus SetOxideLayerBezier(LLayer layer);
     LStatus SetParamBezier(double paramBezier);
-
+	
+	void ComputeBezierCurveCall();
     void ComputeBezierCurve();
 
 };

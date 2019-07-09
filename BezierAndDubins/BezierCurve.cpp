@@ -39,12 +39,41 @@ LStatus BezierCurve::SetGuideWidth(double width){
     return LStatusOK;
 }
 
+LStatus BezierCurve::SetWGGROW003SizeValueBezier(double value){
+    value = LFile_MicronsToIntU( this->file, value );
+    this->WGGROW003SizeValue = value;
+    return LStatusOK;
+}
+LStatus BezierCurve::SetWGOVL010SizeValueBezier(double value){
+    value = LFile_MicronsToIntU( this->file, value );
+    this->WGOVL010SizeValue = value;
+    return LStatusOK;
+}
+LStatus BezierCurve::SetWGOVLHOLESizeValueBezier(double value){
+    value = LFile_MicronsToIntU( this->file, value );
+    this->WGOVLHOLESizeValue = value;
+    return LStatusOK;
+}
+
 LStatus BezierCurve::SetOxideSizeValueBezier(double value){
     value = LFile_MicronsToIntU( this->file, value );
     this->oxideSizeValue = value;
     return LStatusOK;
 }
 
+LStatus BezierCurve::SetWGGROW003LayerBezier(LLayer layer){
+    this->WGGROW003Layer = layer;
+    return LStatusOK;
+}
+LStatus BezierCurve::SetWGOVL010LayerBezier(LLayer layer){
+    this->WGOVL010Layer = layer;
+    return LStatusOK;
+}
+LStatus BezierCurve::SetWGOVLHOLELayerBezier(LLayer layer){
+    this->WGOVLHOLELayer = layer;
+    return LStatusOK;
+}			
+			
 LStatus BezierCurve::SetOxideLayerBezier(LLayer layer){
     this->oxideLayer = layer;
     return LStatusOK;
@@ -55,23 +84,92 @@ LStatus BezierCurve::SetParamBezier(double value){
     return LStatusOK;
 }
 
+void BezierCurve::ComputeBezierCurveCall(){
+	ComputeBezierCurve();
+	
+	LLayer savedLayer;
+	double savedGuideWidth, savedSize;
+    //create the path of oxide if necessary
+    if(this->oxideSizeValue != 0){
+        savedLayer = this->layer;
+        savedGuideWidth = this->guideWidth;
+        savedSize = this->oxideSizeValue;
 
+        this->layer = this->oxideLayer;
+        this->guideWidth = this->oxideSizeValue;
+        this->oxideSizeValue = 0;
 
-void BezierCurve::ComputeBezierCurve()
-{
+        this->ComputeBezierCurve();
+
+        this->layer = savedLayer;
+        this->guideWidth = savedGuideWidth;
+        this->oxideSizeValue = savedSize;
+    }
+	
+	//WGGROW003Layer
+    if(this->WGGROW003SizeValue != 0){
+        savedLayer = this->layer;
+        savedGuideWidth = this->guideWidth;
+        savedSize = this->WGGROW003SizeValue;
+
+        this->layer = this->WGGROW003Layer;
+        this->guideWidth = this->WGGROW003SizeValue;
+        this->WGGROW003SizeValue = 0;
+
+        this->ComputeBezierCurve();
+
+        this->layer = savedLayer;
+        this->guideWidth = savedGuideWidth;
+        this->WGGROW003SizeValue = savedSize;
+    }
+	
+	//WGOVL010Layer
+    if(this->WGOVL010SizeValue != 0){
+        savedLayer = this->layer;
+        savedGuideWidth = this->guideWidth;
+        savedSize = this->WGOVL010SizeValue;
+
+        this->layer = this->WGOVL010Layer;
+        this->guideWidth = this->WGOVL010SizeValue;
+        this->WGOVL010SizeValue = 0;
+
+        this->ComputeBezierCurve();
+
+        this->layer = savedLayer;
+        this->guideWidth = savedGuideWidth;
+        this->WGOVL010SizeValue = savedSize;
+    }
+	
+	//WGOVLHOLELayer
+    if(this->WGOVLHOLESizeValue != 0){
+        savedLayer = this->layer;
+        savedGuideWidth = this->guideWidth;
+        savedSize = this->WGOVLHOLESizeValue;
+
+        this->layer = this->WGOVLHOLELayer;
+        this->guideWidth = this->WGOVLHOLESizeValue;
+        this->WGOVLHOLESizeValue = 0;
+
+        this->ComputeBezierCurve();
+
+        this->layer = savedLayer;
+        this->guideWidth = savedGuideWidth;
+        this->WGOVLHOLESizeValue = savedSize;
+    }
+}
+
+void BezierCurve::ComputeBezierCurve(){
     char strLayer[MAX_LAYER_NAME];
 
     double xStart, yStart, xEnd, yEnd;
     double angleStart, angleEnd;
-    double coef;
     double distX, distY;
 
     this->nbPointsCurve = 0;
     this->nbPoints = 0;
 
-    double t;
     int i = 0;
-    int j = 0;
+    int j = 1;
     double x, y;
     double angle, angle1, angle2;
     LPoint save1, save2, save3, save4;
@@ -83,7 +181,7 @@ void BezierCurve::ComputeBezierCurve()
     angleStart = this->startPoint.GetAngleRadian();
     angleEnd = this->endPoint.GetAngleRadian();
 
-    coef = 1 - this->paramBezier;
+    double coef = 1 - this->paramBezier;
 
 
 LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
@@ -103,7 +201,7 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
     //construct the curve
     this->curve_arr[this->nbPointsCurve] = LPoint_Set( xStart, yStart );
     this->nbPointsCurve = this->nbPointsCurve + 1;
-    for(t=0.0005; t<1; t=t+0.0005)
+    for(double t=0.0005; t<1; t=t+0.0005)
     {
         x = xStart*pow((1-t),3) + 3*this->controlStart.x*pow((1-t),2)*t + 3*this->controlEnd.x*(1-t)*pow(t,2) + xEnd*pow(t,3);
         y = yStart*pow((1-t),3) + 3*this->controlStart.y*pow((1-t),2)*t + 3*this->controlEnd.y*(1-t)*pow(t,2) + yEnd*pow(t,3);
@@ -146,12 +244,9 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
     LUpi_LogMessage(LFormat("nbPoints %d\n",this->nbPoints));
 
     //delete the points that intersect with the polygon
-    j=1;
-    while(j != 0)
-    {
+    while(j != 0){
         j=0;
-        for(i=0; i<this->nbPoints; i++)
-        {
+        for(i=0; i<this->nbPoints; i++){
             if((save1.x==this->point_arr[i].x && save1.y==this->point_arr[i].y) || (save2.x==this->point_arr[i].x && save2.y==this->point_arr[i].y) || (save3.x==this->point_arr[i].x && save3.y==this->point_arr[i].y) || (save4.x==this->point_arr[i].x && save4.y==this->point_arr[i].y))
                 continue;
             if(i==0)
@@ -180,29 +275,10 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
     LUpi_LogMessage(LFormat("nbPoints %d\n",this->nbPoints));
 
     //create the path
-    LObject obj;
-    obj = LPolygon_New( this->cell, this->layer, this->point_arr, this->nbPoints );
+    LObject obj = LPolygon_New( this->cell, this->layer, this->point_arr, this->nbPoints );
 
     double dist = LFile_IntUtoMicrons(this->file, ArrayDistance(this->curve_arr, this->nbPointsCurve));
     LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
-
-    //create the path of oxide if necessary
-    if(this->oxideSizeValue != 0)
-    {
-        LLayer savedLayer = this->layer;
-        double savedGuideWidth = this->guideWidth;
-        double savedOxideSize = this->oxideSizeValue;
-
-        this->layer = this->oxideLayer;
-        this->guideWidth = this->oxideSizeValue;
-        this->oxideSizeValue = 0;
-
-        this->ComputeBezierCurve();
-
-        this->layer = savedLayer;
-        this->guideWidth = savedGuideWidth;
-        this->oxideSizeValue = savedOxideSize;
-    }
 }
 
 
