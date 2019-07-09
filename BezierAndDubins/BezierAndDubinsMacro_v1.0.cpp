@@ -103,11 +103,8 @@ void BezierAndDubinsMacro()
 
     bool rasterizeWaveguide = true;
 
-<<<<<<< HEAD
     LDialogItem DialogItems[2] = {{ "Oxide size on each size (in microns)","5"}, { "Oxide layer","OX"}};
-=======
-    LDialogItem DialogItems[2] = {{ "Oxide size on each side (in microns)","10"}, { "Oxide layer","OX"}};
->>>>>>> refs/remotes/origin/master
+
 
     const char *Pick_List [ ] = {
     "Dubins curves with circles",
