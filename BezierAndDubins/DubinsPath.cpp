@@ -88,6 +88,19 @@ LStatus DubinsPath::SetLayer(LLayer layer){
     return LStatusOK;
 }
 
+LStatus DubinsPath::SetWGGROW003Layer(LLayer layer){
+    this->WGGROW003Layer = layer;
+    return LStatusOK;
+}
+LStatus DubinsPath::SetWGOVL010Layer(LLayer layer){
+    this->WGOVL010Layer = layer;
+    return LStatusOK;
+}
+LStatus DubinsPath::SetWGOVLHOLELayer(LLayer layer){
+    this->WGOVLHOLELayer = layer;
+    return LStatusOK;
+}
+
 LStatus DubinsPath::SetOffsetCurveIsSelected(bool choice){
     this->offsetCurveIsSelected = choice;
     return this->UpdateCircleCenter();
@@ -97,6 +110,22 @@ LStatus DubinsPath::SetOffsetValue(double value){
     value = LFile_MicronsToIntU( this->file, value );
     this->offsetValue = value;
     return this->UpdateCircleCenter();
+}
+
+LStatus DubinsPath::SetWGGROW003SizeValue(double value){
+    value = LFile_MicronsToIntU( this->file, value );
+    this->WGGROW003SizeValue = value;
+    return LStatusOK;
+}
+LStatus DubinsPath::SetWGOVL010SizeValue(double value){
+    value = LFile_MicronsToIntU( this->file, value );
+    this->WGOVL010SizeValue = value;
+    return LStatusOK;
+}
+LStatus DubinsPath::SetWGOVLHOLESizeValue(double value){
+    value = LFile_MicronsToIntU( this->file, value );
+    this->WGOVLHOLESizeValue = value;
+    return LStatusOK;
 }
 
 LStatus DubinsPath::SetOxideSizeValue(double value){
@@ -342,8 +371,8 @@ void DubinsPath::ComputeDubinsPaths(){
     shortestDistance = 9999999999999999.9999;
 
     //RSR
-    if( ! (xStart == xEnd && yStart == yEnd) ) //not the same circle == start and endpoint are different
-    {
+    if(!(xStart == xEnd && yStart == yEnd)) { //not the same circle == start and endpoint are different
+    
         ////compute the RSR length
         //find the tangent
         this->GetLSLorRSRTangent(this->centerStartRightCircle, this->centerEndRightCircle, false);
@@ -379,8 +408,7 @@ void DubinsPath::ComputeDubinsPaths(){
     double comparaisonDistanceSqr = (2*this->radius)*(2*this->radius);
 
     //RSL
-    if( circleDistanceSqr >= comparaisonDistanceSqr ) //circle don't intersect
-    {
+    if( circleDistanceSqr >= comparaisonDistanceSqr) { //circle don't intersect
         this->GetRSLorLSRTangent(this->centerStartRightCircle, this->centerEndLeftCircle, false);
 
         returnDistance = this->ComputeRSLLength();
@@ -395,8 +423,7 @@ void DubinsPath::ComputeDubinsPaths(){
 
     circleDistanceSqr = PointDistance(this->centerEndRightCircle, this->centerStartLeftCircle) * PointDistance(this->centerEndRightCircle, this->centerStartLeftCircle);
     //LSR
-    if( circleDistanceSqr >= comparaisonDistanceSqr ) //circle don't intersect
-    {
+    if( circleDistanceSqr >= comparaisonDistanceSqr ){ //circle don't intersect
         this->GetRSLorLSRTangent(this->centerStartLeftCircle, this->centerEndRightCircle, true);
          
         returnDistance = this->ComputeLSRLength();
@@ -412,8 +439,7 @@ void DubinsPath::ComputeDubinsPaths(){
     comparaisonDistanceSqr = (4*this->radius)*(4*this->radius);
     
     //RLR
-    if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
-    {
+    if( circleDistanceSqr < comparaisonDistanceSqr ){ //circle don't intersect
         this->GetRLRorLRLTangent(this->centerStartRightCircle, this->centerEndRightCircle, false);
 
         returnDistance = this->ComputeRLRLength();
@@ -428,8 +454,7 @@ void DubinsPath::ComputeDubinsPaths(){
     } 
 
     //LRL
-    if( circleDistanceSqr < comparaisonDistanceSqr ) //circle don't intersect
-    {
+    if( circleDistanceSqr < comparaisonDistanceSqr ){ //circle don't intersect
         this->GetRLRorLRLTangent(this->centerStartLeftCircle, this->centerEndLeftCircle, true);
 
         returnDistance = this->ComputeLRLLength();
@@ -1366,15 +1391,14 @@ void DubinsPath::RasterizePath(bool needToRasterize)
         }
     }
     
+	LLayer savedLayer;
+    double savedWidth, savedSize;
+		
     //test for the oxide
-    if(this->oxideSizeValue != 0)
-    {
-        LLayer savedLayer;
-        double savedWidth;
-        double savedOxideSize;
+    if(this->oxideSizeValue != 0){
         savedLayer = this->layer;
         savedWidth = this->guideWidth;
-        savedOxideSize = this->oxideSizeValue;
+        savedSize = this->oxideSizeValue;
         this->guideWidth = this->oxideSizeValue;
         this->layer = this->oxideLayer;
         if(!needToRasterize) //if no rasterizer, save the polygons
@@ -1419,26 +1443,135 @@ void DubinsPath::RasterizePath(bool needToRasterize)
         //put back the previous parameter
         this->guideWidth = savedWidth;
         this->layer = savedLayer;
-        this->oxideSizeValue = savedOxideSize;
+        this->oxideSizeValue = savedSize;
     }
-    else
-    {
-        if(!needToRasterize)
-        {
-            this->torusStart_saved = this->torusStart;
-            this->torusEnd_saved = this->torusEnd;
-            this->line_saved = this->line;
-            this->torusMiddle_saved = this->torusMiddle;
+
+	//test for WGGROW003
+    if(this->WGGROW003SizeValue != 0){
+		savedLayer = this->layer;
+        savedWidth = this->guideWidth;
+        savedSize = this->WGGROW003SizeValue;
+        this->guideWidth = this->WGGROW003SizeValue;
+        this->layer = WGGROW003Layer;
+        /*if(!needToRasterize){ //if no rasterizer, save the polygons
+            this->torusStart_saved = this->torusStart;	this->torusEnd_saved = this->torusEnd;	this->line_saved = this->line;	this->torusMiddle_saved = this->torusMiddle;
+        }else{
+            LObject_Delete( this->cell, this->torusStart );	LObject_Delete( this->cell, this->torusEnd );	LObject_Delete( this->cell, this->torusMiddle );	LObject_Delete( this->cell, this->line );
+        }*/
+        switch(this->type){
+            case RSR:
+                this->StoreRSRPath();
+                break;
+            case LSL:
+                this->StoreLSLPath();
+                break;
+            case RSL:
+                this->StoreRSLPath();
+                break;
+            case LSR:
+                this->StoreLSRPath();
+                break;
+            case RLR:
+                this->StoreRLRPath();
+                break;
+            case LRL:
+                this->StoreLRLPath();
+                break;
+            default:
+                LDialog_AlertBox(LFormat("Path error"));
         }
-        else
-        {
-            LObject_Delete( this->cell, this->torusStart );
-            LObject_Delete( this->cell, this->torusEnd );
-            LObject_Delete( this->cell, this->torusMiddle );
-            LObject_Delete( this->cell, this->line );
-        }
-        
+        //to not have an infinite loop
+        this->WGGROW003SizeValue = 0;
+        //put back the previous parameter
+        this->guideWidth = savedWidth;
+        this->layer = savedLayer;
+        this->WGGROW003SizeValue = savedSize;
     }
+
+	//test for WGOVL010
+    if(this->WGOVL010SizeValue != 0){
+		savedLayer = this->layer;
+        savedWidth = this->guideWidth;
+        savedSize = this->WGOVL010SizeValue;
+        this->guideWidth = this->WGOVL010SizeValue;
+        this->layer = WGOVL010Layer;
+        /*if(!needToRasterize){ //if no rasterizer, save the polygons
+            this->torusStart_saved = this->torusStart;	this->torusEnd_saved = this->torusEnd;	this->line_saved = this->line;	this->torusMiddle_saved = this->torusMiddle;
+        }else{
+            LObject_Delete( this->cell, this->torusStart );	LObject_Delete( this->cell, this->torusEnd );	LObject_Delete( this->cell, this->torusMiddle );	LObject_Delete( this->cell, this->line );
+        }*/
+        switch(this->type){
+            case RSR:
+                this->StoreRSRPath();
+                break;
+            case LSL:
+                this->StoreLSLPath();
+                break;
+            case RSL:
+                this->StoreRSLPath();
+                break;
+            case LSR:
+                this->StoreLSRPath();
+                break;
+            case RLR:
+                this->StoreRLRPath();
+                break;
+            case LRL:
+                this->StoreLRLPath();
+                break;
+            default:
+                LDialog_AlertBox(LFormat("Path error"));
+        }
+        //to not have an infinite loop
+        this->WGOVL010SizeValue = 0;
+        //put back the previous parameter
+        this->guideWidth = savedWidth;
+        this->layer = savedLayer;
+        this->WGOVL010SizeValue = savedSize;
+    }
+
+	//test for WGOVLHOLE
+    if(this->WGOVL010SizeValue != 0){
+		savedLayer = this->layer;
+        savedWidth = this->guideWidth;
+        savedSize = this->WGOVLHOLESizeValue;
+        this->guideWidth = this->WGOVLHOLESizeValue;
+        this->layer = WGOVLHOLELayer;
+        /*if(!needToRasterize){ //if no rasterizer, save the polygons
+            this->torusStart_saved = this->torusStart;	this->torusEnd_saved = this->torusEnd;	this->line_saved = this->line;	this->torusMiddle_saved = this->torusMiddle;
+        }else{
+            LObject_Delete( this->cell, this->torusStart );	LObject_Delete( this->cell, this->torusEnd );	LObject_Delete( this->cell, this->torusMiddle );	LObject_Delete( this->cell, this->line );
+        }*/
+        switch(this->type){
+            case RSR:
+                this->StoreRSRPath();
+                break;
+            case LSL:
+                this->StoreLSLPath();
+                break;
+            case RSL:
+                this->StoreRSLPath();
+                break;
+            case LSR:
+                this->StoreLSRPath();
+                break;
+            case RLR:
+                this->StoreRLRPath();
+                break;
+            case LRL:
+                this->StoreLRLPath();
+                break;
+            default:
+                LDialog_AlertBox(LFormat("Path error"));
+        }
+        //to not have an infinite loop
+        this->WGOVLHOLESizeValue = 0;
+        //put back the previous parameter
+        this->guideWidth = savedWidth;
+        this->layer = savedLayer;
+        this->WGOVLHOLESizeValue = savedSize;
+    }
+
 }
 
 
@@ -1468,9 +1601,73 @@ void DubinsPath::DrawArc(LPoint center, LCoord radius, double startAngle, double
     }
 }
 
+void DubinsPath::DubinsPathWithBezierCurvesCall(){
+	DubinsPathWithBezierCurves();
+	LLayer savedLayer;
+	double savedWidth, savedSize;
+    //if we need a oxide
+    if(this->oxideSizeValue != 0){
+        savedLayer = this->layer;
+        savedWidth = this->guideWidth;
+        savedSize = this->oxideSizeValue;
+        this->layer = this->oxideLayer;
+        this->guideWidth = this->oxideSizeValue;
+        this->oxideSizeValue = 0;
+        this->DubinsPathWithBezierCurves();
+
+        this->layer = savedLayer;
+        this->guideWidth = savedWidth;
+        this->oxideSizeValue = savedSize;
+    }
+
+   
+	//WGGROW003
+	if(this->WGGROW003SizeValue != 0){
+        savedLayer = this->layer;
+        savedWidth = this->guideWidth;
+        savedSize = this->WGGROW003SizeValue;
+        this->layer = this->WGGROW003Layer;
+        this->guideWidth = this->WGGROW003SizeValue;
+        this->WGGROW003SizeValue = 0;
+        this->DubinsPathWithBezierCurves();
+
+        this->layer = savedLayer;
+        this->guideWidth = savedWidth;
+		this->WGGROW003SizeValue = savedSize;
+    }
+
+	//WGOVL010
+    if(this->WGOVL010SizeValue != 0){
+        savedLayer = this->layer;
+        savedWidth = this->guideWidth;
+        savedSize = this->WGOVL010SizeValue;
+        this->layer = this->WGOVL010Layer;
+        this->guideWidth = this->WGOVL010SizeValue;
+        this->WGOVL010SizeValue = 0;
+        this->DubinsPathWithBezierCurves();
+
+        this->layer = savedLayer;
+        this->guideWidth = savedWidth;
+        this->WGOVL010SizeValue = savedSize;
+    }
+	
+	//WGOVLHOLE
+    if(this->WGOVLHOLESizeValue != 0){
+        savedLayer = this->layer;
+        savedWidth = this->guideWidth;
+        savedSize = this->WGOVLHOLESizeValue;
+        this->layer = this->WGOVLHOLELayer;
+        this->guideWidth = this->WGOVLHOLESizeValue;
+        this->WGOVLHOLESizeValue = 0;
+        this->DubinsPathWithBezierCurves();
+
+        this->layer = savedLayer;
+        this->guideWidth = savedWidth;
+        this->WGOVLHOLESizeValue = savedSize;
+    }
+}
 //when we select bezier curves instead of circle
-void DubinsPath::DubinsPathWithBezierCurves()
-{
+void DubinsPath::DubinsPathWithBezierCurves(){
     double xStartCurve1, yStartCurve1, xEndCurve1, yEndCurve1;
     double xStartCurve2, yStartCurve2, xEndCurve2, yEndCurve2;
 
@@ -1498,12 +1695,10 @@ void DubinsPath::DubinsPathWithBezierCurves()
     LCoord x, y;
     double dx, dy;
     double dist1, dist2;
-
     double angle, angle1, angle2;
 
     int i = 0;
-    int j = 0;
-
+    int j = 1;
     double t = 0;
 
     xStartCurve1 = this->startPoint.GetPoint().x;
@@ -1780,9 +1975,7 @@ void DubinsPath::DubinsPathWithBezierCurves()
     }
 
     //delete the points that intersect with the polygon
-    j=1;
-    while(j != 0)
-    {
+    while(j != 0){
         j=0;
         for(i=0; i<nbPoints; i++)
         {
@@ -1811,37 +2004,21 @@ void DubinsPath::DubinsPathWithBezierCurves()
     }
 
     //create the polygon
-    LObject obj;
-    obj = LPolygon_New( this->cell, this->layer, point_arr, nbPoints );
-    double dist;
-    
-    dist = LFile_IntUtoMicrons(this->file, ArrayDistance(point_arr, nbPoints/2));
+    LObject obj = LPolygon_New( this->cell, this->layer, point_arr, nbPoints );
+    double dist = LFile_IntUtoMicrons(this->file, ArrayDistance(point_arr, nbPoints/2));
     
     LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
-    
-    //if we need a oxide
-    if(this->oxideSizeValue != 0)
-    {
-        LLayer savedLayer = this->layer;
-        double savedGuideWidth = this->guideWidth;
-        double savedOxideSize = this->oxideSizeValue;
-        this->layer = this->oxideLayer;
-        this->guideWidth = this->oxideSizeValue;
-        this->oxideSizeValue = 0;
-        this->DubinsPathWithBezierCurves();
-
-        this->layer = savedLayer;
-        this->guideWidth = savedGuideWidth;
-        this->oxideSizeValue = savedOxideSize;
-    }
-    else
-    {
+	
+	
+	if(this->oxideSizeValue != 0){
+        return;
+    }else{
         LObject_Delete( this->cell, this->torusStart );
         LObject_Delete( this->cell, this->torusEnd );
         LObject_Delete( this->cell, this->torusMiddle );
         LObject_Delete( this->cell, this->line );
     }
-    
+
 }
 
 

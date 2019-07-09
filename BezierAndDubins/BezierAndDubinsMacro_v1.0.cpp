@@ -125,12 +125,21 @@ void BezierAndDubinsMacro()
 	strcpy(strLayer, "WG"); //preloaded text for the dialog box
 	
 	//Make the list of the items for the MultiLineDialogBox
-	LDialogItem dialog_items[5];
+	LDialogItem dialog_items[10];
 	//The prompts
 	strcpy(dialog_items[0].prompt, "Layer name of the active cell:");
 	//The values entered in parameters
 	strcpy(dialog_items[0].value, strLayer); 
 	/* To be continued lower according to the selection made in the first dialogBox */
+	
+	//set the overlay layers for the DubinsPath object
+	path.SetWGGROW003Layer(LLayer_Find(pFile, "WGGROW003"));
+	path.SetWGOVL010Layer(LLayer_Find(pFile, "WGOVL010"));
+	path.SetWGOVLHOLELayer(LLayer_Find(pFile, "WGOVLHOLE"));
+	//set the overlay layers for the BezierCurve object
+	bezierCurve.SetWGGROW003LayerBezier(LLayer_Find(pFile, "WGGROW003"));
+	bezierCurve.SetWGOVL010LayerBezier(LLayer_Find(pFile, "WGOVL010"));
+	bezierCurve.SetWGOVLHOLELayerBezier(LLayer_Find(pFile, "WGOVLHOLE"));
 	
     //get the path
 	if (getcwd(cwd, sizeof(cwd)) == NULL)
@@ -152,41 +161,60 @@ void BezierAndDubinsMacro()
 		strcpy(dialog_items[1].prompt, "Offset value (in microns):");
 		strcpy(dialog_items[2].prompt, "Oxide size on each size (in microns):");
 		strcpy(dialog_items[3].prompt, "Oxide layer:");
-		strcpy(dialog_items[4].prompt, "Do you want to rasterize the waveguide?");
+		strcpy(dialog_items[4].prompt, "WGGROW003 width:");
+		strcpy(dialog_items[5].prompt, "WGOVL010  width:");
+		strcpy(dialog_items[6].prompt, "WGOVLHOLE width:");
+		strcpy(dialog_items[7].prompt, "Radius of the circles (in microns):");
+		strcpy(dialog_items[8].prompt, "Width of the guide (in microns):");
+		strcpy(dialog_items[9].prompt, "Do you want to rasterize the waveguide?");
 		//The values entered in parameters
 		strcpy(dialog_items[1].value, value_offset);
 		strcpy(dialog_items[2].value, "5");
 		strcpy(dialog_items[3].value, "OX");
-		strcpy(dialog_items[4].value, "1");
-		
+		strcpy(dialog_items[4].value, "3");
+		strcpy(dialog_items[5].value, "10");
+		strcpy(dialog_items[6].value, "1.5");
+		strcpy(dialog_items[7].value, "100");
+		strcpy(dialog_items[8].value, "0.45");
+		strcpy(dialog_items[9].value, "1");
+
 		//Calls the the dialog box
-		if(!LDialog_MultiLineInputBox("Dubins curves with circles", dialog_items, 5)){
+		if(!LDialog_MultiLineInputBox("Dubins curves with circles", dialog_items, 10)){
 			return;
 		}
 		
 		//Declare variables & assign values from the dialogue box
 		pLayer = LLayer_Find(pFile, dialog_items[0].value); //the layer value
 		strcpy(value_offset, dialog_items[1].value);
-		rasterizeWaveguide = LFile_MicronsToIntU(pFile, atoi(dialog_items[4].value)); 
+		radius = atof(dialog_items[7].value);
+		width = atof(dialog_items[8].value);
+		rasterizeWaveguide = LFile_MicronsToIntU(pFile, atoi(dialog_items[9].value)); 
 		
-		//set the layer for DubinsPath
+		//set the layer for the DubinsPath object
 		path.SetLayer(pLayer);
 		
 		//the offset value
         path.SetOffsetValue( atof(value_offset) ); 
         if(atof(value_offset) == 0.0) 
-            path.SetOffsetCurveIsSelected(false); 
+            path.SetOffsetCurveIsSelected(false); //store in the dubinsPath object
 		else
-            path.SetOffsetCurveIsSelected(true); 
+            path.SetOffsetCurveIsSelected(true); //store in the dubinsPath object
 
 		//the oxide layer and size
-		path.SetOxideSizeValue(2*atof(dialog_items[2].value));
+		path.SetOxideSizeValue(2*atof(dialog_items[2].value)); //store in the dubinsPath object
 		if(LLayer_Find(pFile, dialog_items[3].value)){
 			path.SetOxideLayer(LLayer_Find(pFile, dialog_items[3].value));
 		}else{
 			LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
 		}
         
+		//WGGROW003 width
+		path.SetWGGROW003SizeValue(2*atof(dialog_items[4].value)); //store in the dubinsPath object
+		//WGGROW010 width
+		path.SetWGOVL010SizeValue(2*atof(dialog_items[5].value)); //store in the dubinsPath object
+		//WGOVLHOLE width
+		path.SetWGOVLHOLESizeValue(2*atof(dialog_items[6].value)); //store in the dubinsPath object
+		
 		//catch some errors
 		if(NotAssigned(pLayer)){ //the layer is not found
 			LDialog_AlertBox(LFormat("ERROR:  Could not get the Layer %s in visible cell.", strLayer));
@@ -194,8 +222,8 @@ void BezierAndDubinsMacro()
 		}
 		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
 
-        if( twoLabelsHasBeenSelected() ) //2 labels selected : we will store the positions and angles
-        {
+
+        if(twoLabelsHasBeenSelected()){ //2 labels selected : we will store the positions and angles
             LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));
             LSelection pSelection = LSelection_GetList() ;
 
@@ -203,71 +231,49 @@ void BezierAndDubinsMacro()
             LLabel pLabel = (LLabel)object;
 
             //endLabel
-            pLabelLocation = LLabel_GetPosition( pLabel );
-            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
-            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
-            end.SetPoint(xPosLabel , yPosLabel, pFile);
-            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
-            {
-                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
-                {
-                    end.SetAngleDegre( dAngle );
-                }	
-                else
-                {
-                    end.SetAngleDegre( 0 );
+            pLabelLocation = LLabel_GetPosition(pLabel);
+            xPosLabel = LFile_IntUtoMicrons(pFile, pLabelLocation.x);
+            yPosLabel = LFile_IntUtoMicrons(pFile, pLabelLocation.y);
+            end.SetPoint(xPosLabel, yPosLabel, pFile);
+            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK){
+                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK){
+                    end.SetAngleDegre(dAngle);
+                }else{
+                    end.SetAngleDegre(0);
                     LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
                 }
-            }		
-            else
-            {
-                end.SetAngleDegre( 0 );
+            }else{
+                end.SetAngleDegre(0);
                 LUpi_LogMessage("Angle property not found, 0 by default\n");
             }
-
+			
+			//get the second label
             pSelection = LSelection_GetNext(pSelection); //second label is the first one selected
             object = LSelection_GetObject(pSelection);
             pLabel = (LLabel)object;
 
             //startLabel
-            pLabelLocation = LLabel_GetPosition( pLabel );
-            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
-            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
-            start.SetPoint(xPosLabel , yPosLabel, pFile);
-            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
-            {
-                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
-                {
-                    start.SetAngleDegre( dAngle );
-                }	
-                else
-                {
-                    start.SetAngleDegre( 0 );
+            pLabelLocation = LLabel_GetPosition(pLabel);
+            xPosLabel = LFile_IntUtoMicrons(pFile, pLabelLocation.x);
+            yPosLabel = LFile_IntUtoMicrons(pFile, pLabelLocation.y);
+            start.SetPoint(xPosLabel, yPosLabel, pFile);
+            if(LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK){
+                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK){
+                    start.SetAngleDegre(dAngle);
+                }else{
+                    start.SetAngleDegre(0);
                     LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
                 }
-            }
-            else
-            {
-                start.SetAngleDegre( 0 );
+            }else{
+                start.SetAngleDegre(0);
                 LUpi_LogMessage("Angle property not found, 0 by default\n");
             }
-            strcpy(strLayer, "100");
-            if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
-                return;
-            else
-                radius = atof(strLayer);
-
-            strcpy(strLayer, "0.45");
-            if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
-                return;
-            else
-                width = atof(strLayer);
 
             //store in the dubinsPath object
             path.SetStartPoint(start);
             path.SetEndPoint(end);
-            path.SetRadius(radius);
-            path.SetGuideWidth(width);
+			path.SetRadius(radius);
+			path.SetGuideWidth(width);
             
             if(start.GetAngleRadian() == end.GetAngleRadian() && atan2(end.GetPoint().y-start.GetPoint().y , end.GetPoint().x-start.GetPoint().x) == start.GetAngleRadian()) //draw only a ligne
                 path.DrawLine();
@@ -276,8 +282,7 @@ void BezierAndDubinsMacro()
                     LUpi_LogMessage( LFormat("Warning: start and end points are identical\n") );
                 else
                     LDialog_AlertBox(LFormat("ERROR:  start and end points are identical but with a different angle."));
-            else
-            {
+            else{
                 path.ComputeDubinsPaths();
                 path.RasterizePath(rasterizeWaveguide);
             }
@@ -573,18 +578,6 @@ void BezierAndDubinsMacro()
                 return;
             }
 
-            strcpy(strLayer, "100");
-            if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
-                return;
-            else
-                radius = atof(strLayer);
-
-            strcpy(strLayer, "0.435");
-            if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
-                return;
-            else
-                width = atof(strLayer);
-
             path.SetStartPoint(start);
             path.SetEndPoint(end);
             path.SetRadius(radius);
@@ -606,7 +599,7 @@ void BezierAndDubinsMacro()
     }
 
 
-    if(choice == 1){ //Dubins curve with Bézier
+    else if(choice == 1){ //Dubins curve with Bézier
         LUpi_LogMessage( "\n\nDubins curve with Bézier\n\n" );
 
         strcpy(strLayer, "0.3");
@@ -615,19 +608,31 @@ void BezierAndDubinsMacro()
 		strcpy(dialog_items[1].prompt, "Bezier parameter (between 0 and 1):");
 		strcpy(dialog_items[2].prompt, "Oxide size on each size (in microns):");
 		strcpy(dialog_items[3].prompt, "Oxide layer:");
+		strcpy(dialog_items[4].prompt, "WGGROW003 width:");
+		strcpy(dialog_items[5].prompt, "WGOVL010  width:");
+		strcpy(dialog_items[6].prompt, "WGOVLHOLE width:");
+		strcpy(dialog_items[7].prompt, "Radius of the circles (in microns):");
+		strcpy(dialog_items[8].prompt, "Width of the guide (in microns):");
 		//The values entered in parameters
 		strcpy(dialog_items[1].value, strLayer);
 		strcpy(dialog_items[2].value, "5");
 		strcpy(dialog_items[3].value, "OX");
+		strcpy(dialog_items[4].value, "3");
+		strcpy(dialog_items[5].value, "10");
+		strcpy(dialog_items[6].value, "1.5");
+		strcpy(dialog_items[7].value, "100");
+		strcpy(dialog_items[8].value, "0.435");
 		
 		//Calls the the dialog box
-		if(!LDialog_MultiLineInputBox("Dubins curves with Bezier", dialog_items, 4)){
+		if(!LDialog_MultiLineInputBox("Dubins curves with Bezier", dialog_items, 9)){
 			return;
 		}
 		
 		//Declare variables & assign values from the dialogue box
 		pLayer = LLayer_Find(pFile, dialog_items[0].value); //the layer value
 		strcpy(strLayer, dialog_items[1].value);
+		radius = atof(dialog_items[7].value);
+		width = atof(dialog_items[8].value);
 		
 		//set the layer for DubinsPath
 		path.SetLayer(pLayer);
@@ -635,7 +640,7 @@ void BezierAndDubinsMacro()
 		//Bezier parameter
 		paramBezier = atof(strLayer);
 		path.SetParamBezier(paramBezier);    
-		
+
 		//the oxide layer and size
 		path.SetOxideSizeValue(2*atof(dialog_items[2].value));
 		if(LLayer_Find(pFile, dialog_items[3].value)){
@@ -643,6 +648,13 @@ void BezierAndDubinsMacro()
 		}else{
 			LDialog_AlertBox("Oxide layer could not be found, oxide will not be generated");
 		}
+		
+		//WGGROW003 width
+		path.SetWGGROW003SizeValue(2*atof(dialog_items[4].value));
+		//WGGROW010 width
+		path.SetWGOVL010SizeValue(2*atof(dialog_items[5].value));
+		//WGOVLHOLE width
+		path.SetWGOVLHOLESizeValue(2*atof(dialog_items[6].value));
 		
 		//catch some errors
 		if(NotAssigned(pLayer)){ //the layer is not found
@@ -652,73 +664,53 @@ void BezierAndDubinsMacro()
 		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
 
 
-        if( twoLabelsHasBeenSelected() )
-        {
+        if(twoLabelsHasBeenSelected()){
             LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));
             LSelection pSelection = LSelection_GetList() ;
 
             LObject object = LSelection_GetObject(pSelection); //first label is the second one selected
             LLabel pLabel = (LLabel)object;
-
-            pLabelLocation = LLabel_GetPosition( pLabel );
-            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
-            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
-            end.SetPoint(xPosLabel , yPosLabel, pFile);
-            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
-            {
-                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
-                {
-                    end.SetAngleDegre( dAngle );
-                }	
-                else
-                {
-                    end.SetAngleDegre( 0 );
+			
+			//endLabel
+            pLabelLocation = LLabel_GetPosition(pLabel);
+            xPosLabel = LFile_IntUtoMicrons(pFile, pLabelLocation.x);
+            yPosLabel = LFile_IntUtoMicrons(pFile, pLabelLocation.y);
+            end.SetPoint(xPosLabel, yPosLabel, pFile);
+            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK){
+                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK){
+                    end.SetAngleDegre(dAngle);
+                }else{
+                    end.SetAngleDegre(0);
                     LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
                 }
-            }		
-            else
-            {
-                end.SetAngleDegre( 0 );
+            }else{
+                end.SetAngleDegre(0);
                 LUpi_LogMessage("Angle property not found, 0 by default\n");
             }
-
+			
+			//get the second label
             pSelection = LSelection_GetNext(pSelection); //second label is the first one selected
             object = LSelection_GetObject(pSelection);
             pLabel = (LLabel)object;
-
-            pLabelLocation = LLabel_GetPosition( pLabel );
-            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
-            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
-            start.SetPoint(xPosLabel , yPosLabel, pFile);
-            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
-            {
-                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
-                {
-                    start.SetAngleDegre( dAngle );
-                }	
-                else
-                {
-                    start.SetAngleDegre( 0 );
+			
+			//startLabel
+            pLabelLocation = LLabel_GetPosition(pLabel);
+            xPosLabel = LFile_IntUtoMicrons(pFile, pLabelLocation.x);
+            yPosLabel = LFile_IntUtoMicrons(pFile, pLabelLocation.y);
+            start.SetPoint(xPosLabel, yPosLabel, pFile);
+            if(LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK){
+                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK){
+                    start.SetAngleDegre(dAngle);
+                }else{
+                    start.SetAngleDegre(0);
                     LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
                 }
-            }
-            else
-            {
-                start.SetAngleDegre( 0 );
+            }else{
+                start.SetAngleDegre(0);
                 LUpi_LogMessage("Angle property not found, 0 by default\n");
             }
-            strcpy(strLayer, "100");
-            if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
-                return;
-            else
-                radius = atof(strLayer);
 
-            strcpy(strLayer, "0.435");
-            if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
-                return;
-            else
-                width = atof(strLayer);
-
+            //store in the dubinsPath object
             path.SetStartPoint(start);
             path.SetEndPoint(end);
             path.SetRadius(radius);
@@ -731,14 +723,12 @@ void BezierAndDubinsMacro()
                     LUpi_LogMessage( LFormat("Warning: start and end points are identical\n") );
                 else
                     LDialog_AlertBox(LFormat("ERROR:  start and end points are identical but with a different angle."));
-            else
-            {
+            else{
                 path.ComputeDubinsPaths();
-                path.DubinsPathWithBezierCurves();
+                path.DubinsPathWithBezierCurvesCall();
             }
             return; //fin de programme
         }
-
 
 
         strcpy(strPath,"guideFile.csv");
@@ -910,7 +900,7 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 else
                 {
                     path.ComputeDubinsPaths();
-                    path.DubinsPathWithBezierCurves();
+                    path.DubinsPathWithBezierCurvesCall();
                 }
 
                 fscanf(myFile,"\n"); //got to the next line
@@ -922,6 +912,7 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
 
         else //manual selection
         {
+	
             LDialog_AlertBox(LFormat("No file found: manual selection"));
             LDialogItem DialogItems[2] = {{ "Cell","cell1"}, { "Name","P1"}};
             if (LDialog_MultiLineInputBox("Start point",DialogItems,2) == 0)
@@ -1032,18 +1023,6 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 return;
             }
 
-            strcpy(strLayer, "100");
-            if ( LDialog_InputBox("Radius", "Select the radius of the circles in microns", strLayer) == 0)
-                return;
-            else
-                radius = atof(strLayer);
-
-            strcpy(strLayer, "0.435");
-            if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
-                return;
-            else
-                width = atof(strLayer);
-
             path.SetStartPoint(start);
             path.SetEndPoint(end);
             path.SetRadius(radius);
@@ -1059,11 +1038,10 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
             else
             {
                 path.ComputeDubinsPaths();
-                path.DubinsPathWithBezierCurves();
+                path.DubinsPathWithBezierCurvesCall();
             }
         }
     }
-
 
 
     else if(choice == 2){ //Bezier curves
@@ -1072,21 +1050,35 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
 		//The prompts
 		strcpy(dialog_items[1].prompt, "Oxide size on each size (in microns):");
 		strcpy(dialog_items[2].prompt, "Oxide layer:");
+		strcpy(dialog_items[3].prompt, "WGGROW003 width:");
+		strcpy(dialog_items[4].prompt, "WGOVL010  width:");
+		strcpy(dialog_items[5].prompt, "WGOVLHOLE width:");
+		strcpy(dialog_items[6].prompt, "Width of the guide (in microns):");
+		strcpy(dialog_items[7].prompt, "Bezier parameter (between 0 and 1):");
 		//The values entered in parameters
 		strcpy(dialog_items[1].value, "5");
 		strcpy(dialog_items[2].value, "OX");
+		strcpy(dialog_items[3].value, "3");
+		strcpy(dialog_items[4].value, "10");
+		strcpy(dialog_items[5].value, "1.5");
+		strcpy(dialog_items[6].value, "0.435");
+		strcpy(dialog_items[7].value, "0.3");
 		
 		//Calls the the dialog box
-		if(!LDialog_MultiLineInputBox("Bezier curves", dialog_items, 3)){
+		if(!LDialog_MultiLineInputBox("Bezier curves", dialog_items, 8)){
 			return;
 		}
 		
 		//Declare variables & assign values from the dialogue box
 		pLayer = LLayer_Find(pFile, dialog_items[0].value); //the layer value
+		width = atof(dialog_items[7].value);
+		paramBezier = atof(dialog_items[8].value);
+	
+		//WGGROW003 width, WGGROW010 width, WGOVLHOLE width
+		bezierCurve.SetWGGROW003SizeValueBezier(2*atof(dialog_items[4].value));
+		bezierCurve.SetWGOVL010SizeValueBezier(2*atof(dialog_items[5].value));
+		bezierCurve.SetWGOVLHOLESizeValueBezier(2*atof(dialog_items[6].value));
 		
-		//set the layer for DubinsPath
-		path.SetLayer(pLayer);
-
 		//the oxide layer and size
 		bezierCurve.SetOxideSizeValueBezier(2*atof(dialog_items[1].value));
 		if(LLayer_Find(pFile, dialog_items[2].value)){
@@ -1103,73 +1095,52 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
 		LLayer_GetName(pLayer, sLayerName, MAX_LAYER_NAME);
 		
 		
-        if( twoLabelsHasBeenSelected() )
-        {
+        if(twoLabelsHasBeenSelected()){
             LUpi_LogMessage(LFormat("2 LLabels has been selected\n"));
             LSelection pSelection = LSelection_GetList() ;
 
             LObject object = LSelection_GetObject(pSelection); //first label is the second one selected
             LLabel pLabel = (LLabel)object;
-
+			
+			//endLabel
             pLabelLocation = LLabel_GetPosition( pLabel );
             xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
             yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
             end.SetPoint(xPosLabel , yPosLabel, pFile);
-            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
-            {
-                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
-                {
+            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK){
+                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK){
                     end.SetAngleDegre( dAngle );
-                }	
-                else
-                {
+                }else{
                     end.SetAngleDegre( 0 );
                     LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
                 }
-            }		
-            else
-            {
+            }else{
                 end.SetAngleDegre( 0 );
                 LUpi_LogMessage("Angle property not found, 0 by default\n");
             }
-
+			
+			//get the second label
             pSelection = LSelection_GetNext(pSelection); //second label is the first one selected
             object = LSelection_GetObject(pSelection);
             pLabel = (LLabel)object;
-
-            pLabelLocation = LLabel_GetPosition( pLabel );
-            xPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.x);
-            yPosLabel = LFile_IntUtoMicrons( pFile, pLabelLocation.y);
-            start.SetPoint(xPosLabel , yPosLabel, pFile);
-            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK)
-            {
-                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK)
-                {
+			
+			//startLabel
+            pLabelLocation = LLabel_GetPosition(pLabel);
+            xPosLabel = LFile_IntUtoMicrons(pFile, pLabelLocation.x);
+            yPosLabel = LFile_IntUtoMicrons(pFile, pLabelLocation.y);
+            start.SetPoint(xPosLabel, yPosLabel, pFile);
+            if (LEntity_PropertyExists((LEntity)pLabel, "Angle") == LStatusOK){
+                if(LEntity_GetPropertyValue((LEntity)pLabel, "Angle", &dAngle, sizeof(double)) == LStatusOK){
                     start.SetAngleDegre( dAngle );
-                }	
-                else
-                {
+                }else{
                     start.SetAngleDegre( 0 );
                     LUpi_LogMessage("Angle GetPropertyValue failed, 0 by default\n");
                 }
-            }
-            else
-            {
+            }else{
                 start.SetAngleDegre( 0 );
                 LUpi_LogMessage("Angle property not found, 0 by default\n");
             }
 
-            strcpy(strLayer, "0.435");
-            if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
-                return;
-            else
-                width = atof(strLayer);
-            
-            strcpy(strLayer, "0.3");
-            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
-                return;
-            else
-                paramBezier = atof(strLayer);
 
             bezierCurve.SetFile(pFile);
             bezierCurve.SetCell(pCell);
@@ -1179,11 +1150,10 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
             bezierCurve.SetGuideWidth(width);
             bezierCurve.SetParamBezier(paramBezier);
 
-            bezierCurve.ComputeBezierCurve();
+            bezierCurve.ComputeBezierCurveCall();
 
             return; //fin de programme
         }
-
 
 
         strcpy(strPath,"guideFile.csv");
@@ -1198,12 +1168,6 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
         
         if(myFile != NULL)
         {
-            strcpy(strLayer, "0.3");
-            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
-                return;
-            else
-                paramBezier = atof(strLayer);
-
             while(!feof(myFile))
             {
                 nmbLabel = 0;
@@ -1352,7 +1316,7 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 bezierCurve.SetGuideWidth(width);
                 bezierCurve.SetParamBezier(paramBezier);
                 
-                bezierCurve.ComputeBezierCurve();
+                bezierCurve.ComputeBezierCurveCall();
             
 
                 fscanf(myFile,"\n"); //got to the next line
@@ -1474,17 +1438,6 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 return;
             }
 
-            strcpy(strLayer, "0.435");
-            if ( LDialog_InputBox("Guide width", "Select the width of the guide in microns", strLayer) == 0)
-                return;
-            else
-                width = atof(strLayer);
-
-            strcpy(strLayer, "0.3");
-            if ( LDialog_InputBox("Bezier parameter", "Select the Bezier parameter (between 0 and 1)", strLayer) == 0)
-                return;
-            else
-                paramBezier = atof(strLayer);
 
             bezierCurve.SetFile(pFile);
             bezierCurve.SetCell(pCell);
@@ -1494,11 +1447,12 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
             bezierCurve.SetGuideWidth(width);
             bezierCurve.SetParamBezier(paramBezier);
             
-            bezierCurve.ComputeBezierCurve();
+            bezierCurve.ComputeBezierCurveCall();
             
         }
     }
-    //other choice = nothing
+    
+	//other choice = nothing
     LUpi_LogMessage( "Macro FIN\n" );
 }
 
