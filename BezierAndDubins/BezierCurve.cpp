@@ -84,6 +84,10 @@ LStatus BezierCurve::SetParamBezier(double value){
     return LStatusOK;
 }
 
+//getters
+double BezierCurve::GetWGLength(){
+	return this->WGLength;
+}
 void BezierCurve::ComputeBezierCurveCall(){
 	ComputeBezierCurve();
 	
@@ -276,9 +280,10 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
 
     //create the path
     LObject obj = LPolygon_New( this->cell, this->layer, this->point_arr, this->nbPoints );
-
+	//calculate the length of the waveguide
     double dist = LFile_IntUtoMicrons(this->file, ArrayDistance(this->curve_arr, this->nbPointsCurve));
     LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
+	this->WGLength = dist;
 }
 
 
@@ -308,21 +313,15 @@ long RoundToLong(double value)
         return (long)(value-0.5);
 }
 
-double PointDistance(LPoint start, LPoint end)
-{
-    double dist=0.0;
-    dist = (double)(end.x - start.x)*(end.x - start.x);
+double PointDistance(LPoint start, LPoint end){
+    double dist = (double)(end.x - start.x)*(end.x - start.x);
     dist += (double)(end.y - start.y)*(end.y - start.y);
-    dist = sqrt(dist);
-    return dist;
+    return sqrt(dist);
 }
 
-double ArrayDistance(LPoint* arr, int nbPoints)
-{
+double ArrayDistance(LPoint* arr, int nbPoints){
     double dist = 0;
-    int i = 0;
-    for(i=0; i<nbPoints-1; i++)
-    {
+    for(int i=0; i<nbPoints-1; i++){
         dist += PointDistance(arr[i], arr[i+1]);
     }
     return dist;

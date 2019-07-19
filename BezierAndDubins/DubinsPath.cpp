@@ -40,7 +40,8 @@ LStatus DubinsPath::UpdateCircleCenter(){
 //// PUBLIC METHODS ////
 
 //constructor
-DubinsPath::DubinsPath(){}
+DubinsPath::DubinsPath(){
+}
 
 //setters
 LStatus DubinsPath::SetGuideWidth(float width){
@@ -159,6 +160,10 @@ LLayer DubinsPath::GetLayer(){
 
 double DubinsPath::GetOxideSizeValue(){
     return LFile_IntUtoMicrons(this->file, this->oxideSizeValue);
+}
+
+double DubinsPath::GetWGLength(){
+	return this->WGLength;
 }
 
 //compute the lenght of the different type
@@ -526,6 +531,39 @@ void DubinsPath::DrawLine() //only when the dubin path is a unique line
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
     dist = LFile_IntUtoMicrons(this->file, (LCoord)PointDistance(this->startPoint.GetLPoint(),this->endPoint.GetLPoint()));
     LEntity_AssignProperty( (LEntity)this->line, "PathLength", L_real, &dist );
+	//Oxyde
+	point_arr[0] = LPoint_Set( this->startPoint.GetPoint().x+(sin(atan2(dy,dx))*this->oxideSizeValue/2) , this->startPoint.GetPoint().y-(cos(atan2(dy,dx))*this->oxideSizeValue/2) );
+    point_arr[1] = LPoint_Set( this->endPoint.GetPoint().x+(sin(atan2(dy,dx))*this->oxideSizeValue/2) , this->endPoint.GetPoint().y-(cos(atan2(dy,dx))*this->oxideSizeValue/2) );
+    point_arr[2] = LPoint_Set( this->endPoint.GetPoint().x-(sin(atan2(dy,dx))*this->oxideSizeValue/2) , this->endPoint.GetPoint().y+(cos(atan2(dy,dx))*this->oxideSizeValue/2) );
+    point_arr[3] = LPoint_Set( this->startPoint.GetPoint().x-(sin(atan2(dy,dx))*this->oxideSizeValue/2) , this->startPoint.GetPoint().y+(cos(atan2(dy,dx))*this->oxideSizeValue/2) );
+    this->line = LPolygon_New(this->cell, this->oxideLayer, point_arr, 4);
+    dist = LFile_IntUtoMicrons(this->file, (LCoord)PointDistance(this->startPoint.GetLPoint(),this->endPoint.GetLPoint()));
+    LEntity_AssignProperty( (LEntity)this->line, "PathLength", L_real, &dist );
+	//grow003
+	point_arr[0] = LPoint_Set( this->startPoint.GetPoint().x+(sin(atan2(dy,dx))*this->WGGROW003SizeValue/2) , this->startPoint.GetPoint().y-(cos(atan2(dy,dx))*this->WGGROW003SizeValue/2) );
+    point_arr[1] = LPoint_Set( this->endPoint.GetPoint().x+(sin(atan2(dy,dx))*this->WGGROW003SizeValue/2) , this->endPoint.GetPoint().y-(cos(atan2(dy,dx))*this->WGGROW003SizeValue/2) );
+    point_arr[2] = LPoint_Set( this->endPoint.GetPoint().x-(sin(atan2(dy,dx))*this->WGGROW003SizeValue/2) , this->endPoint.GetPoint().y+(cos(atan2(dy,dx))*this->WGGROW003SizeValue/2) );
+    point_arr[3] = LPoint_Set( this->startPoint.GetPoint().x-(sin(atan2(dy,dx))*this->WGGROW003SizeValue/2) , this->startPoint.GetPoint().y+(cos(atan2(dy,dx))*this->WGGROW003SizeValue/2) );
+    this->line = LPolygon_New(this->cell, this->WGGROW003Layer, point_arr, 4);
+    dist = LFile_IntUtoMicrons(this->file, (LCoord)PointDistance(this->startPoint.GetLPoint(),this->endPoint.GetLPoint()));
+    LEntity_AssignProperty( (LEntity)this->line, "PathLength", L_real, &dist );
+	//ovl010
+	point_arr[0] = LPoint_Set( this->startPoint.GetPoint().x+(sin(atan2(dy,dx))*this->WGOVL010SizeValue/2) , this->startPoint.GetPoint().y-(cos(atan2(dy,dx))*this->WGOVL010SizeValue/2) );
+    point_arr[1] = LPoint_Set( this->endPoint.GetPoint().x+(sin(atan2(dy,dx))*this->WGOVL010SizeValue/2) , this->endPoint.GetPoint().y-(cos(atan2(dy,dx))*this->WGOVL010SizeValue/2) );
+    point_arr[2] = LPoint_Set( this->endPoint.GetPoint().x-(sin(atan2(dy,dx))*this->WGOVL010SizeValue/2) , this->endPoint.GetPoint().y+(cos(atan2(dy,dx))*this->WGOVL010SizeValue/2) );
+    point_arr[3] = LPoint_Set( this->startPoint.GetPoint().x-(sin(atan2(dy,dx))*this->WGOVL010SizeValue/2) , this->startPoint.GetPoint().y+(cos(atan2(dy,dx))*this->WGOVL010SizeValue/2) );
+    this->line = LPolygon_New(this->cell, this->WGOVL010Layer, point_arr, 4);
+    dist = LFile_IntUtoMicrons(this->file, (LCoord)PointDistance(this->startPoint.GetLPoint(),this->endPoint.GetLPoint()));
+    LEntity_AssignProperty( (LEntity)this->line, "PathLength", L_real, &dist );
+	//ovlhole
+	point_arr[0] = LPoint_Set( this->startPoint.GetPoint().x+(sin(atan2(dy,dx))*this->WGOVLHOLESizeValue/2) , this->startPoint.GetPoint().y-(cos(atan2(dy,dx))*this->WGOVLHOLESizeValue/2) );
+    point_arr[1] = LPoint_Set( this->endPoint.GetPoint().x+(sin(atan2(dy,dx))*this->WGOVLHOLESizeValue/2) , this->endPoint.GetPoint().y-(cos(atan2(dy,dx))*this->WGOVLHOLESizeValue/2) );
+    point_arr[2] = LPoint_Set( this->endPoint.GetPoint().x-(sin(atan2(dy,dx))*this->WGOVLHOLESizeValue/2) , this->endPoint.GetPoint().y+(cos(atan2(dy,dx))*this->WGOVLHOLESizeValue/2) );
+    point_arr[3] = LPoint_Set( this->startPoint.GetPoint().x-(sin(atan2(dy,dx))*this->WGOVLHOLESizeValue/2) , this->startPoint.GetPoint().y+(cos(atan2(dy,dx))*this->WGOVLHOLESizeValue/2) );
+    this->line = LPolygon_New(this->cell, this->WGOVLHOLELayer, point_arr, 4);
+    dist = LFile_IntUtoMicrons(this->file, (LCoord)PointDistance(this->startPoint.GetLPoint(),this->endPoint.GetLPoint()));
+    LEntity_AssignProperty( (LEntity)this->line, "PathLength", L_real, &dist );
+	this->WGLength = dist;
 }
 
 
@@ -593,7 +631,11 @@ void DubinsPath::StoreRSRPath()
     point_arr[3] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
     //create the line
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
-
+	
+	this->lineParamsWGLength[0] = point_arr[0];
+	this->lineParamsWGLength[1] = point_arr[1];
+	this->lineParamsWGLength[2] = point_arr[2];
+	this->lineParamsWGLength[3] = point_arr[3];
 }
 
 //same methods as RSR but with a different ordre
@@ -656,6 +698,11 @@ void DubinsPath::StoreLSLPath()
     point_arr[2] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius, params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
     point_arr[3] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+	
+	this->lineParamsWGLength[0] = point_arr[0];
+	this->lineParamsWGLength[1] = point_arr[1];
+	this->lineParamsWGLength[2] = point_arr[2];
+	this->lineParamsWGLength[3] = point_arr[3];
 }
 
 //same methods as RSR but with a different ordre
@@ -715,6 +762,11 @@ void DubinsPath::StoreRSLPath()
     point_arr[2] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
     point_arr[3] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius, params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+	
+	this->lineParamsWGLength[0] = point_arr[0];
+	this->lineParamsWGLength[1] = point_arr[1];
+	this->lineParamsWGLength[2] = point_arr[2];
+	this->lineParamsWGLength[3] = point_arr[3];
 }
 
 //same methods as RSR but with a different ordre
@@ -775,6 +827,11 @@ void DubinsPath::StoreLSRPath()
     point_arr[2] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nOuterRadius , params.ptCenter.y + sin(angleTorusTangentRadian)*params.nOuterRadius );
     point_arr[3] = LPoint_Set( params.ptCenter.x + cos(angleTorusTangentRadian)*params.nInnerRadius, params.ptCenter.y + sin(angleTorusTangentRadian)*params.nInnerRadius );
     this->line = LPolygon_New(this->cell, this->layer, point_arr, 4);
+	
+	this->lineParamsWGLength[0] = point_arr[0];
+	this->lineParamsWGLength[1] = point_arr[1];
+	this->lineParamsWGLength[2] = point_arr[2];
+	this->lineParamsWGLength[3] = point_arr[3];
 }
 
 //for RLR and LRL, same methods but with 3 torus (no line)
@@ -921,10 +978,10 @@ void DubinsPath::RasterizePath(bool needToRasterize)
     LCoord nRadius;
     this->nbPoints = 0;
 
-    if(needToRasterize)
-    {
-        if(this->type == RSL)
-        {
+    if(needToRasterize){
+		
+		double WGLength;
+        if(this->type == RSL){
             
             LTorusParams startTorusParams, endTorusParams;
             LTorus_GetParams(this->torusStart, &startTorusParams);
@@ -949,67 +1006,56 @@ void DubinsPath::RasterizePath(bool needToRasterize)
                 dStopAngleEndTorus += 2.0 * M_PI;
 
             //small radius, start torus
-            if(startTorusExist)
-            {
+            if(startTorusExist){
                 ptCenter = startTorusParams.ptCenter;
                 nRadius = startTorusParams.nInnerRadius;
                 this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
                 this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("Start radius does not exist"));
             }
-
+			
             //long radius, start torus
-            if(startTorusExist)
-            {
+            if(startTorusExist){
                 ptCenter = startTorusParams.ptCenter;
                 nRadius = startTorusParams.nOuterRadius;
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
                 this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
                 this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("Start radius does not exist"));
             }
             
             //small radius, end torus
-            if(endTorusExist)
-            {
+            if(endTorusExist){
                 ptCenter = endTorusParams.ptCenter;
                 nRadius = endTorusParams.nInnerRadius;
                 this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
                 this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("End radius does not exist"));
             }
-            
-
+			
             //long radius, end torus
-            if(endTorusExist)
-            {
+            if(endTorusExist){
                 ptCenter = endTorusParams.ptCenter;
                 nRadius = endTorusParams.nOuterRadius;
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
                 this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
                 this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("End radius does not exist"));
             }
             
-
+			//Adding the middle line to the length of the waveguide
+			WGLength = 2 * sqrt(pow((this->lineParamsWGLength[2].y - this->lineParamsWGLength[1].y), 2)+pow((this->lineParamsWGLength[2].x - this->lineParamsWGLength[1].x), 2));
+			
+			
             LUpi_LogMessage( "RSL path\n" );
         }
-        else if(this->type == LSR)
-        {
+        else if(this->type == LSR){
 
             LTorusParams startTorusParams, endTorusParams;
             LTorus_GetParams(this->torusStart, &startTorusParams);
@@ -1034,69 +1080,56 @@ void DubinsPath::RasterizePath(bool needToRasterize)
                 dStopAngleEndTorus += 2.0 * M_PI;
 
             //small radius, start torus
-            if(startTorusExist)
-            {
+            if(startTorusExist){
                 ptCenter = startTorusParams.ptCenter;
                 nRadius = startTorusParams.nInnerRadius;
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
                 this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
                 this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("Start radius does not exist"));
             }
 
-
             //long radius, end torus
-            if(endTorusExist)
-            {
+            if(endTorusExist){
                 ptCenter = endTorusParams.ptCenter;
                 nRadius = endTorusParams.nOuterRadius;
                 this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
                 this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("End radius does not exist"));
             }
             
-            
             //small radius, end torus
-            if(endTorusExist)
-            {
+            if(endTorusExist){
                 ptCenter = endTorusParams.ptCenter;
                 nRadius = endTorusParams.nInnerRadius;
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
                 this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
                 this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("End radius does not exist"));
             }
             
-
             //long radius, start torus
-            if(startTorusExist)
-            {
+            if(startTorusExist){
                 ptCenter = startTorusParams.ptCenter;
                 nRadius = startTorusParams.nOuterRadius;
                 this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
                 this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("Start radius does not exist"));
             }
             
-
+			//Adding the middle line to the length of the waveguide
+			WGLength = 2 * sqrt(pow((this->lineParamsWGLength[2].y - this->lineParamsWGLength[1].y), 2)+pow((this->lineParamsWGLength[2].x - this->lineParamsWGLength[1].x), 2));
+			
+			
             LUpi_LogMessage( "LSR path\n" );
         }
-        else if(this->type == LSL)
-        {
+        else if(this->type == LSL){
             LTorusParams startTorusParams, endTorusParams;
             LTorus_GetParams(this->torusStart, &startTorusParams);
             LTorus_GetParams(this->torusEnd, &endTorusParams);
@@ -1120,69 +1153,56 @@ void DubinsPath::RasterizePath(bool needToRasterize)
                 dStopAngleEndTorus += 2.0 * M_PI;
 
             //small radius, start torus
-            if(startTorusExist)
-            {
+            if(startTorusExist){
                 ptCenter = startTorusParams.ptCenter;
                 nRadius = startTorusParams.nInnerRadius;
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
                 this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
                 this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("Start radius does not exist"));
             }
             
-
             //small radius, end torus
-            if(endTorusExist)
-            {
+            if(endTorusExist){
                 ptCenter = endTorusParams.ptCenter;
                 nRadius = endTorusParams.nInnerRadius;
                 this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
                 this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("End radius does not exist"));
             }
             
-
             //long radius, end torus
-            if(endTorusExist)
-            {
+            if(endTorusExist){
                 ptCenter = endTorusParams.ptCenter;
                 nRadius = endTorusParams.nOuterRadius;
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
                 this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
                 this->Add( ptCenter.x + nRadius * cos( dStartAngleEndTorus ), ptCenter.y + nRadius * sin( dStartAngleEndTorus ) );
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("End radius does not exist"));
             }
             
-
             //long radius, start torus
-            if(startTorusExist)
-            {
+            if(startTorusExist){
                 ptCenter = startTorusParams.ptCenter;
                 nRadius = startTorusParams.nOuterRadius;
                 this->Add( ptCenter.x + nRadius * cos( dStopAngleStartTorus ), ptCenter.y + nRadius * sin( dStopAngleStartTorus ) );
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
                 this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("Start radius does not exist"));
             }
             
-
+			//Adding the middle line to the length of the waveguide
+			WGLength = 2 * sqrt(pow((this->lineParamsWGLength[2].y - this->lineParamsWGLength[1].y), 2)+pow((this->lineParamsWGLength[2].x - this->lineParamsWGLength[1].x), 2));
+			
+			
             LUpi_LogMessage( "LSL path\n" );
         }
-        else if(this->type == RSR)
-        {
+        else if(this->type == RSR){
             LTorusParams startTorusParams, endTorusParams;
             LTorus_GetParams(this->torusStart, &startTorusParams);
             LTorus_GetParams(this->torusEnd, &endTorusParams);
@@ -1206,69 +1226,56 @@ void DubinsPath::RasterizePath(bool needToRasterize)
                 dStopAngleEndTorus += 2.0 * M_PI;
 
             //small radius, start torus
-            if(startTorusExist)
-            {
+            if(startTorusExist){
                 ptCenter = startTorusParams.ptCenter;
                 nRadius = startTorusParams.nInnerRadius;
                 this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
                 this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("Start radius does not exist"));
             }
             
-
             //long radius, start torus
-            if(startTorusExist)
-            {
+            if(startTorusExist){
                 ptCenter = startTorusParams.ptCenter;
                 nRadius = startTorusParams.nOuterRadius;
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
                 this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
                 this->Add( ptCenter.x + nRadius * cos( dStartAngleStartTorus ), ptCenter.y + nRadius * sin( dStartAngleStartTorus ) );
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("Start radius does not exist"));
             }
             
-            
             //long radius, end torus
-            if(endTorusExist)
-            {
+            if(endTorusExist){
                 ptCenter = endTorusParams.ptCenter;
                 nRadius = endTorusParams.nOuterRadius;
                 this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
                 this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("End radius does not exist"));
             }
             
-
             //small radius, end torus
-            if(endTorusExist)
-            {
+            if(endTorusExist){
                 ptCenter = endTorusParams.ptCenter;
                 nRadius = endTorusParams.nInnerRadius;
                 //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
                 this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
                 this->Add( ptCenter.x + nRadius * cos( dStopAngleEndTorus ), ptCenter.y + nRadius * sin( dStopAngleEndTorus ) );
-            }
-            else
-            {
+            }else{
                 LUpi_LogMessage(LFormat("End radius does not exist"));
             }
             
-
+			//Adding the middle line to the length of the waveguide
+			WGLength = 2 * sqrt(pow((this->lineParamsWGLength[2].y - this->lineParamsWGLength[1].y), 2)+pow((this->lineParamsWGLength[2].x - this->lineParamsWGLength[1].x), 2));
+			
+			
             LUpi_LogMessage( "RSR path\n" );
         }
-        else if(this->type == LRL)
-        {
+        else if(this->type == LRL){
             LTorusParams startTorusParams, endTorusParams, middleTorusParams;
             LTorus_GetParams(this->torusStart, &startTorusParams);
             LTorus_GetParams(this->torusEnd, &endTorusParams);
@@ -1291,31 +1298,31 @@ void DubinsPath::RasterizePath(bool needToRasterize)
             nRadius = startTorusParams.nInnerRadius;
             //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, true);
             this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, true);
-
+			
             //long radius, middle torus
             ptCenter = middleTorusParams.ptCenter;
             nRadius = middleTorusParams.nOuterRadius;
             //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
             this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
-
+			
             //small radius, end torus
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nInnerRadius;
             //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
             this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
-
+			
             //long radius, end torus
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nOuterRadius;
             //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
             this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
-
+			
             //small radius, middle torus
             ptCenter = middleTorusParams.ptCenter;
             nRadius = middleTorusParams.nInnerRadius;
             //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
             this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
-
+			
             //long radius, start torus
             ptCenter = startTorusParams.ptCenter;
             nRadius = startTorusParams.nOuterRadius;
@@ -1324,8 +1331,7 @@ void DubinsPath::RasterizePath(bool needToRasterize)
 
             LUpi_LogMessage( "LRL path\n" );
         }
-        else if(this->type == RLR)
-        {
+        else if(this->type == RLR){
             LTorusParams startTorusParams, endTorusParams, middleTorusParams;
             LTorus_GetParams(this->torusStart, &startTorusParams);
             LTorus_GetParams(this->torusEnd, &endTorusParams);
@@ -1348,31 +1354,31 @@ void DubinsPath::RasterizePath(bool needToRasterize)
             nRadius = startTorusParams.nInnerRadius;
             //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleStartTorus, dStopAngleStartTorus, false);
             this->DrawArc(ptCenter, nRadius, dStartAngleStartTorus, dStopAngleStartTorus, false);
-
+			
             //long radius, middle torus
             ptCenter = middleTorusParams.ptCenter;
             nRadius = middleTorusParams.nOuterRadius;
             //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
             this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, true);
-
+			
             //small radius, end torus
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nInnerRadius;
             //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, false);
             this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, false);
-
+			
             //long radius, end torus
             ptCenter = endTorusParams.ptCenter;
             nRadius = endTorusParams.nOuterRadius;
             //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleEndTorus, dStopAngleEndTorus, true);
             this->DrawArc(ptCenter, nRadius, dStartAngleEndTorus, dStopAngleEndTorus, true);
-
+			
             //small radius, middle torus
             ptCenter = middleTorusParams.ptCenter;
             nRadius = middleTorusParams.nInnerRadius;
             //this->DrawArc(ptCenter, nRadius-this->offsetValue, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
             this->DrawArc(ptCenter, nRadius, dStartAngleMiddleTorus, dStopAngleMiddleTorus, false);
-
+			
             //long radius, start torus
             ptCenter = startTorusParams.ptCenter;
             nRadius = startTorusParams.nOuterRadius;
@@ -1381,16 +1387,47 @@ void DubinsPath::RasterizePath(bool needToRasterize)
 
             LUpi_LogMessage( "RLR path\n" );
         }
-
+	
         if(this->nbPoints > 0)
         {
             LObject obj;
             obj = LPolygon_New(this->cell, this->layer, this->point_arr, this->nbPoints);
-            double dist = LFile_IntUtoMicrons(this->file, this->distance);
-            LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
+            //calculate the length of the waveguide
+			double dist = LFile_IntUtoMicrons(this->file, ArrayDistance(point_arr, nbPoints));
+            LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);	
+			this->WGLength = dist;
         }
     }
-    
+    else{
+		//Get the length for the Tori
+		LTorusParams torusParamsForWGLength;
+		double theta;
+		double length;
+		//torusStart
+		LTorus_GetParams(this->torusStart, &torusParamsForWGLength); //get the parameters
+		theta = torusParamsForWGLength.dStopAngle - torusParamsForWGLength.dStartAngle;
+		length = (2*M_PI*(torusParamsForWGLength.nInnerRadius+torusParamsForWGLength.nOuterRadius)/20000)*(theta)/(360);
+		//torusEnd
+		LTorus_GetParams(this->torusEnd, &torusParamsForWGLength); //get the parameters
+		theta = torusParamsForWGLength.dStopAngle - torusParamsForWGLength.dStartAngle;
+		length += (2*M_PI*(torusParamsForWGLength.nInnerRadius+torusParamsForWGLength.nOuterRadius)/20000)*(theta)/(360);
+		
+		//Get the length for the line
+		if(this->type == RSL || this->type == LSR || this->type == LSL || this->type == RSR){
+			length += sqrt(pow((this->lineParamsWGLength[2].y - this->lineParamsWGLength[1].y), 2)+pow((this->lineParamsWGLength[2].x - this->lineParamsWGLength[1].x), 2))/10000;
+		}
+		//Get the length for the torusMiddle
+		else if(this->type == RLR || this->type == LRL){
+			LTorus_GetParams(this->torusMiddle, &torusParamsForWGLength); //get the parameters
+			theta = torusParamsForWGLength.dStopAngle - torusParamsForWGLength.dStartAngle;
+			length += (2*M_PI*(torusParamsForWGLength.nInnerRadius+torusParamsForWGLength.nOuterRadius)/20000)*(theta)/(360);
+		}
+		
+		this->WGLength = length;
+    }
+	
+	
+	
 	LLayer savedLayer;
     double savedWidth, savedSize;
 		
@@ -1401,22 +1438,22 @@ void DubinsPath::RasterizePath(bool needToRasterize)
         savedSize = this->oxideSizeValue;
         this->guideWidth = this->oxideSizeValue;
         this->layer = this->oxideLayer;
-        if(!needToRasterize) //if no rasterizer, save the polygons
-        {
+        if(!needToRasterize){ //if no rasterizer, save the polygons
+        
             this->torusStart_saved = this->torusStart;
             this->torusEnd_saved = this->torusEnd;
             this->line_saved = this->line;
             this->torusMiddle_saved = this->torusMiddle;
         }
-        else
-        {
+        else{
+        
             LObject_Delete( this->cell, this->torusStart );
             LObject_Delete( this->cell, this->torusEnd );
             LObject_Delete( this->cell, this->torusMiddle );
             LObject_Delete( this->cell, this->line );
         }
-        switch(this->type)
-        {
+        switch(this->type){
+        
             case RSR:
                 this->StoreRSRPath();
                 break;
@@ -1453,11 +1490,6 @@ void DubinsPath::RasterizePath(bool needToRasterize)
         savedSize = this->WGGROW003SizeValue;
         this->guideWidth = this->WGGROW003SizeValue;
         this->layer = WGGROW003Layer;
-        /*if(!needToRasterize){ //if no rasterizer, save the polygons
-            this->torusStart_saved = this->torusStart;	this->torusEnd_saved = this->torusEnd;	this->line_saved = this->line;	this->torusMiddle_saved = this->torusMiddle;
-        }else{
-            LObject_Delete( this->cell, this->torusStart );	LObject_Delete( this->cell, this->torusEnd );	LObject_Delete( this->cell, this->torusMiddle );	LObject_Delete( this->cell, this->line );
-        }*/
         switch(this->type){
             case RSR:
                 this->StoreRSRPath();
@@ -1495,11 +1527,6 @@ void DubinsPath::RasterizePath(bool needToRasterize)
         savedSize = this->WGOVL010SizeValue;
         this->guideWidth = this->WGOVL010SizeValue;
         this->layer = WGOVL010Layer;
-        /*if(!needToRasterize){ //if no rasterizer, save the polygons
-            this->torusStart_saved = this->torusStart;	this->torusEnd_saved = this->torusEnd;	this->line_saved = this->line;	this->torusMiddle_saved = this->torusMiddle;
-        }else{
-            LObject_Delete( this->cell, this->torusStart );	LObject_Delete( this->cell, this->torusEnd );	LObject_Delete( this->cell, this->torusMiddle );	LObject_Delete( this->cell, this->line );
-        }*/
         switch(this->type){
             case RSR:
                 this->StoreRSRPath();
@@ -1537,11 +1564,6 @@ void DubinsPath::RasterizePath(bool needToRasterize)
         savedSize = this->WGOVLHOLESizeValue;
         this->guideWidth = this->WGOVLHOLESizeValue;
         this->layer = WGOVLHOLELayer;
-        /*if(!needToRasterize){ //if no rasterizer, save the polygons
-            this->torusStart_saved = this->torusStart;	this->torusEnd_saved = this->torusEnd;	this->line_saved = this->line;	this->torusMiddle_saved = this->torusMiddle;
-        }else{
-            LObject_Delete( this->cell, this->torusStart );	LObject_Delete( this->cell, this->torusEnd );	LObject_Delete( this->cell, this->torusMiddle );	LObject_Delete( this->cell, this->line );
-        }*/
         switch(this->type){
             case RSR:
                 this->StoreRSRPath();
@@ -1602,9 +1624,11 @@ void DubinsPath::DrawArc(LPoint center, LCoord radius, double startAngle, double
 }
 
 void DubinsPath::DubinsPathWithBezierCurvesCall(){
-	DubinsPathWithBezierCurves();
+	this->WGLength = DubinsPathWithBezierCurves();
+	
 	LLayer savedLayer;
 	double savedWidth, savedSize;
+	
     //if we need a oxide
     if(this->oxideSizeValue != 0){
         savedLayer = this->layer;
@@ -1619,7 +1643,6 @@ void DubinsPath::DubinsPathWithBezierCurvesCall(){
         this->guideWidth = savedWidth;
         this->oxideSizeValue = savedSize;
     }
-
    
 	//WGGROW003
 	if(this->WGGROW003SizeValue != 0){
@@ -1667,7 +1690,7 @@ void DubinsPath::DubinsPathWithBezierCurvesCall(){
     }
 }
 //when we select bezier curves instead of circle
-void DubinsPath::DubinsPathWithBezierCurves(){
+double DubinsPath::DubinsPathWithBezierCurves(){
     double xStartCurve1, yStartCurve1, xEndCurve1, yEndCurve1;
     double xStartCurve2, yStartCurve2, xEndCurve2, yEndCurve2;
 
@@ -1697,8 +1720,7 @@ void DubinsPath::DubinsPathWithBezierCurves(){
     double dist1, dist2;
     double angle, angle1, angle2;
 
-    int i = 0;
-    int j = 1;
+    int i = 0, j = 1;
     double t = 0;
 
     xStartCurve1 = this->startPoint.GetPoint().x;
@@ -1752,8 +1774,7 @@ void DubinsPath::DubinsPathWithBezierCurves(){
         //construct the curve1
         curve1_arr[nbPointsCurve1] = LPoint_Set( xStartCurve1, yStartCurve1 );
         nbPointsCurve1 = nbPointsCurve1 + 1;
-        for(t=0.0005; t<1; t=t+0.0005)
-        {
+        for(t=0.0005; t<1; t=t+0.0005){
             x = xStartCurve1*pow((1-t),3) + 3*controlStartCurve1.x*pow((1-t),2)*t + 3*controlEndCurve1.x*(1-t)*pow(t,2) + xEndCurve1*pow(t,3);
             y = yStartCurve1*pow((1-t),3) + 3*controlStartCurve1.y*pow((1-t),2)*t + 3*controlEndCurve1.y*(1-t)*pow(t,2) + yEndCurve1*pow(t,3);
             curve1_arr[nbPointsCurve1] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
@@ -1775,16 +1796,16 @@ void DubinsPath::DubinsPathWithBezierCurves(){
         curve2_arr[nbPointsCurve2] = LPoint_Set( xEndCurve1, yEndCurve1 );
         nbPointsCurve2 = nbPointsCurve2 + 1;
 
-
         //right side of curve 1
-        point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve1 + sin(angleStartCurve1) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve1 - cos(angleStartCurve1) * this->guideWidth / 2.0));
-        save1 = point_arr[nbPoints];
+        point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve1 + sin(angleStartCurve1) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve1 - cos(angleStartCurve1) * this->guideWidth / 2.0));  
+		save1 = point_arr[nbPoints];
         nbPoints = nbPoints + 1;
         for(i=1; i<nbPointsCurve1-1; i++)
         {
             angle = atan2( curve1_arr[i+1].y-curve1_arr[i].y , curve1_arr[i+1].x-curve1_arr[i].x );
             point_arr[nbPoints] = LPoint_Set((LCoord)round(curve1_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(curve1_arr[i].y - cos(angle) * this->guideWidth / 2.0));
             nbPoints = nbPoints + 1;
+			//for the waveguide length calculations
         }
         point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve1 + sin(angleEndCurve1) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve1 - cos(angleEndCurve1) * this->guideWidth / 2.0));
         nbPoints = nbPoints + 1;
@@ -1792,21 +1813,21 @@ void DubinsPath::DubinsPathWithBezierCurves(){
         //right side of curve 2
         point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve2 + sin(angleStartCurve2) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve2 - cos(angleStartCurve2) * this->guideWidth / 2.0));
         nbPoints = nbPoints + 1;
-        for(i=1; i<nbPointsCurve2-1; i++)
+		for(i=1; i<nbPointsCurve2-1; i++)
         {
             angle = atan2( curve2_arr[i+1].y-curve2_arr[i].y , curve2_arr[i+1].x-curve2_arr[i].x );
             point_arr[nbPoints] = LPoint_Set((LCoord)round(curve2_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(curve2_arr[i].y - cos(angle) * this->guideWidth / 2.0));
-            nbPoints = nbPoints + 1;
+			nbPoints = nbPoints + 1;
         }
         point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve2 + sin(angleEndCurve2) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve2 - cos(angleEndCurve2) * this->guideWidth / 2.0));
         save2 = point_arr[nbPoints];
-        nbPoints = nbPoints + 1;
+       nbPoints = nbPoints + 1;
 
         //left side of curve 2
-        point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve2 + sin(angleEndCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve2 - cos(angleEndCurve2 + M_PI) * this->guideWidth / 2.0));
+		point_arr[nbPoints] = LPoint_Set((LCoord)round(xEndCurve2 + sin(angleEndCurve2 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yEndCurve2 - cos(angleEndCurve2 + M_PI) * this->guideWidth / 2.0));
         save3 = point_arr[nbPoints];
         nbPoints = nbPoints + 1;
-        for(i=nbPointsCurve2-2; i>=1; i--)
+		for(i=nbPointsCurve2-2; i>=1; i--)
         {
             angle = atan2( curve2_arr[i-1].y-curve2_arr[i].y , curve2_arr[i-1].x-curve2_arr[i].x );
             point_arr[nbPoints] = LPoint_Set((LCoord)round(curve2_arr[i].x + sin(angle) * this->guideWidth / 2.0) , (LCoord)round(curve2_arr[i].y - cos(angle) * this->guideWidth / 2.0));
@@ -1827,7 +1848,7 @@ void DubinsPath::DubinsPathWithBezierCurves(){
         point_arr[nbPoints] = LPoint_Set((LCoord)round(xStartCurve1 + sin(angleStartCurve1 + M_PI) * this->guideWidth / 2.0) , (LCoord)round(yStartCurve1 - cos(angleStartCurve1 + M_PI) * this->guideWidth / 2.0));
         save4 = point_arr[nbPoints];
         nbPoints = nbPoints + 1;
-    }
+	}
     else if(this->type == RLR || this->type == LRL) //with 3 torus
     {
         LPoint controlStartMiddle, controlEndMiddle; 
@@ -2005,27 +2026,24 @@ void DubinsPath::DubinsPathWithBezierCurves(){
 
     //create the polygon
     LObject obj = LPolygon_New( this->cell, this->layer, point_arr, nbPoints );
-    double dist = LFile_IntUtoMicrons(this->file, ArrayDistance(point_arr, nbPoints/2));
     
-    LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
+	//get the length of the waveguide from the Polygon
+	double dist = LFile_IntUtoMicrons(this->file, (ArrayDistance(point_arr, nbPoints/2)));
+    LEntity_AssignProperty((LEntity)obj, "PathLength", L_real, &dist);
 	
 	
-	if(this->oxideSizeValue != 0){
-        return;
-    }else{
+	if(this->oxideSizeValue == 0){
         LObject_Delete( this->cell, this->torusStart );
         LObject_Delete( this->cell, this->torusEnd );
         LObject_Delete( this->cell, this->torusMiddle );
         LObject_Delete( this->cell, this->line );
     }
-
+	
+	return dist;
 }
 
 
-void DubinsPath::Add( double x, double y )
-{
-	//LCoord nx = round( x );
-	//LCoord ny = round( y );
+void DubinsPath::Add(double x, double y){
 
     LCoord nx = (LCoord)Round0or5( x );
 	LCoord ny = (LCoord)Round0or5( y );
@@ -2038,9 +2056,11 @@ void DubinsPath::Add( double x, double y )
 	
 	nLastx = nx;
 	nLasty = ny;
-
+	
+	LPoint point;
+	point.x = nx;
+	point.y = ny;
 }
-
 
 
 //NON CLASS FUNCTIONS
@@ -2072,3 +2092,4 @@ double Round0or5(double val)
 	returnedVal = tmpInt*5.0;
 	return returnedVal;
 }
+
