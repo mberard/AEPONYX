@@ -27,6 +27,7 @@ private:
     int nbPoints;
 
     double guideWidth;
+	double WGLength;
 	
 	double WGGROW003SizeValue;
     double WGOVL010SizeValue;
@@ -56,6 +57,8 @@ public:
 	LStatus SetWGOVLHOLELayerBezier(LLayer layer);
     LStatus SetOxideLayerBezier(LLayer layer);
     LStatus SetParamBezier(double paramBezier);
+	
+	double GetWGLength();
 	
 	void ComputeBezierCurveCall();
     void ComputeBezierCurve();

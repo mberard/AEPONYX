@@ -282,6 +282,12 @@ void BezierAndDubinsMacro()
                 path.ComputeDubinsPaths();
                 path.RasterizePath(rasterizeWaveguide);
             }
+			
+			//longueur du waveguide
+			float WGLength = path.GetWGLength();
+			LUpi_LogMessage(LFormat("\nLength du waveguide: %.4f microns\n\n", WGLength));
+			
+			LDisplay_Refresh();
             return; //fin de programme
         }
 
@@ -458,7 +464,13 @@ void BezierAndDubinsMacro()
                 fscanf(myFile,"\n"); //got to the next line
             }
             fclose(myFile);
-        }
+			
+			//longueur du waveguide
+			float WGLength = path.GetWGLength();
+			LUpi_LogMessage(LFormat("\nLength du waveguide: %.4f microns\n\n", WGLength));
+			
+			LDisplay_Refresh();
+		}
 
 
 
@@ -591,6 +603,12 @@ void BezierAndDubinsMacro()
                 path.ComputeDubinsPaths();
                 path.RasterizePath(rasterizeWaveguide);
             }
+			
+			//longueur du waveguide
+			float WGLength = path.GetWGLength();
+			LUpi_LogMessage(LFormat("\nLength du waveguide: %.4f microns\n\n", WGLength));
+			
+			LDisplay_Refresh();
         }
     }
 
@@ -723,6 +741,12 @@ void BezierAndDubinsMacro()
                 path.ComputeDubinsPaths();
                 path.DubinsPathWithBezierCurvesCall();
             }
+			
+			//longueur du waveguide
+			float WGLength = path.GetWGLength();
+			LUpi_LogMessage(LFormat("\nLength du waveguide: %.4f microns\n\n", WGLength));
+			
+			LDisplay_Refresh();
             return; //fin de programme
         }
 
@@ -901,6 +925,12 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
 
                 fscanf(myFile,"\n"); //got to the next line
             }
+			
+			//longueur du waveguide
+			float WGLength = path.GetWGLength();
+			LUpi_LogMessage(LFormat("\nLength du waveguide: %.4f microns\n\n", WGLength));
+			
+			LDisplay_Refresh();
             fclose(myFile);
         }
 
@@ -1036,6 +1066,12 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
                 path.ComputeDubinsPaths();
                 path.DubinsPathWithBezierCurvesCall();
             }
+			
+			//longueur du waveguide
+			float WGLength = path.GetWGLength();
+			LUpi_LogMessage(LFormat("\nLength du waveguide: %.4f microns\n\n", WGLength));
+			
+			LDisplay_Refresh();
         }
     }
 
@@ -1147,7 +1183,11 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
             bezierCurve.SetParamBezier(paramBezier);
 
             bezierCurve.ComputeBezierCurveCall();
-
+			
+			//longueur du waveguide
+			float WGLength = bezierCurve.GetWGLength();
+			LUpi_LogMessage(LFormat("\nLength du waveguide: %.4f microns\n\n", WGLength));
+			LDisplay_Refresh();
             return; //fin de programme
         }
 
@@ -1317,7 +1357,13 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
 
                 fscanf(myFile,"\n"); //got to the next line
             }
-            fclose(myFile);
+            
+			//longueur du waveguide
+			float WGLength = bezierCurve.GetWGLength();
+			LUpi_LogMessage(LFormat("\nLength du waveguide: %.4f microns\n\n", WGLength));
+			
+			LDisplay_Refresh();
+			fclose(myFile);
         }
 
 
@@ -1445,10 +1491,17 @@ LUpi_LogMessage(LFormat("endLabelName %s\n\n", endLabelName));
             
             bezierCurve.ComputeBezierCurveCall();
             
+			//longueur du waveguide
+			float WGLength = bezierCurve.GetWGLength();
+			LUpi_LogMessage(LFormat("\nLength du waveguide: %.4f microns\n\n", WGLength));
+			
+			LDisplay_Refresh();
         }
     }
     
 	//other choice = nothing
+	
+	
     LUpi_LogMessage( "Macro FIN\n" );
 }
 
