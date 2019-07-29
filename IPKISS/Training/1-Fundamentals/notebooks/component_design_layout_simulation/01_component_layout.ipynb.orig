@@ -1,0 +1,301 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Tutorial: Component Design\n",
+    "## Step 1/2: Design an MMI layout"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In this Notebook you will first learn how to create the layout design of an MMI. We will then simulate and optimize the design.\n",
+    "\n",
+    "<img src=\"_image/MMI_geometry_annotated.png\" />\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "As we have done before, we start by importing necessary libraries:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import pylab as plt\n",
+    "import numpy as np\n",
+    "import sys\n",
+    "\n",
+    "plt.rcParams['figure.figsize'] = (12, 12)\n",
+    "sys.path.insert(0, '.')\n",
+    "from technologies import silicon_photonics\n",
+    "from ipkiss3 import all as i3"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We will now define a Multi-mode interferometer (MMI) from geometric elements, and simulate it. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### MMI PCell"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In IPKISS, cells (building blocks) with parameters can be defined. These cells are called **PCells** (Parametric cells), and the parameters are called **properties** in IPKISS. Each property can influence the geometry or behaviour of a component. \n",
+    "\n",
+    ">Note:\n",
+    ">* IPKISS predefines many different types of properties, like positive numbers, booleans, strings and so forth.\n",
+    ">* IPKISS also predefines many geometric elements, such as rectangle, circle, ellipse, etc."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Define the PCell"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In order to define a new PCell with a few geometric elements from scratch:\n",
+    "\n",
+    "* We define a Python class derived from `i3.PCell`. We call it `SimpleMMI` here.\n",
+    "* Inside that class we define another class `Layout`, derived from `i3.LayoutView`. This class will contain the geometric information."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "class SimpleMMI(i3.PCell):\n",
+    "    class Layout(i3.LayoutView):\n",
+    "            # properties\n",
+    "            width = i3.PositiveNumberProperty(default=4.0)\n",
+    "            length = i3.PositiveNumberProperty(default=20.0)\n",
+    "            taper_width = i3.PositiveNumberProperty(default=1.0)\n",
+    "            waveguide_width = i3.PositiveNumberProperty(default=0.5)\n",
+    "            waveguide_spacing = i3.PositiveNumberProperty(default=2.0)\n",
+    "            \n",
+    "            # methods\n",
+    "            def _generate_elements(self, elems):\n",
+    "                elems += i3.Rectangle(layer=i3.TECH.PPLAYER.RWG.CORE,\n",
+    "                                      center=(0.5 * self.length, 0.0),\n",
+    "                                      box_size=(self.length, self.width))\n",
+    "                elems += i3.Wedge(layer=i3.TECH.PPLAYER.RWG.CORE,\n",
+    "                                  begin_coord=(-5.0, 0.0),\n",
+    "                                  end_coord=(0.0, 0.0),\n",
+    "                                  begin_width=self.waveguide_width,\n",
+    "                                  end_width=self.taper_width\n",
+    "                                  )\n",
+    "                elems += i3.Wedge(layer=i3.TECH.PPLAYER.RWG.CORE,\n",
+    "                                  begin_coord=(self.length, 0.5 * self.waveguide_spacing),\n",
+    "                                  end_coord=(self.length + 5.0, 0.5 * self.waveguide_spacing),\n",
+    "                                  begin_width=self.taper_width,\n",
+    "                                  end_width=self.waveguide_width\n",
+    "                                  )\n",
+    "                elems += i3.Wedge(layer=i3.TECH.PPLAYER.RWG.CORE,\n",
+    "                                  begin_coord=(self.length, -0.5 * self.waveguide_spacing),\n",
+    "                                  end_coord=(self.length + 5.0, -0.5 * self.waveguide_spacing),\n",
+    "                                  begin_width=self.taper_width,\n",
+    "                                  end_width=self.waveguide_width\n",
+    "                                  )\n",
+    "                return elems"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In the code above we note that:\n",
+    "\n",
+    "* The `Layout` class inside the `SimpleMMI` PCell is a **Layout View**. IPKISS can attach many different views to a PCell. For instance, **layout**, **simulation**, **cross-sections**, etc.\n",
+    "* 5 positive number **properties** are defined of which order can be altered. Each property has a **default value**: if the user does not supply a value, this default will be used.\n",
+    "* Inside the **method** `_generate_elements`, 4 **geometric elements** are added:\n",
+    "\n",
+    "   * One Rectangle, representing the multi-mode section of the MMI\n",
+    "   * Three Wedges, representing the tapers at the input and output\n",
+    "\n",
+    "* The 4 geometric elements use the properties of `SimpleMMI.Layout`, e.g. they use the `length` property by addressing it as `self.length`. Calculations are done using standard Python on these properties, to calculate the dimensions and positions of the elements."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "To find documentation about predefined class like `Wedge`, you can run the following command in the notebooks. It will show up a page in the bottom with documentation."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "?i3.Wedge"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Visualize the Layout\n",
+    "\n",
+    "To visualize the layout, we *instantiate* the PCell ``SimpleMMI``, and then instantiate the ``Layout`` class. We can modify the **properties** of the MMI by passing them to the layout, as shown below:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "mmi = SimpleMMI()\n",
+    "mmi_layout = mmi.Layout(length=10.0)\n",
+    "mmi_layout.visualize()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Add the waveguide cladding"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In order for the device to work in this predefined `silicon_photonics` technology, we need to define the cladding of the waveguide as well: the region with a lower refractive index. We will redefine the SimpleMMI class and add one Rectangle over the whole device: "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "class SimpleMMI(i3.PCell):\n",
+    "    class Layout(i3.LayoutView):\n",
+    "            # properties\n",
+    "            width = i3.PositiveNumberProperty(default=4.0)\n",
+    "            length = i3.PositiveNumberProperty(default=20.0)\n",
+    "            taper_width = i3.PositiveNumberProperty(default=1.0)\n",
+    "            waveguide_width = i3.PositiveNumberProperty(default=0.5)\n",
+    "            waveguide_spacing = i3.PositiveNumberProperty(default=2.0)\n",
+    "            \n",
+    "            # methods\n",
+    "            def _generate_elements(self, elems):\n",
+    "                elems += i3.Rectangle(layer=i3.TECH.PPLAYER.RWG.CORE,\n",
+    "                                      center=(0.5 * self.length, 0.0),\n",
+    "                                      box_size=(self.length, self.width))\n",
+    "                elems += i3.Wedge(layer=i3.TECH.PPLAYER.RWG.CORE,\n",
+    "                                  begin_coord=(-5.0, 0.0),\n",
+    "                                  end_coord=(0.0, 0.0),\n",
+    "                                  begin_width=self.waveguide_width,\n",
+    "                                  end_width=self.taper_width\n",
+    "                                  )\n",
+    "                elems += i3.Wedge(layer=i3.TECH.PPLAYER.RWG.CORE,\n",
+    "                                  begin_coord=(self.length, 0.5 * self.waveguide_spacing),\n",
+    "                                  end_coord=(self.length + 5.0, 0.5 * self.waveguide_spacing),\n",
+    "                                  begin_width=self.taper_width,\n",
+    "                                  end_width=self.waveguide_width\n",
+    "                                  )\n",
+    "                elems += i3.Wedge(layer=i3.TECH.PPLAYER.RWG.CORE,\n",
+    "                                  begin_coord=(self.length, -0.5 * self.waveguide_spacing),\n",
+    "                                  end_coord=(self.length + 5.0, -0.5 * self.waveguide_spacing),\n",
+    "                                  begin_width=self.taper_width,\n",
+    "                                  end_width=self.waveguide_width\n",
+    "                                  )\n",
+    "                elems += i3.Rectangle(layer=i3.TECH.PPLAYER.RWG.CLADDING,\n",
+    "                                      center=(0.5 * self.length, 0.0),\n",
+    "                                      box_size=(self.length + 2 * 5.0, self.width + 2 * 3.0)\n",
+    "                                     )\n",
+    "                return elems"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "When we visualize the Layout now, we can see the waveguide core embedded in the cladding. We have two visualization functions:\n",
+    "\n",
+    "* visualize: this will visualize the structure by plotting the different layers.\n",
+    "* visualize_2d: this will run a *virtual fabrication*, which means the picture shows the actual fabricated layer thicknesses. In this case, 220 nm Si (no etch), and 150 nm (partially etched)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "mmi = SimpleMMI()\n",
+    "mmi_layout = mmi.Layout(length=30.0)\n",
+    "mmi_layout.visualize()\n",
+    "mmi_layout.visualize_2d()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now, the MMI device layout is designed. Let's move on to the next Notebook to simulate it and try to optimize the design: <a href=\"./02_component_simulate.ipynb\"> **Step 2/2: Simulate the MMI design** </a>"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}

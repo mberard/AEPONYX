@@ -1,0 +1,3 @@
+LIBRARY _optimized_cy_88F_CoreCladdingShapeWaveguide_CapheModel_calculate_S.pyd
+EXPORTS
+init_optimized_cy_88F_CoreCladdingShapeWaveguide_CapheModel_calculate_S
