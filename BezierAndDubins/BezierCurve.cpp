@@ -88,8 +88,11 @@ LStatus BezierCurve::SetParamBezier(double value){
 double BezierCurve::GetWGLength(){
 	return this->WGLength;
 }
+
+
 void BezierCurve::ComputeBezierCurveCall(){
-	ComputeBezierCurve();
+	//creates the waveguide
+    ComputeBezierCurve();
 	
 	LLayer savedLayer;
 	double savedGuideWidth, savedSize;
@@ -188,7 +191,7 @@ void BezierCurve::ComputeBezierCurve(){
     double coef = 1 - this->paramBezier;
 
 
-LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
+    LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
 
     distX = xEnd - xStart;
     distY = yEnd - yStart;
@@ -205,8 +208,7 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
     //construct the curve
     this->curve_arr[this->nbPointsCurve] = LPoint_Set( xStart, yStart );
     this->nbPointsCurve = this->nbPointsCurve + 1;
-    for(double t=0.0005; t<1; t=t+0.0005)
-    {
+    for(double t=0.0005; t<1; t=t+0.0005){
         x = xStart*pow((1-t),3) + 3*this->controlStart.x*pow((1-t),2)*t + 3*this->controlEnd.x*(1-t)*pow(t,2) + xEnd*pow(t,3);
         y = yStart*pow((1-t),3) + 3*this->controlStart.y*pow((1-t),2)*t + 3*this->controlEnd.y*(1-t)*pow(t,2) + yEnd*pow(t,3);
         this->curve_arr[this->nbPointsCurve] = LPoint_Set( RoundToLong(x), RoundToLong(y) );
@@ -283,7 +285,7 @@ LUpi_LogMessage(LFormat("BEGIN CREATING BEZIER CURVE\n"));
 	//calculate the length of the waveguide
     double dist = LFile_IntUtoMicrons(this->file, ArrayDistance(this->curve_arr, this->nbPointsCurve));
     LEntity_AssignProperty( (LEntity)obj, "PathLength", L_real, &dist);
-	this->WGLength = dist;
+	this->WGLength = dist; 
 }
 
 
