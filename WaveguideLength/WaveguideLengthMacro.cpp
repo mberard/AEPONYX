@@ -128,7 +128,6 @@ void WaveguideLengthMacro(){
 					taperSide+=1;
 				}
 				else if(distance==MMI_width){
-					LUpi_LogMessage("MMI_");
 					MMISide+=1;
 				}
 				startPoint = arr[i];
