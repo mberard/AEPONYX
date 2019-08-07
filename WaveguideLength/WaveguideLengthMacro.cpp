@@ -24,7 +24,8 @@ void WaveguideLengthMacro(){
 	if(!pCell)
 		return;
 	
-	char print[50];
+	char print[50]; //for the log message
+
 
 	/*ASKING FOR THE VARIABLES NEEDED*/
 	LDialogItem dialog_items[4];
@@ -127,7 +128,6 @@ void WaveguideLengthMacro(){
 					taperSide+=1;
 				}
 				else if(distance==MMI_width){
-					LUpi_LogMessage("MMI_");
 					MMISide+=1;
 				}
 				startPoint = arr[i];
@@ -136,7 +136,7 @@ void WaveguideLengthMacro(){
 			//Is it a taper? (or butterfly MMI)
 			if(taperSide==1 && WGSide==1 || MMISide==1){
 				double waist_width = MMI_width-waist;
-				//trouver le côté de largeur du waveguide et du taper (ou MMI et MMI - waist)
+				//trouver le côté de largeur du waveguide et du taper (ou MMI et waist)
 				for(int j=0; j<numberOfPoint; j++){
 					endPoint = arr[j];
 					distance = (sqrt((double)(endPoint.x - startPoint.x)*(endPoint.x - startPoint.x)+(double)(endPoint.y - startPoint.y)*(endPoint.y - startPoint.y)))/10000;
@@ -224,14 +224,14 @@ void WaveguideLengthMacro(){
 				LUpi_LogMessage(LFormat("Polygon -> length: %f, (0,0) point of the object: (%f, %f)\n", (sqrt(pow((double)(newEndPoint.x - newStartPoint.x), 2) + pow((double)(newEndPoint.y - newStartPoint.y), 2)))/10000, (double)newStartPoint.x/10000, (double)newStartPoint.y/10000));
 			}
 			//other polygon
-		 	else{
-				distance = 0;
+		 	else{ 
+				//Take off the width from the length
 				bool flag = false;
-				//Take of the width from the length
 				if(WGSide>=2){
 					LUpi_LogMessage("WG_");
 					distance -= WG_width*2;
 				}else if (MMISide>=2){
+					LUpi_LogMessage("MMI_");
 					distance -= MMI_width*2;
 				}else{
 					while(flag == false){
@@ -287,13 +287,14 @@ void WaveguideLengthMacro(){
 				}
 
 				//calculate the length
+				distance = 0;
 				for(int i=0; i<numberOfPoint; i++){
 					endPoint = arr[i];
 					distance += (round(sqrt((double)(endPoint.x - startPoint.x)*(endPoint.x - startPoint.x)+(double)(endPoint.y - startPoint.y)*(endPoint.y - startPoint.y))))/10000;
 					startPoint = arr[i];
     			}
-
 				WGLength += distance/2;
+
 				//Add a log of the type, length and location 
 				double cx = 0, cy = 0;
 				if(arr[numberOfPoint/4].x < arr[numberOfPoint/4*3].x){
@@ -331,7 +332,7 @@ void WaveguideLengthMacro(){
 			//if there is no side that correspond to a waveguide or a MMI
 			else{
 				const char* picklist[2];
-				const char* title = LFormat( "Choose which side of the box is the length", 2);
+				const char* title = LFormat("Choose which side of the box is the length", 2);
 				char msg1[20], msg2[20];
 
 				//list of the two sides of the box
